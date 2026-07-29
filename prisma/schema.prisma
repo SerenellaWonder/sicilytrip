@@ -172,6 +172,7 @@ model Wishlist {
   @@unique([userId, hotelId])
 }
 
+
 model ApiLog {
   id           String   @id @default(cuid())
   provider     String
@@ -185,4 +186,76 @@ model ApiLog {
   createdAt    DateTime @default(now())
 
   @@index([provider, createdAt])
+}
+
+
+model Region {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  isoCode     String?
+
+  provinces   Province[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Province {
+  id          String   @id @default(cuid())
+
+  regionId    String
+
+  name        String
+  code        String
+  slug        String   @unique
+
+  region       Region @relation(fields: [regionId], references: [id])
+
+  municipalities Municipality[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Municipality {
+  id          String   @id @default(cuid())
+
+  provinceId  String
+
+  name        String
+  slug        String   @unique
+
+  latitude    Float?
+  longitude   Float?
+
+  province Province @relation(fields: [provinceId], references: [id])
+
+  destinations Destination[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Destination {
+  id              String   @id @default(cuid())
+
+  municipalityId  String
+
+  name            String
+  slug            String   @unique
+
+  shortDescription String?
+  description      String?
+
+  latitude        Float?
+  longitude       Float?
+
+  featured        Boolean @default(false)
+  published       Boolean @default(true)
+
+  municipality Municipality @relation(fields: [municipalityId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
