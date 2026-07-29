@@ -1,0 +1,188 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  REQUIRES_PAYMENT_METHOD
+  REQUIRES_ACTION
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  CANCELED
+}
+
+model Hotel {
+  id               String   @id @default(cuid())
+  slug             String   @unique
+  name             String
+  city             String
+  region           String
+  country          String   @default("IT")
+  shortDescription String?
+  longDescription  String?
+  address          String?
+  latitude         Float?
+  longitude        Float?
+  starRating       Int?
+  mainImageUrl     String?
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  apiMappings HotelApiMapping[]
+  bookings    Booking[]
+}
+
+model HotelApiMapping {
+  id              String   @id @default(cuid())
+  hotelId         String
+  provider        String
+  providerHotelId String
+  rawPayload      Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  hotel Hotel @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerHotelId])
+}
+
+model RoomCache {
+  id          String   @id @default(cuid())
+  hotelId     String
+  provider    String
+  roomCode    String
+  roomName    String
+  description String?
+  capacity    Int?
+  rawPayload  Json?
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+
+  @@index([hotelId, provider])
+}
+
+model RateCache {
+  id                 String   @id @default(cuid())
+  hotelId            String
+  provider           String
+  rateKey            String
+  roomCode           String?
+  boardCode          String?
+  priceAmount        Decimal  @db.Decimal(10, 2)
+  currency           String
+  cancellationPolicy String?
+  rawPayload         Json?
+  expiresAt          DateTime
+  createdAt          DateTime @default(now())
+
+  @@index([hotelId, provider])
+  @@index([rateKey])
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  firstName String?
+  lastName  String?
+  language  String?  @default("it")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bookings Booking[]
+}
+
+model Booking {
+  id                String        @id @default(cuid())
+  userId            String
+  hotelId           String
+  provider          String
+  providerBookingId String?
+  status            BookingStatus @default(PENDING)
+  checkIn           DateTime
+  checkOut          DateTime
+  guests            Int
+  totalAmount       Decimal       @db.Decimal(10, 2)
+  currency          String
+  customerEmail     String
+  rawPayload        Json?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hotel    Hotel     @relation(fields: [hotelId], references: [id], onDelete: Restrict)
+  payments Payment[]
+}
+
+model Payment {
+  id                    String        @id @default(cuid())
+  bookingId             String
+  stripePaymentIntentId String?       @unique
+  amount                Decimal       @db.Decimal(10, 2)
+  currency              String
+  status                PaymentStatus
+  rawPayload            Json?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+}
+
+model Experience {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String?
+  city        String?
+  priceFrom   Decimal? @db.Decimal(10, 2)
+  currency    String?  @default("EUR")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Package {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Wishlist {
+  id        String   @id @default(cuid())
+  userId    String
+  hotelId   String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, hotelId])
+}
+
+model ApiLog {
+  id           String   @id @default(cuid())
+  provider     String
+  endpoint     String
+  method       String
+  statusCode   Int?
+  latencyMs    Int?
+  requestBody  Json?
+  responseBody Json?
+  errorMessage String?
+  createdAt    DateTime @default(now())
+
+  @@index([provider, createdAt])
+}
