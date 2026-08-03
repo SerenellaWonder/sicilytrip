@@ -1,15 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { PartnerSolutionClient } from './client/partnersolution.client';
+import { PartnerSolutionHotelService } from './services/hotel.services';
+import { HotelSearchDto } from './dto/hotel-search.dto';
 
 @Injectable()
 export class PartnerSolutionService {
-
   constructor(
-    private readonly client: PartnerSolutionClient,
+    private readonly hotelService: PartnerSolutionHotelService,
   ) {}
 
   async getSuppliers() {
-    return this.client.get('/api/Suppliers');
+    return this.hotelService.suppliers();
   }
 
+  async search(dto: HotelSearchDto) {
+  return this.hotelService.search(dto);
+}
 }

@@ -5,16 +5,20 @@ import { ConfigModule } from '@nestjs/config';
 import { PartnerSolutionController } from './partnersolution.controller';
 import { PartnerSolutionService } from './partnersolution.service';
 import { PartnerSolutionClient } from './client/partnersolution.client';
+import { PartnerSolutionHotelService } from './services/hotel.services';
 
 @Module({
   imports: [
     ConfigModule,
     HttpModule,
   ],
-  controllers: [PartnerSolutionController],
+  controllers: [
+    PartnerSolutionController,
+  ],
   providers: [
     PartnerSolutionService,
     PartnerSolutionClient,
+    PartnerSolutionHotelService,
   ],
   exports: [
     PartnerSolutionService,

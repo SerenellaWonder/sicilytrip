@@ -10,6 +10,8 @@ import { PrismaModule } from './prisma/prisma.module';
 import { GeographyModule } from './modules/geography/geography.module';
 import { PartnerSolutionModule } from './modules/partnersolution/partnersolution.module';
 
+import { PlacesModule } from './modules/places/places.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -21,6 +23,7 @@ import { PartnerSolutionModule } from './modules/partnersolution/partnersolution
     HealthModule,
     GeographyModule,
     PartnerSolutionModule,
+    PlacesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
