@@ -423,11 +423,12 @@ export default function DestinationsMap() {
             <div
               className="
                 absolute
-    inset-x-[4%]
-    bottom-[1%]
-    top-[30%]
+    inset-x-[7%]
+    bottom-[7%]
+    top-[18%]
     origin-center
-    scale-[1.8]
+    scale-[1.25]
+    xl:scale-[1.35]
   "
             >
               {/* SAGOMA REALE */}
