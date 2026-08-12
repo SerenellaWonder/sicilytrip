@@ -24,7 +24,8 @@ const items = [
   },
   {
     label: "Chi siamo",
-    href: "/#about",
+    href: "/chi-siamo",
+    pathname: "/chi-siamo",
   },
   {
     label: "Journal",

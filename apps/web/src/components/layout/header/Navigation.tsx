@@ -13,7 +13,8 @@ const items = [
   },
   {
     label: "Chi siamo",
-    href: "/#about",
+    href: "/chi-siamo",
+    pathname: "/chi-siamo",
   },
   {
     label: "Journal",
@@ -39,9 +40,7 @@ export default function Navigation({
       className="
         hidden
         items-center
-
         gap-8
-
         lg:flex
         xl:gap-10
       "
@@ -61,13 +60,10 @@ export default function Navigation({
             className={`
               group
               relative
-
               py-3
-
               text-[14px]
               font-semibold
               tracking-[0.015em]
-
               transition-all
               duration-300
 
@@ -97,12 +93,9 @@ export default function Navigation({
                 absolute
                 bottom-1
                 left-0
-
                 h-[2px]
-
                 rounded-full
                 bg-[#F58220]
-
                 transition-all
                 duration-300
                 ease-out
