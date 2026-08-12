@@ -19,7 +19,8 @@ const items = [
   },
   {
     label: "Esperienze",
-    href: "/#experiences",
+    href: "/esperienze",
+    pathname: "/esperienze",
   },
   {
     label: "Chi siamo",
@@ -75,9 +76,7 @@ export default function MobileMenu({
 
   return (
     <>
-      {/* =====================================================
-          HAMBURGER
-      ===================================================== */}
+      {/* HAMBURGER */}
 
       <button
         type="button"
@@ -86,18 +85,13 @@ export default function MobileMenu({
         aria-expanded={open}
         className={`
           flex
-
           h-11
           w-11
-
           items-center
           justify-center
-
           rounded-full
-
           transition-all
           duration-300
-
           lg:hidden
 
           ${
@@ -109,11 +103,8 @@ export default function MobileMenu({
               : `
                 border
                 border-white/20
-
                 bg-white/10
-
                 text-white
-
                 backdrop-blur-md
               `
           }
@@ -125,23 +116,17 @@ export default function MobileMenu({
         />
       </button>
 
-      {/* =====================================================
-          OVERLAY
-      ===================================================== */}
+      {/* OVERLAY */}
 
       <div
         className={`
           fixed
           inset-0
           z-[80]
-
           bg-[#07182D]/60
-
           backdrop-blur-sm
-
           transition-all
           duration-300
-
           lg:hidden
 
           ${
@@ -153,9 +138,7 @@ export default function MobileMenu({
         onClick={closeMenu}
       />
 
-      {/* =====================================================
-          PANEL
-      ===================================================== */}
+      {/* PANEL */}
 
       <div
         className={`
@@ -163,29 +146,20 @@ export default function MobileMenu({
           right-0
           top-0
           z-[90]
-
           flex
           h-[100dvh]
-
           w-[88%]
           max-w-[390px]
-
           flex-col
-
           bg-[#07182D]
-
           px-7
           pb-8
           pt-6
-
           text-white
-
           shadow-[-20px_0_60px_rgba(0,0,0,0.25)]
-
           transition-transform
           duration-500
           ease-out
-
           lg:hidden
 
           ${
@@ -195,9 +169,7 @@ export default function MobileMenu({
           }
         `}
       >
-        {/* ===================================================
-            TOP
-        =================================================== */}
+        {/* TOP */}
 
         <div
           className="
@@ -226,20 +198,14 @@ export default function MobileMenu({
             aria-label="Chiudi menu"
             className="
               flex
-
               h-11
               w-11
-
               items-center
               justify-center
-
               rounded-full
-
               border
               border-white/15
-
               bg-white/[0.06]
-
               text-white
             "
           >
@@ -250,9 +216,7 @@ export default function MobileMenu({
           </button>
         </div>
 
-        {/* ===================================================
-            NAV
-        =================================================== */}
+        {/* NAV */}
 
         <nav
           className="
@@ -276,14 +240,11 @@ export default function MobileMenu({
                 onClick={closeMenu}
                 className="
                   group
-
                   flex
                   items-center
                   justify-between
-
                   border-b
                   border-white/10
-
                   py-5
                 "
               >
@@ -292,7 +253,6 @@ export default function MobileMenu({
                     text-[26px]
                     font-semibold
                     tracking-[-0.03em]
-
                     transition-colors
                     duration-300
 
@@ -326,9 +286,7 @@ export default function MobileMenu({
           })}
         </nav>
 
-        {/* ===================================================
-            BOTTOM
-        =================================================== */}
+        {/* BOTTOM */}
 
         <div className="mt-auto">
           <button
@@ -337,22 +295,16 @@ export default function MobileMenu({
             className="
               flex
               w-full
-
               items-center
               justify-center
               gap-3
-
               rounded-full
-
               bg-[#F58220]
-
               px-6
               py-4
-
               text-sm
               font-semibold
               text-white
-
               shadow-[0_12px_30px_rgba(245,130,32,0.20)]
             "
           >
@@ -367,14 +319,11 @@ export default function MobileMenu({
           <p
             className="
               mt-5
-
               text-center
-
               text-[9px]
               font-semibold
               uppercase
               tracking-[0.22em]
-
               text-white/25
             "
           >

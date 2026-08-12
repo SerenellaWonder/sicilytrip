@@ -8,7 +8,8 @@ const items = [
   },
   {
     label: "Esperienze",
-    href: "/#experiences",
+    href: "/esperienze",
+    pathname: "/esperienze",
   },
   {
     label: "Chi siamo",
