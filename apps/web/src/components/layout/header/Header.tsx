@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 import Container from "@/components/common/Container";
 
@@ -10,7 +11,19 @@ import HeaderActions from "./HeaderActions";
 import MobileMenu from "./MobileMenu";
 
 export default function Header() {
+  const pathname = usePathname();
+
   const [scrolled, setScrolled] = useState(false);
+
+  /*
+   * La Home ha la Hero fotografica sotto l'header,
+   * quindi può partire trasparente.
+   *
+   * Le pagine interne invece partono con header bianco.
+   */
+  const isHome = pathname === "/";
+
+  const solidHeader = !isHome || scrolled;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -36,23 +49,29 @@ export default function Header() {
         top-0
         z-50
         w-full
+
         transition-all
         duration-500
         ease-out
 
         ${
-          scrolled
+          solidHeader
             ? `
               border-b
               border-[#0D2340]/[0.06]
+
               bg-white/96
+
               shadow-[0_8px_30px_rgba(7,24,45,0.08)]
+
               backdrop-blur-xl
             `
             : `
               border-b
               border-white/[0.10]
+
               bg-transparent
+
               shadow-none
             `
         }
@@ -64,6 +83,7 @@ export default function Header() {
             flex
             items-center
             justify-between
+
             transition-all
             duration-500
             ease-out
@@ -75,9 +95,12 @@ export default function Header() {
             }
           `}
         >
+          {/* LOGO */}
+
           <div
             className={`
               shrink-0
+
               transition-all
               duration-500
 
@@ -91,11 +114,23 @@ export default function Header() {
             <Logo />
           </div>
 
-          <Navigation scrolled={scrolled} />
+          {/* DESKTOP NAVIGATION */}
 
-          <HeaderActions scrolled={scrolled} />
+          <Navigation
+            solidHeader={solidHeader}
+            pathname={pathname}
+          />
 
-          <MobileMenu scrolled={scrolled} />
+          {/* DESKTOP ACTION */}
+
+          <HeaderActions scrolled={solidHeader} />
+
+          {/* MOBILE */}
+
+          <MobileMenu
+            solidHeader={solidHeader}
+            pathname={pathname}
+          />
         </div>
       </Container>
     </header>
