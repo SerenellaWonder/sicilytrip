@@ -18,7 +18,8 @@ const items = [
   },
   {
     label: "Journal",
-    href: "/#journal",
+    href: "/journal",
+    pathname: "/journal",
   },
   {
     label: "Contatti",

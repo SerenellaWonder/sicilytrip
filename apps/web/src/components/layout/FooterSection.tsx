@@ -17,23 +17,23 @@ import { useConcierge } from "@/components/concierge/ConciergeProvider";
 const menu = [
   {
     label: "Destinazioni",
-    href: "#destinations",
+    href: "/destinazioni",
   },
   {
     label: "Hotel",
-    href: "#destinations",
+    href: "/#destinations",
   },
   {
     label: "Esperienze",
-    href: "#experiences",
+    href: "/esperienze",
   },
   {
     label: "Chi siamo",
-    href: "#about",
+    href: "/chi-siamo",
   },
   {
     label: "Journal",
-    href: "#journal",
+    href: "/journal",
   },
 ];
 

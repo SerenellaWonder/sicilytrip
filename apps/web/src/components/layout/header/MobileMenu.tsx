@@ -29,7 +29,8 @@ const items = [
   },
   {
     label: "Journal",
-    href: "/#journal",
+    href: "/journal",
+    pathname: "/journal",
   },
   {
     label: "Contatti",
@@ -77,7 +78,9 @@ export default function MobileMenu({
 
   return (
     <>
-      {/* HAMBURGER */}
+      {/* =====================================================
+          HAMBURGER
+      ===================================================== */}
 
       <button
         type="button"
@@ -117,7 +120,9 @@ export default function MobileMenu({
         />
       </button>
 
-      {/* OVERLAY */}
+      {/* =====================================================
+          OVERLAY
+      ===================================================== */}
 
       <div
         className={`
@@ -139,7 +144,9 @@ export default function MobileMenu({
         onClick={closeMenu}
       />
 
-      {/* PANEL */}
+      {/* =====================================================
+          PANEL
+      ===================================================== */}
 
       <div
         className={`
@@ -170,7 +177,9 @@ export default function MobileMenu({
           }
         `}
       >
-        {/* TOP */}
+        {/* ===================================================
+            TOP
+        =================================================== */}
 
         <div
           className="
@@ -217,7 +226,9 @@ export default function MobileMenu({
           </button>
         </div>
 
-        {/* NAV */}
+        {/* ===================================================
+            NAV
+        =================================================== */}
 
         <nav
           className="
@@ -287,7 +298,9 @@ export default function MobileMenu({
           })}
         </nav>
 
-        {/* BOTTOM */}
+        {/* ===================================================
+            BOTTOM
+        =================================================== */}
 
         <div className="mt-auto">
           <button
