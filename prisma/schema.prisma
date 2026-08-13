@@ -23,6 +23,13 @@ enum PaymentStatus {
   CANCELED
 }
 
+enum HotelSearchStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
 model Hotel {
   id               String   @id @default(cuid())
   slug             String   @unique
@@ -270,6 +277,102 @@ model Destination {
 
   hotels Hotel[]
 
+  hotelSearches HotelSearch[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+model HotelSearch {
+  id String @id @default(cuid())
+
+  provider String
+
+  providerSearchId String @unique
+
+  destinationId String?
+
+  destination Destination? @relation(fields: [destinationId], references: [id])
+
+  checkIn DateTime
+
+  checkOut DateTime
+
+  rooms Json
+
+  status HotelSearchStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  results HotelSearchResult[]
+}
+
+model HotelSearchResult {
+  id              String   @id @default(cuid())
+
+  hotelSearchId   String
+
+  provider        String
+
+  providerHotelId String
+
+  supplier        String?
+
+  hotelName       String
+
+  stars           Int?
+
+  price           Decimal? @db.Decimal(10, 2)
+
+  currency        String?
+
+  payload         Json
+
+  createdAt       DateTime @default(now())
+
+  hotelSearch HotelSearch @relation(fields: [hotelSearchId], references: [id], onDelete: Cascade)
+
+  @@index([hotelSearchId])
+
+  @@index([providerHotelId])
+
+  @@index([provider])
+}
+model HotelDetail {
+
+  id String @id @default(cuid())
+
+  provider String
+
+  providerHotelId String @unique
+
+  name String
+
+  stars Int?
+
+  category String?
+
+  zone String?
+
+  latitude Float?
+
+  longitude Float?
+
+  address String?
+
+  photoGallery Json?
+
+  descriptions Json?
+
+  facilities Json?
+
+  payload Json
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@index([provider])
+
 }

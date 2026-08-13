@@ -1,48 +1,29 @@
 import { Injectable } from '@nestjs/common';
 
-import {
-  IPlacesProvider,
-  PlaceSuggestion,
-  PlaceDetails,
-} from '../interfaces/places-provider.interface';
-
 import { NominatimClient } from '../client/nominatim.client';
+import { Destination } from '../models/destination.model';
+import { IPlacesProvider } from '../interfaces/places-provider.interface';
+import { DestinationMapper } from '../mappers/destination.mapper';
 
 @Injectable()
-export class NominatimProvider
-  implements IPlacesProvider
-{
+export class NominatimProvider implements IPlacesProvider {
   constructor(
     private readonly client: NominatimClient,
   ) {}
 
   async autocomplete(
     query: string,
-  ): Promise<PlaceSuggestion[]> {
+  ): Promise<Destination[]> {
+    const result = await this.client.search(query);
 
-    const result =
-      await this.client.search(query);
-
-    return result.map((item: any) => ({
-
-      id: item.place_id,
-
-      label: item.name ?? item.display_name,
-
-      description: item.display_name,
-
-    }));
-
+    return result.map((item: any) =>
+      DestinationMapper.fromNominatim(item),
+    );
   }
 
   async details(
     id: string,
-  ): Promise<PlaceDetails> {
-
-    throw new Error(
-      'Not implemented yet',
-    );
-
+  ): Promise<Destination> {
+    throw new Error('Method not implemented.');
   }
-
 }

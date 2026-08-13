@@ -5,40 +5,27 @@ import { ConfigModule } from '@nestjs/config';
 import { PlacesController } from './places.controller';
 import { PlacesService } from './places.service';
 
+import { DestinationCache } from './cache/destination.cache';
+
 import { NominatimClient } from './client/nominatim.client';
 import { NominatimProvider } from './providers/nominatim.provider';
 
 @Module({
-
   imports: [
-
     ConfigModule,
-
     HttpModule,
-
   ],
-
   controllers: [
-
     PlacesController,
-
   ],
-
   providers: [
-
     PlacesService,
-
+    DestinationCache,
     NominatimClient,
-
     NominatimProvider,
-
   ],
-
   exports: [
-
     PlacesService,
-
   ],
-
 })
 export class PlacesModule {}

@@ -12,6 +12,8 @@ import { PartnerSolutionModule } from './modules/partnersolution/partnersolution
 
 import { PlacesModule } from './modules/places/places.module';
 
+import { HotelsModule } from './modules/hotels/hotels.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -24,6 +26,7 @@ import { PlacesModule } from './modules/places/places.module';
     GeographyModule,
     PartnerSolutionModule,
     PlacesModule,
+    HotelsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

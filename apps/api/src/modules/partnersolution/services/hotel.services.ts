@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
 
-import { HotelSearchDto } from '../dto/hotel-search.dto';
 import { PartnerSolutionClient } from '../client/partnersolution.client';
+
+import { PartnerHotelSearchDto } from '../dto/partner-hotel-search.dto';
+import { PartnerSearchResponseDto } from '../dto/partner-search-response.dto';
 
 @Injectable()
 export class PartnerSolutionHotelService {
+
   constructor(
     private readonly client: PartnerSolutionClient,
   ) {}
@@ -13,10 +16,15 @@ export class PartnerSolutionHotelService {
     return this.client.get('/api/Suppliers');
   }
 
-  async search(dto: HotelSearchDto) {
-    return this.client.post(
+  async search(
+    request: PartnerHotelSearchDto,
+  ): Promise<PartnerSearchResponseDto> {
+
+    return this.client.post<PartnerSearchResponseDto>(
       '/api/HotelSearch',
-      dto,
+      request,
     );
+
   }
+
 }

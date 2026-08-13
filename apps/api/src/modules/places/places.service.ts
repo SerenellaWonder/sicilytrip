@@ -1,34 +1,76 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 
-import { GooglePlacesClient } from './client/google-places.client';
+import { DestinationCache } from './cache/destination.cache';
+import { Destination } from './models/destination.model';
+import { NominatimProvider } from './providers/nominatim.provider';
 
 @Injectable()
 export class PlacesService {
   constructor(
-    private readonly google: GooglePlacesClient,
+    private readonly provider: NominatimProvider,
+    private readonly cache: DestinationCache,
   ) {}
 
-  async autocomplete(query: string) {
+  /**
+   * Ricerca destinazioni tramite provider
+   * e salva automaticamente i risultati in cache.
+   */
+  async autocomplete(
+    query: string,
+  ): Promise<Destination[]> {
 
-    const response = await this.google.post<any>(
-      '/places:autocomplete',
-      {
-        input: query,
+    const destinations =
+      await this.provider.autocomplete(query);
 
-        includedRegionCodes: ['it'],
+    this.cache.saveMany(destinations);
 
-        languageCode: 'it',
+    return destinations;
+  }
 
-        regionCode: 'it',
-      },
-      {
-        headers: {
-          'X-Goog-FieldMask':
-            'suggestions.placePrediction.placeId,suggestions.placePrediction.text',
-        },
-      },
-    );
+  /**
+   * Restituisce una destinazione dalla cache.
+   * Utilizzato dagli endpoint REST.
+   */
+  async details(
+    id: string,
+  ): Promise<Destination> {
 
-    return response.suggestions ?? [];
+    const destination =
+      this.cache.get(id);
+
+    if (!destination) {
+
+      throw new NotFoundException(
+        `Destination ${id} not found`,
+      );
+
+    }
+
+    return destination;
+  }
+
+  /**
+   * Metodo interno utilizzato dagli altri moduli
+   * (Hotels, Experiences, Packages, ecc.).
+   */
+  findById(
+    id: string,
+  ): Destination {
+
+    const destination =
+      this.cache.get(id);
+
+    if (!destination) {
+
+      throw new NotFoundException(
+        `Destination ${id} not found`,
+      );
+
+    }
+
+    return destination;
   }
 }
