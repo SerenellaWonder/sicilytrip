@@ -16,6 +16,7 @@ import {
 
 import { apiFetch } from "@/lib/api";
 import SearchExpiryNotice from "../SearchExpiryNotice";
+import GuestDetailsForm from "./GuestDetailsForm";
 
 type HotelRoomRate = {
   SelectCode: string;
@@ -630,15 +631,16 @@ export default function HotelBookingPage({
         </div>
 
         {preBook && (
-          <section
-            className="
-              mt-7
-              rounded-[26px]
-              bg-white
-              p-7
-              shadow-[0_12px_40px_rgba(13,35,64,0.05)]
-            "
-          >
+          <>
+            <section
+              className="
+                mt-7
+                rounded-[26px]
+                bg-white
+                p-7
+                shadow-[0_12px_40px_rgba(13,35,64,0.05)]
+              "
+            >
             <div
               className="
                 flex
@@ -734,7 +736,15 @@ export default function HotelBookingPage({
                 {cleanRemarks(preBook.Remarks)}
               </p>
             )}
-          </section>
+            </section>
+
+            <GuestDetailsForm
+              searchId={searchId}
+              hotelId={hotelId}
+              rateId={rateId}
+              disabled={searchExpired}
+            />
+          </>
         )}
       </div>
     </main>
