@@ -15,6 +15,7 @@ import {
 
 import { apiFetch } from "@/lib/api";
 
+import SearchExpiryNotice from "../SearchExpiryNotice";
 import HotelPreviewImage from "./HotelPreviewImage";
 
 type Hotel = {
@@ -287,6 +288,8 @@ export default function HotelResultsPage({
 
           Modifica ricerca
         </a>
+
+        <SearchExpiryNotice searchId={searchId} />
 
         {/* HEADER */}
 

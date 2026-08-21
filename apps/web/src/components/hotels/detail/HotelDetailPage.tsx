@@ -17,6 +17,7 @@ import {
 
 import { apiFetch } from "@/lib/api";
 
+import SearchExpiryNotice from "../SearchExpiryNotice";
 import HotelGallery from "./HotelGallery";
 import HotelRooms from "./HotelRooms";
 
@@ -349,6 +350,8 @@ export default function HotelDetailPage({
 
           Torna ai risultati
         </a>
+
+        <SearchExpiryNotice searchId={searchId} />
 
         {/* HOTEL HEADER */}
 

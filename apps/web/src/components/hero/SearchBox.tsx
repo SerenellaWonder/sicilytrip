@@ -416,6 +416,10 @@ export default function SearchBox({
         JSON.stringify({
           ...response,
 
+          createdAt: Date.now(),
+          expiresAt:
+            Date.now() + 20 * 60 * 1000,
+
           search: {
             destination,
             checkIn,

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { apiFetch } from "@/lib/api";
+import SearchExpiryNotice from "../SearchExpiryNotice";
 
 type HotelRoomRate = {
   SelectCode: string;
@@ -74,6 +75,9 @@ export default function HotelBookingPage({
 
   const [preBookError, setPreBookError] =
     useState("");
+
+  const [searchExpired, setSearchExpired] =
+    useState(false);
 
   useEffect(() => {
     try {
@@ -219,6 +223,13 @@ export default function HotelBookingPage({
     "FREE";
 
   async function handlePreBook() {
+    if (searchExpired) {
+      setPreBookError(
+        "La ricerca è scaduta. Effettua una nuova ricerca per verificare nuovamente disponibilità e prezzo."
+      );
+      return;
+    }
+
     try {
       setPreBooking(true);
       setPreBookError("");
@@ -303,6 +314,11 @@ export default function HotelBookingPage({
 
           Cambia tariffa
         </a>
+
+        <SearchExpiryNotice
+          searchId={searchId}
+          onExpiredChange={setSearchExpired}
+        />
 
         <div className="mt-8">
           <span
@@ -524,7 +540,8 @@ export default function HotelBookingPage({
               onClick={handlePreBook}
               disabled={
                 preBooking ||
-                preBook != null
+                preBook != null ||
+                searchExpired
               }
               className="
                 mt-7
@@ -560,6 +577,8 @@ export default function HotelBookingPage({
                 </>
               ) : preBook ? (
                 "Tariffa confermata"
+              ) : searchExpired ? (
+                "Ricerca scaduta"
               ) : (
                 "Riconferma tariffa"
               )}
