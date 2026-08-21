@@ -2,6 +2,12 @@ import { Injectable } from '@nestjs/common';
 
 import { PartnerSolutionClient } from '../client/partnersolution.client';
 
+type PartnerHotelPreBookRequest = {
+  SearchId: string;
+  GiataId: string;
+  RoomId: string;
+};
+
 @Injectable()
 export class PartnerSolutionHotelPreBookService {
 
@@ -10,7 +16,7 @@ export class PartnerSolutionHotelPreBookService {
   ) {}
 
   async preBook(
-    request: unknown,
+    request: PartnerHotelPreBookRequest,
   ) {
 
     return this.client.post(

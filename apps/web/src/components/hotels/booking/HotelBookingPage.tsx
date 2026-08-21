@@ -14,6 +14,8 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
+import { apiFetch } from "@/lib/api";
+
 type HotelRoomRate = {
   SelectCode: string;
   Rooms?: string[];
@@ -22,6 +24,27 @@ type HotelRoomRate = {
   Price?: number;
   Currency?: string;
   Supplier?: string;
+};
+
+type CancellationData = {
+  Fee?: string;
+  DeadLine?: string;
+};
+
+type CancellationDetail = {
+  Room?: string;
+  CancellationData?: CancellationData[];
+};
+
+type HotelPreBookResponse = {
+  Error?: string;
+  Remarks?: string;
+  DeadlineDate?: string;
+  CancellationDetails?: CancellationDetail[];
+  PurchaseToken?: string;
+  Spui?: string;
+  OriginalCurrency?: string;
+  FinalPrice?: number;
 };
 
 export default function HotelBookingPage({
@@ -40,6 +63,17 @@ export default function HotelBookingPage({
 
   const [loading, setLoading] =
     useState(true);
+
+  const [preBook, setPreBook] =
+    useState<HotelPreBookResponse | null>(
+      null
+    );
+
+  const [preBooking, setPreBooking] =
+    useState(false);
+
+  const [preBookError, setPreBookError] =
+    useState("");
 
   useEffect(() => {
     try {
@@ -183,6 +217,52 @@ export default function HotelBookingPage({
   const freeCancellation =
     rate.CancellationPolicyCode ===
     "FREE";
+
+  async function handlePreBook() {
+    try {
+      setPreBooking(true);
+      setPreBookError("");
+
+      const response =
+        await apiFetch<HotelPreBookResponse>(
+          "/hotels/prebook",
+          {
+            method: "POST",
+            body: JSON.stringify({
+              searchId,
+              hotelId,
+              rateId,
+            }),
+          }
+        );
+
+      if (response.Error) {
+        throw new Error(
+          response.Error
+        );
+      }
+
+      setPreBook(response);
+    } catch (error) {
+      setPreBook(null);
+      setPreBookError(
+        error instanceof Error
+          ? error.message
+          : "Impossibile riconfermare la tariffa."
+      );
+    } finally {
+      setPreBooking(false);
+    }
+  }
+
+  const confirmedPrice =
+    preBook?.FinalPrice != null
+      ? formatPrice(
+          preBook.FinalPrice,
+          preBook.OriginalCurrency ||
+            rate.Currency
+        )
+      : price;
 
   return (
     <main
@@ -423,7 +503,7 @@ export default function HotelBookingPage({
                 tracking-[-0.04em]
               "
             >
-              {price ??
+              {confirmedPrice ??
                 "Su richiesta"}
             </strong>
 
@@ -441,13 +521,16 @@ export default function HotelBookingPage({
 
             <button
               type="button"
-              disabled
+              onClick={handlePreBook}
+              disabled={
+                preBooking ||
+                preBook != null
+              }
               className="
                 mt-7
                 inline-flex
                 h-12
                 w-full
-                cursor-not-allowed
                 items-center
                 justify-center
                 rounded-full
@@ -458,27 +541,182 @@ export default function HotelBookingPage({
                 uppercase
                 tracking-[0.13em]
                 text-white
-                opacity-60
+
+                disabled:cursor-not-allowed
+                disabled:opacity-60
               "
             >
-              Continua
+              {preBooking ? (
+                <>
+                  <Loader2
+                    size={15}
+                    className="
+                      mr-2
+                      animate-spin
+                    "
+                  />
+
+                  Riconferma...
+                </>
+              ) : preBook ? (
+                "Tariffa confermata"
+              ) : (
+                "Riconferma tariffa"
+              )}
             </button>
 
-            <p
-              className="
-                mt-3
-                text-center
-                text-[10px]
-                leading-4
-                text-white/40
-              "
-            >
-              La conferma tariffa sarà attivata
-              appena completata l&apos;integrazione
-              PreBook.
-            </p>
+            {preBookError ? (
+              <div
+                className="
+                  mt-4
+                  rounded-xl
+                  bg-red-500/15
+                  px-4
+                  py-3
+                  text-xs
+                  leading-5
+                  text-red-100
+                "
+              >
+                <p>{preBookError}</p>
+
+                <a
+                  href="/"
+                  className="
+                    mt-2
+                    inline-block
+                    font-semibold
+                    text-white
+                    underline
+                  "
+                >
+                  Effettua una nuova ricerca
+                </a>
+              </div>
+            ) : (
+              <p
+                className="
+                  mt-3
+                  text-center
+                  text-[10px]
+                  leading-4
+                  text-white/40
+                "
+              >
+                La disponibilità della ricerca
+                resta valida per 20 minuti.
+              </p>
+            )}
           </aside>
         </div>
+
+        {preBook && (
+          <section
+            className="
+              mt-7
+              rounded-[26px]
+              bg-white
+              p-7
+              shadow-[0_12px_40px_rgba(13,35,64,0.05)]
+            "
+          >
+            <div
+              className="
+                flex
+                items-start
+                gap-3
+              "
+            >
+              <CheckCircle2
+                size={22}
+                className="
+                  mt-0.5
+                  shrink-0
+                  text-emerald-600
+                "
+              />
+
+              <div>
+                <h2
+                  className="
+                    text-2xl
+                    font-semibold
+                    text-[#0D2340]
+                  "
+                >
+                  Tariffa riconfermata
+                </h2>
+
+                {preBook.DeadlineDate && (
+                  <p
+                    className="
+                      mt-2
+                      text-sm
+                      text-slate-500
+                    "
+                  >
+                    Termine cancellazione: {preBook.DeadlineDate}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {preBook.CancellationDetails?.map(
+              (detail, detailIndex) => (
+                <div
+                  key={`${detail.Room ?? "room"}-${detailIndex}`}
+                  className="
+                    mt-6
+                    rounded-2xl
+                    bg-[#F7F5F1]
+                    p-5
+                  "
+                >
+                  <p
+                    className="
+                      text-sm
+                      font-semibold
+                      text-[#0D2340]
+                    "
+                  >
+                    Camera {detail.Room ?? detailIndex + 1}
+                  </p>
+
+                  <div className="mt-3 grid gap-2">
+                    {detail.CancellationData?.map(
+                      (item, itemIndex) => (
+                        <p
+                          key={`${item.DeadLine ?? "deadline"}-${itemIndex}`}
+                          className="
+                            text-xs
+                            leading-5
+                            text-slate-600
+                          "
+                        >
+                          Dal {formatDeadline(item.DeadLine)}: penale {item.Fee ?? "non indicata"}
+                        </p>
+                      )
+                    )}
+                  </div>
+                </div>
+              )
+            )}
+
+            {preBook.Remarks && (
+              <p
+                className="
+                  mt-6
+                  whitespace-pre-line
+                  text-xs
+                  leading-6
+                  text-slate-500
+                "
+              >
+                {cleanRemarks(preBook.Remarks)}
+              </p>
+            )}
+          </section>
+        )}
       </div>
     </main>
   );
@@ -554,4 +792,68 @@ function formatPrice(
       maximumFractionDigits: 2,
     }
   ).format(price);
+}
+
+function formatDeadline(
+  value?: string
+) {
+  if (!value) {
+    return "data non indicata";
+  }
+
+  const date = new Date(value);
+
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat(
+    "it-IT",
+    {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }
+  ).format(date);
+}
+
+function cleanRemarks(
+  value: string
+) {
+  const withBreaks =
+    value
+      .replace(
+        /<br\s*\/?>/gi,
+        "\n"
+      )
+      .replace(
+        /<[^>]+>/g,
+        ""
+      );
+
+  if (
+    typeof document ===
+    "undefined"
+  ) {
+    return withBreaks.trim();
+  }
+
+  const textarea =
+    document.createElement(
+      "textarea"
+    );
+
+  textarea.innerHTML =
+    withBreaks;
+
+  return textarea.value
+    .replace(
+      /\n{3,}/g,
+      "\n\n"
+    )
+    .trim();
 }
