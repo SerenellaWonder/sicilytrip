@@ -2,6 +2,8 @@ export class HotelSearchResultDto {
 
   hotelId: string;
 
+  giataId?: string;
+
   name: string;
 
   stars?: number;
@@ -19,5 +21,11 @@ export class HotelSearchResultDto {
   image?: string;
 
   zone?: string;
+
+  room?: string;
+
+  board?: string;
+
+  policy?: string;
 
 }

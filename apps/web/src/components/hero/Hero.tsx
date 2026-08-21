@@ -4,7 +4,7 @@ import Image from "next/image";
 
 import HeroContent from "@/components/hero/HeroContent";
 import ScrollIndicator from "@/components/hero/ScrollIndicator";
-import ConciergeSearch from "@/components/concierge/ConciergeSearch";
+import HeroSearch from "@/components/hero/HeroSearch";
 
 export default function Hero() {
   return (
@@ -115,7 +115,7 @@ export default function Hero() {
           <ScrollIndicator />
         </div>
 
-        {/* CONCIERGE */}
+        {/* CONCIERGE / HOTEL SEARCH */}
 
         <div
           className="
@@ -127,17 +127,17 @@ export default function Hero() {
             sm:translate-y-[42%]
           "
         >
-          <ConciergeSearch />
+          <HeroSearch />
         </div>
       </section>
 
-      {/* SPACE FOR OVERLAPPING CONCIERGE */}
+      {/* SPACE FOR OVERLAPPING SEARCH */}
 
       <div
         className="
-          h-[150px]
-          sm:h-[80px]
-          lg:h-[85px]
+          h-[170px]
+          sm:h-[105px]
+          lg:h-[110px]
         "
       />
     </>

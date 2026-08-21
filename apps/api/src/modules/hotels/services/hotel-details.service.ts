@@ -6,6 +6,7 @@ import { Prisma } from '@prisma/client';
 
 import { HotelDetailRepository } from '../repositories/hotel-detail.repository';
 import { HotelSearchRepository } from '../repositories/hotel-search.repository';
+import { HotelSearchResultRepository } from '../repositories/hotel-search-result.repository';
 
 import { PartnerSolutionHotelDetailsService } from '../../partnersolution/services/hotel-details.service';
 
@@ -15,6 +16,7 @@ export class HotelDetailsService {
   constructor(
     private readonly hotelDetailRepository: HotelDetailRepository,
     private readonly hotelSearchRepository: HotelSearchRepository,
+    private readonly hotelSearchResultRepository: HotelSearchResultRepository,
     private readonly provider: PartnerSolutionHotelDetailsService,
   ) {}
 
@@ -36,7 +38,7 @@ export class HotelDetailsService {
     }
 
     //
-    // 2. Recupero ProviderSearchId
+    // 2. Recupero ricerca
     //
     const providerSearch =
       await this.hotelSearchRepository.findById(
@@ -50,16 +52,56 @@ export class HotelDetailsService {
     }
 
     //
-    // 3. Chiamata Partner Solution
+    // 3. Recupero risultato hotel della ricerca
+    //
+    const searchResults =
+      await this.hotelSearchResultRepository.findBySearchId(
+        searchId,
+      );
+
+    const hotelResult =
+      searchResults.find(
+        result =>
+          result.providerHotelId === hotelId,
+      );
+
+    if (!hotelResult) {
+      throw new NotFoundException(
+        'Hotel non trovato nei risultati della ricerca',
+      );
+    }
+
+    //
+    // 4. Recupero GiataID dal payload originale
+    //
+    const payload =
+      hotelResult.payload as Record<
+        string,
+        unknown
+      >;
+
+    const giataId =
+      payload?.GiataID != null
+        ? String(payload.GiataID)
+        : undefined;
+
+    if (!giataId) {
+      throw new NotFoundException(
+        'GiataID non disponibile per questo hotel',
+      );
+    }
+
+    //
+    // 5. Chiamata Partner Solution
     //
     const detail =
       await this.provider.details(
         providerSearch.providerSearchId,
-        hotelId,
+        giataId,
       );
 
     //
-    // 4. Salvataggio nel DB
+    // 6. Salvataggio nel DB
     //
     await this.hotelDetailRepository.save({
 
@@ -105,7 +147,7 @@ export class HotelDetailsService {
     });
 
     //
-    // 5. Restituisco il dettaglio
+    // 7. Restituzione dettaglio
     //
     return detail;
 

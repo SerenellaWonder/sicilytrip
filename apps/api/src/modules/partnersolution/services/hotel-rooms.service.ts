@@ -10,11 +10,16 @@ export class PartnerSolutionHotelRoomsService {
   ) {}
 
   async rooms(
-    hotelId: string,
+    searchId: string,
+    giataId: string,
   ) {
 
     return this.client.get(
-      `/api/HotelRooms?HotelId=${hotelId}`,
+      `/api/HotelRooms?SearchId=${encodeURIComponent(
+        searchId,
+      )}&GiataId=${encodeURIComponent(
+        giataId,
+      )}`,
     );
 
   }

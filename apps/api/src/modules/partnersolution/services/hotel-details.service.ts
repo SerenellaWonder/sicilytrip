@@ -12,14 +12,14 @@ export class PartnerSolutionHotelDetailsService {
 
   async details(
     searchId: string,
-    hotelId: string,
+    giataId: string,
   ): Promise<PartnerHotelDetailDto> {
 
     return this.client.get<PartnerHotelDetailDto>(
       `/api/HotelDetails?searchid=${encodeURIComponent(
         searchId,
       )}&giataid=${encodeURIComponent(
-        hotelId,
+        giataId,
       )}`,
     );
 

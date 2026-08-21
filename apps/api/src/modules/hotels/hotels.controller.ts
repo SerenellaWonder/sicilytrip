@@ -24,34 +24,66 @@ export class HotelsController {
 
   constructor(
     private readonly hotelsService: HotelsService,
-    private readonly hotelSearchService: HotelSearchService,
-    private readonly hotelSearchResultsService: HotelSearchResultsService,
-    private readonly hotelDetailsService: HotelDetailsService,
-    private readonly hotelRoomsService: HotelRoomsService,
-    private readonly hotelPreBookService: HotelPreBookService,
-    private readonly hotelBookService: HotelBookService,
+
+    private readonly hotelSearchService:
+      HotelSearchService,
+
+    private readonly hotelSearchResultsService:
+      HotelSearchResultsService,
+
+    private readonly hotelDetailsService:
+      HotelDetailsService,
+
+    private readonly hotelRoomsService:
+      HotelRoomsService,
+
+    private readonly hotelPreBookService:
+      HotelPreBookService,
+
+    private readonly hotelBookService:
+      HotelBookService,
   ) {}
+
+  /*
+   * HOTEL SEARCH
+   */
 
   @Post('search')
   search(
     @Body() dto: HotelSearchDto,
   ) {
-    return this.hotelSearchService.search(dto);
+    return this.hotelSearchService.search(
+      dto,
+    );
   }
+
+  /*
+   * SEARCH RESULTS
+   */
 
   @Get('search/:searchId')
   getSearchResults(
-    @Param('searchId') searchId: string,
+    @Param('searchId')
+    searchId: string,
   ) {
     return this.hotelSearchResultsService.findBySearchId(
       searchId,
     );
   }
 
-  @Get('search/:searchId/hotel/:hotelId')
+  /*
+   * HOTEL DETAILS
+   */
+
+  @Get(
+    'search/:searchId/hotel/:hotelId',
+  )
   details(
-    @Param('searchId') searchId: string,
-    @Param('hotelId') hotelId: string,
+    @Param('searchId')
+    searchId: string,
+
+    @Param('hotelId')
+    hotelId: string,
   ) {
     return this.hotelDetailsService.details(
       searchId,
@@ -59,27 +91,60 @@ export class HotelsController {
     );
   }
 
-  @Get(':hotelId/rooms')
+  /*
+   * HOTEL ROOMS
+   *
+   * Il frontend passa:
+   *
+   * - searchId interno SicilyTrip
+   * - hotelId restituito dai risultati
+   *
+   * Il service recupera poi:
+   *
+   * - providerSearchId
+   * - GiataID
+   *
+   * necessari a PartnerSolution.
+   */
+
+  @Get(
+    'search/:searchId/hotel/:hotelId/rooms',
+  )
   rooms(
-    @Param('hotelId') hotelId: string,
+    @Param('searchId')
+    searchId: string,
+
+    @Param('hotelId')
+    hotelId: string,
   ) {
     return this.hotelRoomsService.rooms(
+      searchId,
       hotelId,
     );
   }
 
+  /*
+   * PREBOOK
+   */
+
   @Post('prebook')
   preBook(
-    @Body() dto: HotelPreBookDto,
+    @Body()
+    dto: HotelPreBookDto,
   ) {
     return this.hotelPreBookService.preBook(
       dto,
     );
   }
 
+  /*
+   * BOOK
+   */
+
   @Post('book')
   book(
-    @Body() dto: HotelBookDto,
+    @Body()
+    dto: HotelBookDto,
   ) {
     return this.hotelBookService.book(
       dto,
