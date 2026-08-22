@@ -6,6 +6,13 @@ import TailoredExperience from "@/components/experiences/page/TailoredExperience
 
 import FooterSection from "@/components/layout/FooterSection";
 
+export const metadata: Metadata = {
+  title: "Esperienze",
+  description:
+    "Scopri esperienze autentiche, sapori, natura e cultura per vivere la Sicilia oltre il soggiorno.",
+  alternates: { canonical: "/esperienze" },
+};
+
 export default function ExperiencesPage() {
   return (
     <>
@@ -23,3 +30,4 @@ export default function ExperiencesPage() {
     </>
   );
 }
+import type { Metadata } from "next";

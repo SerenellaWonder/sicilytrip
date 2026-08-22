@@ -7,6 +7,13 @@ import TravelMood from "@/components/destinations/page/TravelMood";
 
 import FooterSection from "@/components/layout/FooterSection";
 
+export const metadata: Metadata = {
+  title: "Destinazioni",
+  description:
+    "Esplora le destinazioni più affascinanti della Sicilia e trova il luogo ideale per il tuo prossimo soggiorno.",
+  alternates: { canonical: "/destinazioni" },
+};
+
 export default function DestinationsPage() {
   return (
     <>
@@ -26,3 +33,4 @@ export default function DestinationsPage() {
     </>
   );
 }
+import type { Metadata } from "next";

@@ -7,6 +7,13 @@ import AboutManifesto from "@/components/about/page/AboutManifesto";
 
 import FooterSection from "@/components/layout/FooterSection";
 
+export const metadata: Metadata = {
+  title: "Chi siamo",
+  description:
+    "Conosci SicilyTrip e il nostro modo di raccontare e organizzare viaggi autentici in Sicilia.",
+  alternates: { canonical: "/chi-siamo" },
+};
+
 export default function AboutPage() {
   return (
     <>
@@ -23,3 +30,4 @@ export default function AboutPage() {
     </>
   );
 }
+import type { Metadata } from "next";

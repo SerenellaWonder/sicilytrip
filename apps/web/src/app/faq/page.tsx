@@ -5,9 +5,10 @@ import FooterSection from "@/components/layout/FooterSection";
 import Header from "@/components/layout/header";
 
 export const metadata: Metadata = {
-  title: "Domande frequenti | SicilyTrip",
+  title: "Domande frequenti",
   description:
     "Risposte alle domande più comuni su ricerca hotel, disponibilità, tariffe e prenotazioni con SicilyTrip.",
+  alternates: { canonical: "/faq" },
 };
 
 const sections = [
