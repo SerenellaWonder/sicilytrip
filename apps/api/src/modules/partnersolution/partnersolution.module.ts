@@ -12,10 +12,7 @@ import { PartnerSolutionHotelPreBookService } from './services/hotel-prebook.ser
 import { PartnerSolutionHotelBookService } from './services/hotel-book.service';
 
 @Module({
-  imports: [
-    ConfigModule,
-    HttpModule,
-  ],
+  imports: [ConfigModule, HttpModule],
   providers: [
     PartnerSolutionClient,
     PartnerSolutionHotelService,

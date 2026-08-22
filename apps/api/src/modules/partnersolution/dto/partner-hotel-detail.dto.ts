@@ -1,13 +1,10 @@
 export interface PartnerHotelDescriptionDto {
-
   Title: string;
 
   Description: string;
-
 }
 
 export interface PartnerHotelDetailDto {
-
   Error?: string;
 
   Stars?: number;
@@ -29,5 +26,4 @@ export interface PartnerHotelDetailDto {
   Descriptions?: PartnerHotelDescriptionDto[];
 
   Facilities?: string[];
-
 }

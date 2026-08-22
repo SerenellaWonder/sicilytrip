@@ -1,15 +1,12 @@
 import { PartnerHotelResultDto } from './partner-hotel-result.dto';
 
 export interface PartnerSearchResponseDto {
-
   SearchId?: string;
 
   Error?: string;
-
 }
 
 export interface PartnerSearchResultsResponseDto {
-
   TotFound?: number;
 
   Results?: PartnerHotelResultDto[];
@@ -21,5 +18,4 @@ export interface PartnerSearchResultsResponseDto {
   PendingProcess?: number;
 
   Error?: string;
-
 }

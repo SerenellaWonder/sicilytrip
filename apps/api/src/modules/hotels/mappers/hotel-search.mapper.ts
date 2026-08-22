@@ -1,13 +1,8 @@
 import { HotelSearchDto } from '../dto/hotel-search.dto';
 
 export class HotelSearchMapper {
-
-  static toPartnerSolution(
-    dto: HotelSearchDto,
-  ) {
-
+  static toPartnerSolution(dto: HotelSearchDto) {
     return {
-
       PlaceId: dto.placeId,
 
       NorthEast: dto.northEast,
@@ -18,8 +13,7 @@ export class HotelSearchMapper {
 
       CheckOut: dto.checkOut,
 
-      Rooms: dto.rooms.map(room => ({
-
+      Rooms: dto.rooms.map((room) => ({
         Adults: room.adults,
 
         Children: room.children,
@@ -29,13 +23,9 @@ export class HotelSearchMapper {
         Age2: 0,
 
         Age3: 0,
-
       })),
 
       Suppliers: [],
-
     };
-
   }
-
 }

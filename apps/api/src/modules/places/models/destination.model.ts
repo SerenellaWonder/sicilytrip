@@ -1,5 +1,4 @@
 export class Destination {
-
   id!: string;
 
   slug!: string;
@@ -27,5 +26,4 @@ export class Destination {
     latitude: number;
     longitude: number;
   };
-
 }

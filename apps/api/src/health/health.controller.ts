@@ -1,8 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import {
-  HealthCheck,
-  HealthCheckService,
-} from '@nestjs/terminus';
+import { HealthCheck, HealthCheckService } from '@nestjs/terminus';
 import { HealthService } from './health.service';
 
 @Controller('health')
@@ -25,7 +22,7 @@ export class HealthController {
           },
         };
       },
-      async () => ({
+      () => ({
         application: {
           status: 'up',
           environment: process.env.NODE_ENV ?? 'development',

@@ -1,67 +1,44 @@
-import {
-  Injectable,
-  Logger,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { AxiosError } from 'axios';
 import { firstValueFrom } from 'rxjs';
+import { NominatimResultDto } from '../dto/nominatim-result.dto';
 
 @Injectable()
 export class NominatimClient {
   private readonly logger = new Logger(NominatimClient.name);
 
-  private readonly baseUrl =
-    'https://nominatim.openstreetmap.org';
+  private readonly baseUrl = 'https://nominatim.openstreetmap.org';
 
-  constructor(
-    private readonly http: HttpService,
-  ) {}
+  constructor(private readonly http: HttpService) {}
 
-  async search(query: string): Promise<any[]> {
-
+  async search(query: string): Promise<NominatimResultDto[]> {
     try {
-
       const response = await firstValueFrom(
-
-        this.http.get(
-          `${this.baseUrl}/search`,
-          {
-            params: {
-              q: query,
-              format: 'jsonv2',
-              addressdetails: 1,
-              limit: 8,
-              countrycodes: 'it',
-            },
-
-            headers: {
-              'User-Agent':
-                'SicilyTrip/1.0 contact@sicilytrip.it',
-            },
-
-            timeout: 30000,
+        this.http.get<NominatimResultDto[]>(`${this.baseUrl}/search`, {
+          params: {
+            q: query,
+            format: 'jsonv2',
+            addressdetails: 1,
+            limit: 8,
+            countrycodes: 'it',
           },
-        ),
 
+          headers: {
+            'User-Agent': 'SicilyTrip/1.0 contact@sicilytrip.it',
+          },
+
+          timeout: 30000,
+        }),
       );
 
       return response.data;
-
     } catch (error) {
-
       const err = error as AxiosError;
 
       this.logger.error(err.message);
 
-      throw new HttpException(
-        'Nominatim unavailable',
-        HttpStatus.BAD_GATEWAY,
-      );
-
+      throw new HttpException('Nominatim unavailable', HttpStatus.BAD_GATEWAY);
     }
-
   }
-
 }

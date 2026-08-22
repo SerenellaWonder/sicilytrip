@@ -3,86 +3,51 @@ import { Hotel } from '../models/hotel.model';
 import { PartnerHotelResultDto } from '../../partnersolution/dto/partner-hotel-result.dto';
 
 export class HotelMapper {
-
-  static fromPartnerSolution(
-    source: PartnerHotelResultDto,
-  ): Hotel {
-
+  static fromPartnerSolution(source: PartnerHotelResultDto): Hotel {
     return {
-
       id: '',
 
       provider: 'PartnerSolution',
 
-      providerHotelId:
-        String(
-          source.HotelId ?? '',
-        ),
+      providerHotelId: String(source.HotelId ?? ''),
 
-      supplier:
-        source.Supplier ??
-        source.SupplierName ??
-        '',
+      supplier: source.Supplier ?? source.SupplierName ?? '',
 
-      name:
-        source.HotelName ??
-        '',
+      name: source.HotelName ?? '',
 
-      description:
-        source.Description,
+      description: source.Description,
 
-      stars:
-        Number(
-          source.Stars ??
-          source.Category ??
-          0,
-        ),
+      stars: Number(source.Stars ?? source.Category ?? 0),
 
-      address:
-        source.Address,
+      address: source.Address,
 
-      city:
-        source.City,
+      city: source.City,
 
-      region:
-        source.Region,
+      region: source.Region,
 
-      country:
-        source.Country,
+      country: source.Country,
 
-      latitude:
-        source.Latitude,
+      latitude: source.Latitude,
 
-      longitude:
-        source.Longitude,
+      longitude: source.Longitude,
 
-      thumbnail:
-        source.Image ??
-        source.Thumbnail,
+      thumbnail: source.Image ?? source.Thumbnail,
 
-      images:
-        source.Images ?? [],
+      images: source.Images ?? [],
 
-      amenities:
-        source.Amenities ?? [],
+      amenities: source.Amenities ?? [],
 
-      rating:
-        source.Rating,
+      rating: source.Rating,
 
-      reviewCount:
-        source.ReviewCount,
+      reviewCount: source.ReviewCount,
 
       price:
         source.Price !== undefined
           ? {
               amount: Number(source.Price),
-              currency:
-                source.Currency ?? 'EUR',
+              currency: source.Currency ?? 'EUR',
             }
           : undefined,
-
     };
-
   }
-
 }

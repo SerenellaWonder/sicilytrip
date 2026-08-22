@@ -1,8 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  HotelSearchStatus,
-  Prisma,
-} from '@prisma/client';
+import { HotelSearchStatus, Prisma } from '@prisma/client';
 
 import { PrismaService } from '../../../prisma/prisma.service';
 
@@ -17,17 +14,11 @@ interface CreateHotelSearchInput {
 
 @Injectable()
 export class HotelSearchRepository {
-
-  constructor(
-    private readonly prisma: PrismaService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   create(input: CreateHotelSearchInput) {
-
     return this.prisma.hotelSearch.create({
-
       data: {
-
         provider: input.provider,
 
         providerSearchId: input.providerSearchId,
@@ -41,17 +32,12 @@ export class HotelSearchRepository {
         rooms: input.rooms,
 
         status: HotelSearchStatus.PENDING,
-
       },
-
     });
-
   }
 
   findById(id: string) {
-
     return this.prisma.hotelSearch.findUnique({
-
       where: {
         id,
       },
@@ -60,17 +46,11 @@ export class HotelSearchRepository {
         destination: true,
         results: true,
       },
-
     });
-
   }
 
-  findByProviderSearchId(
-    providerSearchId: string,
-  ) {
-
+  findByProviderSearchId(providerSearchId: string) {
     return this.prisma.hotelSearch.findUnique({
-
       where: {
         providerSearchId,
       },
@@ -79,47 +59,29 @@ export class HotelSearchRepository {
         destination: true,
         results: true,
       },
-
     });
-
   }
 
-  async getProviderSearchId(
-    searchId: string,
-  ): Promise<string> {
+  async getProviderSearchId(searchId: string): Promise<string> {
+    const search = await this.prisma.hotelSearch.findUnique({
+      where: {
+        id: searchId,
+      },
 
-    const search =
-      await this.prisma.hotelSearch.findUnique({
-
-        where: {
-          id: searchId,
-        },
-
-        select: {
-          providerSearchId: true,
-        },
-
-      });
+      select: {
+        providerSearchId: true,
+      },
+    });
 
     if (!search) {
-
-      throw new Error(
-        `Search ${searchId} non trovata`,
-      );
-
+      throw new Error(`Search ${searchId} non trovata`);
     }
 
     return search.providerSearchId;
-
   }
 
-  updateStatus(
-    id: string,
-    status: HotelSearchStatus,
-  ) {
-
+  updateStatus(id: string, status: HotelSearchStatus) {
     return this.prisma.hotelSearch.update({
-
       where: {
         id,
       },
@@ -127,9 +89,6 @@ export class HotelSearchRepository {
       data: {
         status,
       },
-
     });
-
   }
-
 }

@@ -1,5 +1,4 @@
 export class HotelSearchResultDto {
-
   hotelId: string;
 
   giataId?: string;
@@ -27,5 +26,4 @@ export class HotelSearchResultDto {
   board?: string;
 
   policy?: string;
-
 }

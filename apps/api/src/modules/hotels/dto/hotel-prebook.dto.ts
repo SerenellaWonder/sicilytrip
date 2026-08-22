@@ -1,7 +1,6 @@
 import { IsString } from 'class-validator';
 
 export class HotelPreBookDto {
-
   @IsString()
   searchId!: string;
 
@@ -10,5 +9,4 @@ export class HotelPreBookDto {
 
   @IsString()
   rateId!: string;
-
 }

@@ -16,16 +16,12 @@ interface SearchResultInput {
 
 @Injectable()
 export class HotelSearchResultRepository {
-
-  constructor(
-    private readonly prisma: PrismaService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async replaceResults(
     hotelSearchId: string,
     results: SearchResultInput[],
   ): Promise<void> {
-
     await this.prisma.hotelSearchResult.deleteMany({
       where: {
         hotelSearchId,
@@ -37,9 +33,7 @@ export class HotelSearchResultRepository {
     }
 
     await this.prisma.hotelSearchResult.createMany({
-
-      data: results.map(result => ({
-
+      data: results.map((result) => ({
         hotelSearchId,
 
         provider: result.provider,
@@ -52,27 +46,17 @@ export class HotelSearchResultRepository {
 
         stars: result.stars,
 
-        price:
-          result.price != null
-            ? new Prisma.Decimal(result.price)
-            : null,
+        price: result.price != null ? new Prisma.Decimal(result.price) : null,
 
         currency: result.currency,
 
         payload: result.payload,
-
       })),
-
     });
-
   }
 
-  async findBySearchId(
-    hotelSearchId: string,
-  ) {
-
+  async findBySearchId(hotelSearchId: string) {
     return this.prisma.hotelSearchResult.findMany({
-
       where: {
         hotelSearchId,
       },
@@ -80,21 +64,14 @@ export class HotelSearchResultRepository {
       orderBy: {
         price: 'asc',
       },
-
     });
-
   }
 
   async findOne(id: string) {
-
     return this.prisma.hotelSearchResult.findUnique({
-
       where: {
         id,
       },
-
     });
-
   }
-
 }

@@ -1,23 +1,15 @@
-import {
-  IsArray,
-  IsInt,
-  IsString,
-  ValidateNested,
-} from 'class-validator';
+import { IsArray, IsInt, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class RoomDto {
-
   @IsInt()
   adults!: number;
 
   @IsInt()
   children!: number;
-
 }
 
 export class HotelSearchDto {
-
   @IsString()
   placeId!: string;
 
@@ -37,5 +29,4 @@ export class HotelSearchDto {
   @ValidateNested({ each: true })
   @Type(() => RoomDto)
   rooms!: RoomDto[];
-
 }

@@ -4,10 +4,7 @@ import { PartnerSolutionHotelResultsService } from '../../partnersolution/servic
 
 @Injectable()
 export class HotelResultsService {
-
-  constructor(
-    private readonly provider: PartnerSolutionHotelResultsService,
-  ) {}
+  constructor(private readonly provider: PartnerSolutionHotelResultsService) {}
 
   async getResults(searchId: string) {
     return this.provider.getResults(searchId);

@@ -4,10 +4,7 @@ import {
   VersioningType,
 } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import {
-  DocumentBuilder,
-  SwaggerModule,
-} from '@nestjs/swagger';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './app.module';
 
@@ -15,9 +12,8 @@ export async function createApp(): Promise<INestApplication> {
   const app = await NestFactory.create(AppModule);
 
   const configuredOrigins =
-    process.env.CORS_ORIGINS
-      ?.split(',')
-      .map(origin => origin.trim())
+    process.env.CORS_ORIGINS?.split(',')
+      .map((origin) => origin.trim())
       .filter(Boolean) ?? [];
 
   app.enableCors({
@@ -50,10 +46,7 @@ export async function createApp(): Promise<INestApplication> {
     .setVersion('1.0.0')
     .build();
 
-  const document = SwaggerModule.createDocument(
-    app,
-    swaggerConfig,
-  );
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
 
   SwaggerModule.setup('docs', app, document);
 

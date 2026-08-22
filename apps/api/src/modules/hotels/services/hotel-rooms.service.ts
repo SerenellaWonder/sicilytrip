@@ -1,60 +1,38 @@
-import {
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { HotelSearchRepository } from '../repositories/hotel-search.repository';
 import { HotelSearchResultRepository } from '../repositories/hotel-search-result.repository';
 
-import { PartnerSolutionHotelRoomsService }
-from '../../partnersolution/services/hotel-rooms.service';
+import { PartnerSolutionHotelRoomsService } from '../../partnersolution/services/hotel-rooms.service';
+import { getHotelPayloadString } from '../utils/hotel-payload';
 
 @Injectable()
 export class HotelRoomsService {
-
   constructor(
-    private readonly provider:
-      PartnerSolutionHotelRoomsService,
+    private readonly provider: PartnerSolutionHotelRoomsService,
 
-    private readonly hotelSearchRepository:
-      HotelSearchRepository,
+    private readonly hotelSearchRepository: HotelSearchRepository,
 
-    private readonly hotelSearchResultRepository:
-      HotelSearchResultRepository,
+    private readonly hotelSearchResultRepository: HotelSearchResultRepository,
   ) {}
 
-  async rooms(
-    searchId: string,
-    hotelId: string,
-  ) {
-
+  async rooms(searchId: string, hotelId: string) {
     //
     // 1. Recupero ricerca interna
     //
-    const search =
-      await this.hotelSearchRepository.findById(
-        searchId,
-      );
+    const search = await this.hotelSearchRepository.findById(searchId);
 
     if (!search) {
-      throw new NotFoundException(
-        'Ricerca non trovata',
-      );
+      throw new NotFoundException('Ricerca non trovata');
     }
 
     //
     // 2. Recupero hotel dai risultati
     //
     const results =
-      await this.hotelSearchResultRepository.findBySearchId(
-        searchId,
-      );
+      await this.hotelSearchResultRepository.findBySearchId(searchId);
 
-    const hotel =
-      results.find(
-        result =>
-          result.providerHotelId === hotelId,
-      );
+    const hotel = results.find((result) => result.providerHotelId === hotelId);
 
     if (!hotel) {
       throw new NotFoundException(
@@ -65,31 +43,17 @@ export class HotelRoomsService {
     //
     // 3. Recupero GiataID
     //
-    const payload =
-      hotel.payload as Record<
-        string,
-        unknown
-      >;
+    const payload = hotel.payload as Record<string, unknown>;
 
-    const giataId =
-      payload?.GiataID != null
-        ? String(payload.GiataID)
-        : undefined;
+    const giataId = getHotelPayloadString(payload.GiataID);
 
     if (!giataId) {
-      throw new NotFoundException(
-        'GiataID non disponibile per questo hotel',
-      );
+      throw new NotFoundException('GiataID non disponibile per questo hotel');
     }
 
     //
     // 4. Chiamata PartnerSolution
     //
-    return this.provider.rooms(
-      search.providerSearchId,
-      giataId,
-    );
-
+    return this.provider.rooms(search.providerSearchId, giataId);
   }
-
 }

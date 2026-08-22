@@ -5,34 +5,17 @@ import { HotelSearchResultRepository } from '../repositories/hotel-search-result
 
 @Injectable()
 export class HotelSearchResultsService {
+  constructor(private readonly repository: HotelSearchResultRepository) {}
 
-  constructor(
-    private readonly repository: HotelSearchResultRepository,
-  ) {}
-
-  async findBySearchId(
-    searchId: string,
-  ) {
-
-    const hotels =
-      await this.repository.findBySearchId(
-        searchId,
-      );
+  async findBySearchId(searchId: string) {
+    const hotels = await this.repository.findBySearchId(searchId);
 
     return {
-
       searchId,
 
       total: hotels.length,
 
-      hotels: hotels.map(hotel =>
-        HotelSearchResultMapper.toDto(
-          hotel,
-        ),
-      ),
-
+      hotels: hotels.map((hotel) => HotelSearchResultMapper.toDto(hotel)),
     };
-
   }
-
 }

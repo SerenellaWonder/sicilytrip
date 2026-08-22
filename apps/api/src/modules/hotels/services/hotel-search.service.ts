@@ -18,25 +18,21 @@ export class HotelSearchService {
   ) {}
 
   async search(dto: HotelSearchDto) {
+    const request = HotelSearchMapper.toPartnerSolution(dto);
 
-    const request =
-      HotelSearchMapper.toPartnerSolution(dto);
-
-    const providerResponse =
-      await this.partnerSolution.search(request);
+    const providerResponse = await this.partnerSolution.search(request);
 
     if (!providerResponse.SearchId) {
       return providerResponse;
     }
 
-    const storedSearch =
-      await this.searchRepository.create({
-        provider: 'PartnerSolution',
-        providerSearchId: providerResponse.SearchId,
-        checkIn: new Date(dto.checkIn),
-        checkOut: new Date(dto.checkOut),
-        rooms: dto.rooms as unknown as Prisma.InputJsonValue,
-      });
+    const storedSearch = await this.searchRepository.create({
+      provider: 'PartnerSolution',
+      providerSearchId: providerResponse.SearchId,
+      checkIn: new Date(dto.checkIn),
+      checkOut: new Date(dto.checkOut),
+      rooms: dto.rooms as unknown as Prisma.InputJsonValue,
+    });
 
     return this.polling.waitForResults(
       providerResponse.SearchId,

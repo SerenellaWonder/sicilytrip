@@ -20,33 +20,25 @@ import { HotelSearchResultsService } from './services/hotel-search-results.servi
 import { HotelDetailRepository } from './repositories/hotel-detail.repository';
 
 @Module({
-  imports: [
-    PlacesModule,
-    PartnerSolutionModule,
-  ],
-  controllers: [
-    HotelsController,
-  ],
+  imports: [PlacesModule, PartnerSolutionModule],
+  controllers: [HotelsController],
   providers: [
-  HotelsService,
-
-  HotelSearchRepository,
-  HotelSearchResultRepository,
-  HotelDetailRepository,
-
-  HotelSearchService,
-  HotelSearchResultsService,
-  HotelResultsService,
-  HotelDetailsService,
-  HotelRoomsService,
-  HotelPreBookService,
-  HotelBookService,
-
-  SearchPollingService,
-],
-  exports: [
     HotelsService,
+
     HotelSearchRepository,
+    HotelSearchResultRepository,
+    HotelDetailRepository,
+
+    HotelSearchService,
+    HotelSearchResultsService,
+    HotelResultsService,
+    HotelDetailsService,
+    HotelRoomsService,
+    HotelPreBookService,
+    HotelBookService,
+
+    SearchPollingService,
   ],
+  exports: [HotelsService, HotelSearchRepository],
 })
 export class HotelsModule {}

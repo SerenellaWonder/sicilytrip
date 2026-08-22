@@ -1,24 +1,18 @@
-import {
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
-import {
-  HotelSearchStatus,
-} from '@prisma/client';
+import { HotelSearchStatus, Prisma } from '@prisma/client';
 
 import { HotelSearchRepository } from '../repositories/hotel-search.repository';
 
 import { HotelSearchResultRepository } from '../repositories/hotel-search-result.repository';
 
 import { HotelResultsService } from './hotel-results.service';
+import { PartnerHotelResultDto } from '../../partnersolution/dto/partner-hotel-result.dto';
+import { PartnerSearchResultsResponseDto } from '../../partnersolution/dto/partner-search-response.dto';
 
 @Injectable()
 export class SearchPollingService {
-
-  private readonly logger = new Logger(
-    SearchPollingService.name,
-  );
+  private readonly logger = new Logger(SearchPollingService.name);
 
   /*
    * Indicazioni XML Turismo:
@@ -33,26 +27,19 @@ export class SearchPollingService {
   private readonly intervalMs = 1000;
 
   constructor(
-    private readonly resultsService:
-      HotelResultsService,
+    private readonly resultsService: HotelResultsService,
 
-    private readonly searchRepository:
-      HotelSearchRepository,
+    private readonly searchRepository: HotelSearchRepository,
 
-    private readonly resultRepository:
-      HotelSearchResultRepository,
+    private readonly resultRepository: HotelSearchResultRepository,
   ) {}
 
-  async waitForResults(
-    providerSearchId: string,
-    internalSearchId: string,
-  ) {
-
+  async waitForResults(providerSearchId: string, internalSearchId: string) {
     const startedAt = Date.now();
 
     let pollNumber = 0;
 
-    let lastResponse: any = null;
+    let lastResponse: PartnerSearchResultsResponseDto | null = null;
 
     /*
      * Evita di considerare conclusiva la risposta
@@ -67,29 +54,17 @@ export class SearchPollingService {
 
     let processingStarted = false;
 
-    this.logger.log(
-      '========================================',
-    );
+    this.logger.log('========================================');
 
-    this.logger.log(
-      'START HOTEL POLLING',
-    );
+    this.logger.log('START HOTEL POLLING');
 
-    this.logger.log(
-      `InternalSearchId: ${internalSearchId}`,
-    );
+    this.logger.log(`InternalSearchId: ${internalSearchId}`);
 
-    this.logger.log(
-      `ProviderSearchId: ${providerSearchId}`,
-    );
+    this.logger.log(`ProviderSearchId: ${providerSearchId}`);
 
-    this.logger.log(
-      'Interval: 1000ms | Timeout: 40000ms',
-    );
+    this.logger.log('Interval: 1000ms | Timeout: 40000ms');
 
-    this.logger.log(
-      '========================================',
-    );
+    this.logger.log('========================================');
 
     await this.searchRepository.updateStatus(
       internalSearchId,
@@ -97,49 +72,32 @@ export class SearchPollingService {
     );
 
     try {
-
       /*
        * Il provider richiede esplicitamente
        * 1 secondo di attesa prima del primo
        * GetHotelResults.
        */
 
-      await this.delay(
-        this.intervalMs,
-      );
+      await this.delay(this.intervalMs);
 
-      while (
-        Date.now() - startedAt <
-        this.timeoutMs
-      ) {
-
+      while (Date.now() - startedAt < this.timeoutMs) {
         pollNumber++;
 
-        this.logger.log(
-          `POLL #${pollNumber}`,
-        );
+        this.logger.log(`POLL #${pollNumber}`);
 
-        const response =
-          await this.resultsService.getResults(
-            providerSearchId,
-          );
+        const response = await this.resultsService.getResults(providerSearchId);
 
         lastResponse = response;
 
-        const hotels =
-          response.Results ?? [];
+        const hotels = response.Results ?? [];
 
-        const total =
-          response.TotFound ?? 0;
+        const total = response.TotFound ?? 0;
 
-        const processed =
-          response.Processed ?? 0;
+        const processed = response.Processed ?? 0;
 
-        const toProcess =
-          response.ToProcess ?? 0;
+        const toProcess = response.ToProcess ?? 0;
 
-        const pending =
-          response.PendingProcess ?? 0;
+        const pending = response.PendingProcess ?? 0;
 
         this.logger.log(
           [
@@ -156,10 +114,7 @@ export class SearchPollingService {
          */
 
         if (response.Error) {
-
-          this.logger.error(
-            `PartnerSolution error: ${response.Error}`,
-          );
+          this.logger.error(`PartnerSolution error: ${response.Error}`);
 
           await this.searchRepository.updateStatus(
             internalSearchId,
@@ -167,26 +122,18 @@ export class SearchPollingService {
           );
 
           return {
-
-            searchId:
-              internalSearchId,
+            searchId: internalSearchId,
 
             providerSearchId,
 
-            status:
-              HotelSearchStatus.FAILED,
+            status: HotelSearchStatus.FAILED,
 
-            error:
-              response.Error,
+            error: response.Error,
 
-            total:
-              hotels.length,
+            total: hotels.length,
 
-            results:
-              hotels,
-
+            results: hotels,
           };
-
         }
 
         /*
@@ -238,13 +185,9 @@ export class SearchPollingService {
          * avere almeno quel numero di risultati.
          */
 
-        const resultsCompleted =
-          total > 0 &&
-          hotels.length >= total;
+        const resultsCompleted = total > 0 && hotels.length >= total;
 
-        const completed =
-          providerCompleted &&
-          resultsCompleted;
+        const completed = providerCompleted && resultsCompleted;
 
         this.logger.log(
           [
@@ -256,84 +199,51 @@ export class SearchPollingService {
         );
 
         if (completed) {
-
-          await this.saveResults(
-            internalSearchId,
-            hotels,
-          );
+          await this.saveResults(internalSearchId, hotels);
 
           await this.searchRepository.updateStatus(
             internalSearchId,
             HotelSearchStatus.COMPLETED,
           );
 
-          this.logger.log(
-            '========================================',
-          );
+          this.logger.log('========================================');
 
-          this.logger.log(
-            'HOTEL SEARCH COMPLETED',
-          );
+          this.logger.log('HOTEL SEARCH COMPLETED');
 
-          this.logger.log(
-            `Polls: ${pollNumber}`,
-          );
+          this.logger.log(`Polls: ${pollNumber}`);
 
-          this.logger.log(
-            `Hotels: ${hotels.length}`,
-          );
+          this.logger.log(`Hotels: ${hotels.length}`);
 
-          this.logger.log(
-            `Elapsed: ${
-              Date.now() - startedAt
-            }ms`,
-          );
+          this.logger.log(`Elapsed: ${Date.now() - startedAt}ms`);
 
-          this.logger.log(
-            '========================================',
-          );
+          this.logger.log('========================================');
 
           return {
-
-            searchId:
-              internalSearchId,
+            searchId: internalSearchId,
 
             providerSearchId,
 
-            status:
-              HotelSearchStatus.COMPLETED,
+            status: HotelSearchStatus.COMPLETED,
 
-            total:
-              hotels.length,
+            total: hotels.length,
 
-            results:
-              hotels,
-
+            results: hotels,
           };
-
         }
 
         /*
          * ATTENDI IL POLL SUCCESSIVO
          */
 
-        const elapsed =
-          Date.now() - startedAt;
+        const elapsed = Date.now() - startedAt;
 
-        const remaining =
-          this.timeoutMs - elapsed;
+        const remaining = this.timeoutMs - elapsed;
 
         if (remaining <= 0) {
           break;
         }
 
-        await this.delay(
-          Math.min(
-            this.intervalMs,
-            remaining,
-          ),
-        );
-
+        await this.delay(Math.min(this.intervalMs, remaining));
       }
 
       /*
@@ -343,16 +253,10 @@ export class SearchPollingService {
        * risultati ricevuti.
        */
 
-      const hotels =
-        lastResponse?.Results ?? [];
+      const hotels = lastResponse?.Results ?? [];
 
       if (hotels.length > 0) {
-
-        await this.saveResults(
-          internalSearchId,
-          hotels,
-        );
-
+        await this.saveResults(internalSearchId, hotels);
       }
 
       await this.searchRepository.updateStatus(
@@ -360,148 +264,78 @@ export class SearchPollingService {
         HotelSearchStatus.FAILED,
       );
 
-      this.logger.warn(
-        '========================================',
-      );
+      this.logger.warn('========================================');
 
-      this.logger.warn(
-        'HOTEL POLLING TIMEOUT',
-      );
+      this.logger.warn('HOTEL POLLING TIMEOUT');
 
-      this.logger.warn(
-        `ProviderSearchId: ${providerSearchId}`,
-      );
+      this.logger.warn(`ProviderSearchId: ${providerSearchId}`);
 
-      this.logger.warn(
-        `Polls: ${pollNumber}`,
-      );
+      this.logger.warn(`Polls: ${pollNumber}`);
 
-      this.logger.warn(
-        `Hotels received: ${hotels.length}`,
-      );
+      this.logger.warn(`Hotels received: ${hotels.length}`);
 
-      this.logger.warn(
-        `Elapsed: ${
-          Date.now() - startedAt
-        }ms`,
-      );
+      this.logger.warn(`Elapsed: ${Date.now() - startedAt}ms`);
 
-      this.logger.warn(
-        '========================================',
-      );
+      this.logger.warn('========================================');
 
       return {
-
-        searchId:
-          internalSearchId,
+        searchId: internalSearchId,
 
         providerSearchId,
 
-        status:
-          HotelSearchStatus.FAILED,
+        status: HotelSearchStatus.FAILED,
 
-        timeout:
-          true,
+        timeout: true,
 
-        total:
-          hotels.length,
+        total: hotels.length,
 
-        results:
-          hotels,
-
+        results: hotels,
       };
-
     } catch (error) {
+      this.logger.error('HOTEL POLLING ERROR');
 
-      this.logger.error(
-        'HOTEL POLLING ERROR',
-      );
-
-      this.logger.error(
-        error,
-      );
+      this.logger.error(error);
 
       await this.searchRepository
-        .updateStatus(
-          internalSearchId,
-          HotelSearchStatus.FAILED,
-        )
+        .updateStatus(internalSearchId, HotelSearchStatus.FAILED)
         .catch(() => undefined);
 
       throw error;
-
     }
-
   }
 
   private async saveResults(
     internalSearchId: string,
-    hotels: any[],
+    hotels: PartnerHotelResultDto[],
   ) {
-
-    this.logger.log(
-      `Saving ${hotels.length} hotel(s)`,
-    );
+    this.logger.log(`Saving ${hotels.length} hotel(s)`);
 
     await this.resultRepository.replaceResults(
-
       internalSearchId,
 
-      hotels.map((hotel: any) => ({
+      hotels.map((hotel) => ({
+        provider: 'PartnerSolution',
 
-        provider:
-          'PartnerSolution',
+        providerHotelId: String(hotel.ID ?? hotel.HotelId ?? ''),
 
-        providerHotelId:
-          String(
-            hotel.ID ??
-            hotel.HotelId ??
-            '',
-          ),
+        supplier: hotel.Supplier,
 
-        supplier:
-          hotel.Supplier,
+        hotelName: hotel.Name ?? hotel.HotelName ?? '',
 
-        hotelName:
-          hotel.Name ??
-          hotel.HotelName,
+        stars: hotel.Category ?? hotel.Stars,
 
-        stars:
-          hotel.Category ??
-          hotel.Stars,
+        price: hotel.PriceFrom ?? hotel.Price,
 
-        price:
-          hotel.PriceFrom ??
-          hotel.Price,
+        currency: hotel.Currency,
 
-        currency:
-          hotel.Currency,
-
-        payload:
-          hotel,
-
+        payload: hotel as unknown as Prisma.InputJsonValue,
       })),
-
     );
 
-    this.logger.log(
-      `Saved ${hotels.length} hotel(s)`,
-    );
-
+    this.logger.log(`Saved ${hotels.length} hotel(s)`);
   }
 
-  private delay(
-    milliseconds: number,
-  ) {
-
-    return new Promise<void>(
-      (resolve) =>
-        setTimeout(
-          resolve,
-          milliseconds,
-        ),
-    );
-
+  private delay(milliseconds: number) {
+    return new Promise<void>((resolve) => setTimeout(resolve, milliseconds));
   }
-
 }

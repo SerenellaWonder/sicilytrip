@@ -1,5 +1,4 @@
 export interface Hotel {
-
   /**
    * Id interno SicilyTrip
    */
@@ -96,5 +95,4 @@ export interface Hotel {
     amount: number;
     currency: string;
   };
-
 }

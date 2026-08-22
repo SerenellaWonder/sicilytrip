@@ -1,10 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 
 import { HotelsService } from './hotels.service';
 
@@ -21,27 +15,20 @@ import { HotelBookDto } from './dto/hotel-book.dto';
 
 @Controller('hotels')
 export class HotelsController {
-
   constructor(
     private readonly hotelsService: HotelsService,
 
-    private readonly hotelSearchService:
-      HotelSearchService,
+    private readonly hotelSearchService: HotelSearchService,
 
-    private readonly hotelSearchResultsService:
-      HotelSearchResultsService,
+    private readonly hotelSearchResultsService: HotelSearchResultsService,
 
-    private readonly hotelDetailsService:
-      HotelDetailsService,
+    private readonly hotelDetailsService: HotelDetailsService,
 
-    private readonly hotelRoomsService:
-      HotelRoomsService,
+    private readonly hotelRoomsService: HotelRoomsService,
 
-    private readonly hotelPreBookService:
-      HotelPreBookService,
+    private readonly hotelPreBookService: HotelPreBookService,
 
-    private readonly hotelBookService:
-      HotelBookService,
+    private readonly hotelBookService: HotelBookService,
   ) {}
 
   /*
@@ -49,12 +36,8 @@ export class HotelsController {
    */
 
   @Post('search')
-  search(
-    @Body() dto: HotelSearchDto,
-  ) {
-    return this.hotelSearchService.search(
-      dto,
-    );
+  search(@Body() dto: HotelSearchDto) {
+    return this.hotelSearchService.search(dto);
   }
 
   /*
@@ -66,18 +49,14 @@ export class HotelsController {
     @Param('searchId')
     searchId: string,
   ) {
-    return this.hotelSearchResultsService.findBySearchId(
-      searchId,
-    );
+    return this.hotelSearchResultsService.findBySearchId(searchId);
   }
 
   /*
    * HOTEL DETAILS
    */
 
-  @Get(
-    'search/:searchId/hotel/:hotelId',
-  )
+  @Get('search/:searchId/hotel/:hotelId')
   details(
     @Param('searchId')
     searchId: string,
@@ -85,10 +64,7 @@ export class HotelsController {
     @Param('hotelId')
     hotelId: string,
   ) {
-    return this.hotelDetailsService.details(
-      searchId,
-      hotelId,
-    );
+    return this.hotelDetailsService.details(searchId, hotelId);
   }
 
   /*
@@ -107,9 +83,7 @@ export class HotelsController {
    * necessari a PartnerSolution.
    */
 
-  @Get(
-    'search/:searchId/hotel/:hotelId/rooms',
-  )
+  @Get('search/:searchId/hotel/:hotelId/rooms')
   rooms(
     @Param('searchId')
     searchId: string,
@@ -117,10 +91,7 @@ export class HotelsController {
     @Param('hotelId')
     hotelId: string,
   ) {
-    return this.hotelRoomsService.rooms(
-      searchId,
-      hotelId,
-    );
+    return this.hotelRoomsService.rooms(searchId, hotelId);
   }
 
   /*
@@ -132,9 +103,7 @@ export class HotelsController {
     @Body()
     dto: HotelPreBookDto,
   ) {
-    return this.hotelPreBookService.preBook(
-      dto,
-    );
+    return this.hotelPreBookService.preBook(dto);
   }
 
   /*
@@ -146,9 +115,6 @@ export class HotelsController {
     @Body()
     dto: HotelBookDto,
   ) {
-    return this.hotelBookService.book(
-      dto,
-    );
+    return this.hotelBookService.book(dto);
   }
-
 }

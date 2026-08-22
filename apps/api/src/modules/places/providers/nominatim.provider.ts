@@ -7,23 +7,16 @@ import { DestinationMapper } from '../mappers/destination.mapper';
 
 @Injectable()
 export class NominatimProvider implements IPlacesProvider {
-  constructor(
-    private readonly client: NominatimClient,
-  ) {}
+  constructor(private readonly client: NominatimClient) {}
 
-  async autocomplete(
-    query: string,
-  ): Promise<Destination[]> {
+  async autocomplete(query: string): Promise<Destination[]> {
     const result = await this.client.search(query);
 
-    return result.map((item: any) =>
-      DestinationMapper.fromNominatim(item),
-    );
+    return result.map((item) => DestinationMapper.fromNominatim(item));
   }
 
-  async details(
-    id: string,
-  ): Promise<Destination> {
-    throw new Error('Method not implemented.');
+  details(id: string): Promise<Destination> {
+    void id;
+    return Promise.reject(new Error('Method not implemented.'));
   }
 }

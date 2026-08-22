@@ -10,20 +10,9 @@ type PartnerHotelPreBookRequest = {
 
 @Injectable()
 export class PartnerSolutionHotelPreBookService {
+  constructor(private readonly client: PartnerSolutionClient) {}
 
-  constructor(
-    private readonly client: PartnerSolutionClient,
-  ) {}
-
-  async preBook(
-    request: PartnerHotelPreBookRequest,
-  ) {
-
-    return this.client.post(
-      '/api/HotelPreBook',
-      request,
-    );
-
+  async preBook(request: PartnerHotelPreBookRequest) {
+    return this.client.post('/api/HotelPreBook', request);
   }
-
 }

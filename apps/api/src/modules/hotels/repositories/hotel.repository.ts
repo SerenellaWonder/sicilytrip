@@ -6,94 +6,53 @@ import { Hotel } from '../models/hotel.model';
 
 @Injectable()
 export class HotelRepository {
+  constructor(private readonly prisma: PrismaService) {}
 
-  constructor(
-    private readonly prisma: PrismaService,
-  ) {}
-
-  async findById(
-    id: string,
-  ) {
-
+  async findById(id: string) {
     return this.prisma.hotel.findUnique({
       where: {
         id,
       },
     });
-
   }
 
-  async findByProviderHotelId(
-    provider: string,
-    providerHotelId: string,
-  ) {
-
+  async findByProviderHotelId(provider: string, providerHotelId: string) {
     return this.prisma.hotel.findFirst({
-
       where: {
-
         apiMappings: {
-
           some: {
-
             provider,
 
             providerHotelId,
-
           },
-
         },
-
       },
-
     });
-
   }
 
-  async save(
-    hotel: Hotel,
-  ) {
-
+  async save(hotel: Hotel) {
     return this.prisma.hotel.create({
-
       data: {
+        slug: hotel.name.toLowerCase().replace(/\s+/g, '-'),
 
-        slug:
-          hotel.name
-            .toLowerCase()
-            .replace(/\s+/g, '-'),
+        name: hotel.name,
 
-        name:
-          hotel.name,
+        destinationId: '',
 
-        destinationId:
-          '',
+        country: hotel.country,
 
-        country:
-          hotel.country,
+        address: hotel.address,
 
-        address:
-          hotel.address,
+        latitude: hotel.latitude,
 
-        latitude:
-          hotel.latitude,
+        longitude: hotel.longitude,
 
-        longitude:
-          hotel.longitude,
+        starRating: hotel.stars,
 
-        starRating:
-          hotel.stars,
+        shortDescription: hotel.description,
 
-        shortDescription:
-          hotel.description,
-
-        mainImageUrl:
-          hotel.thumbnail,
-
+        mainImageUrl: hotel.thumbnail,
       },
-
     });
-
   }
-
 }

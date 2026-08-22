@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 
 import { HotelDetailRepository } from '../repositories/hotel-detail.repository';
@@ -9,10 +6,10 @@ import { HotelSearchRepository } from '../repositories/hotel-search.repository';
 import { HotelSearchResultRepository } from '../repositories/hotel-search-result.repository';
 
 import { PartnerSolutionHotelDetailsService } from '../../partnersolution/services/hotel-details.service';
+import { getHotelPayloadString } from '../utils/hotel-payload';
 
 @Injectable()
 export class HotelDetailsService {
-
   constructor(
     private readonly hotelDetailRepository: HotelDetailRepository,
     private readonly hotelSearchRepository: HotelSearchRepository,
@@ -20,18 +17,12 @@ export class HotelDetailsService {
     private readonly provider: PartnerSolutionHotelDetailsService,
   ) {}
 
-  async details(
-    searchId: string,
-    hotelId: string,
-  ) {
-
+  async details(searchId: string, hotelId: string) {
     //
     // 1. CACHE
     //
     const cached =
-      await this.hotelDetailRepository.findByProviderHotelId(
-        hotelId,
-      );
+      await this.hotelDetailRepository.findByProviderHotelId(hotelId);
 
     if (cached) {
       return cached;
@@ -40,30 +31,21 @@ export class HotelDetailsService {
     //
     // 2. Recupero ricerca
     //
-    const providerSearch =
-      await this.hotelSearchRepository.findById(
-        searchId,
-      );
+    const providerSearch = await this.hotelSearchRepository.findById(searchId);
 
     if (!providerSearch) {
-      throw new NotFoundException(
-        'Ricerca non trovata',
-      );
+      throw new NotFoundException('Ricerca non trovata');
     }
 
     //
     // 3. Recupero risultato hotel della ricerca
     //
     const searchResults =
-      await this.hotelSearchResultRepository.findBySearchId(
-        searchId,
-      );
+      await this.hotelSearchResultRepository.findBySearchId(searchId);
 
-    const hotelResult =
-      searchResults.find(
-        result =>
-          result.providerHotelId === hotelId,
-      );
+    const hotelResult = searchResults.find(
+      (result) => result.providerHotelId === hotelId,
+    );
 
     if (!hotelResult) {
       throw new NotFoundException(
@@ -74,37 +56,26 @@ export class HotelDetailsService {
     //
     // 4. Recupero GiataID dal payload originale
     //
-    const payload =
-      hotelResult.payload as Record<
-        string,
-        unknown
-      >;
+    const payload = hotelResult.payload as Record<string, unknown>;
 
-    const giataId =
-      payload?.GiataID != null
-        ? String(payload.GiataID)
-        : undefined;
+    const giataId = getHotelPayloadString(payload.GiataID);
 
     if (!giataId) {
-      throw new NotFoundException(
-        'GiataID non disponibile per questo hotel',
-      );
+      throw new NotFoundException('GiataID non disponibile per questo hotel');
     }
 
     //
     // 5. Chiamata Partner Solution
     //
-    const detail =
-      await this.provider.details(
-        providerSearch.providerSearchId,
-        giataId,
-      );
+    const detail = await this.provider.details(
+      providerSearch.providerSearchId,
+      giataId,
+    );
 
     //
     // 6. Salvataggio nel DB
     //
     await this.hotelDetailRepository.save({
-
       provider: 'PartnerSolution',
 
       providerHotelId: hotelId,
@@ -117,40 +88,25 @@ export class HotelDetailsService {
 
       zone: detail.Zone,
 
-      latitude:
-        detail.Lat
-          ? Number(detail.Lat)
-          : undefined,
+      latitude: detail.Lat ? Number(detail.Lat) : undefined,
 
-      longitude:
-        detail.Lon
-          ? Number(detail.Lon)
-          : undefined,
+      longitude: detail.Lon ? Number(detail.Lon) : undefined,
 
       address: detail.Address,
 
-      photoGallery:
-        (detail.PhotoGallery ??
-          []) as unknown as Prisma.InputJsonValue,
+      photoGallery: detail.PhotoGallery ?? [],
 
-      descriptions:
-        (detail.Descriptions ??
-          []) as unknown as Prisma.InputJsonValue,
+      descriptions: (detail.Descriptions ??
+        []) as unknown as Prisma.InputJsonValue,
 
-      facilities:
-        (detail.Facilities ??
-          []) as unknown as Prisma.InputJsonValue,
+      facilities: detail.Facilities ?? [],
 
-      payload:
-        detail as unknown as Prisma.InputJsonValue,
-
+      payload: detail as unknown as Prisma.InputJsonValue,
     });
 
     //
     // 7. Restituzione dettaglio
     //
     return detail;
-
   }
-
 }
