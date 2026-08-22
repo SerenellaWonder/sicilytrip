@@ -39,6 +39,10 @@ const menu = [
     label: "FAQ",
     href: "/faq",
   },
+  {
+    label: "Contatti",
+    href: "/contatti",
+  },
 ];
 
 export default function FooterSection() {
@@ -860,7 +864,7 @@ export default function FooterSection() {
               "
             >
               <Link
-                href="#"
+                href="/privacy"
                 className="
                   transition-colors
                   duration-300
@@ -871,7 +875,7 @@ export default function FooterSection() {
               </Link>
 
               <Link
-                href="#"
+                href="/cookie"
                 className="
                   transition-colors
                   duration-300
@@ -882,7 +886,7 @@ export default function FooterSection() {
               </Link>
 
               <Link
-                href="#"
+                href="/termini"
                 className="
                   transition-colors
                   duration-300

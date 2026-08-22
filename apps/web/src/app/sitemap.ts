@@ -9,6 +9,7 @@ const routes = [
   "/chi-siamo",
   "/journal",
   "/faq",
+  "/contatti",
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

@@ -39,7 +39,8 @@ const items = [
   },
   {
     label: "Contatti",
-    href: "/#footer",
+    href: "/contatti",
+    pathname: "/contatti",
   },
 ];
 
