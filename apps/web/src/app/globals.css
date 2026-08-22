@@ -243,3 +243,8 @@
   -webkit-text-fill-color: transparent;
 
 }
+
+*:focus-visible {
+  outline: 3px solid #F58220 !important;
+  outline-offset: 3px !important;
+}

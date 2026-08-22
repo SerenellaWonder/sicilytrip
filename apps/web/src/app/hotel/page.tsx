@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import Header from "@/components/layout/header";
 
 import HotelResultsPage from "@/components/hotels/results/HotelResultsPage";
@@ -66,7 +68,7 @@ export default async function HotelPage({
               il tuo soggiorno.
             </p>
 
-            <a
+            <Link
               href="/"
               className="
                 mt-8
@@ -81,7 +83,7 @@ export default async function HotelPage({
               "
             >
               Torna alla home
-            </a>
+            </Link>
           </div>
         </main>
       </>

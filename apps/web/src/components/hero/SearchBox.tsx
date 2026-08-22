@@ -114,44 +114,6 @@ export default function SearchBox({
     useState("");
 
   /*
-   * Se initialValues cambia, riallineiamo
-   * la SearchBox.
-   *
-   * Utile soprattutto nella pagina risultati
-   * quando cambia il searchId.
-   */
-
-  useEffect(() => {
-    if (!initialValues) {
-      return;
-    }
-
-    setDestination(
-      initialValues.destination
-    );
-
-    setDestinationQuery(
-      initialValues.destination.name
-    );
-
-    setCheckIn(
-      initialValues.checkIn
-    );
-
-    setCheckOut(
-      initialValues.checkOut
-    );
-
-    setAdults(
-      initialValues.adults
-    );
-
-    setChildren(
-      initialValues.children
-    );
-  }, [initialValues]);
-
-  /*
    * AUTOCOMPLETE DESTINAZIONE
    */
 
@@ -161,8 +123,6 @@ export default function SearchBox({
       destinationQuery ===
         destination.name
     ) {
-      setSuggestions([]);
-      setShowSuggestions(false);
       return;
     }
 
@@ -170,8 +130,6 @@ export default function SearchBox({
       destinationQuery.trim();
 
     if (query.length < 2) {
-      setSuggestions([]);
-      setShowSuggestions(false);
       return;
     }
 
@@ -560,6 +518,9 @@ export default function SearchBox({
                     setDestination(
                       null
                     );
+
+                    setSuggestions([]);
+                    setShowSuggestions(false);
 
                     setError("");
                   }}

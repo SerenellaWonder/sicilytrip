@@ -6,7 +6,6 @@ import {
   Check,
   Coffee,
   MapPin,
-  ShieldCheck,
   Star,
   X,
 } from "lucide-react";

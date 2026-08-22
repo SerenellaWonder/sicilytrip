@@ -52,36 +52,40 @@ export default function GuestDetailsForm({
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    try {
-      const savedDetails = sessionStorage.getItem(storageKey);
+    const timer = window.setTimeout(() => {
+      try {
+        const savedDetails = sessionStorage.getItem(storageKey);
 
-      if (savedDetails) {
-        const parsed = JSON.parse(savedDetails) as GuestDetails;
-        setDetails({
-          ...parsed,
-          leadIsGuest: parsed.leadIsGuest ?? true,
-          dataProcessingAccepted:
-            parsed.dataProcessingAccepted ?? false,
-        });
-        return;
+        if (savedDetails) {
+          const parsed = JSON.parse(savedDetails) as GuestDetails;
+          setDetails({
+            ...parsed,
+            leadIsGuest: parsed.leadIsGuest ?? true,
+            dataProcessingAccepted:
+              parsed.dataProcessingAccepted ?? false,
+          });
+          return;
+        }
+
+        const storedSearch = sessionStorage.getItem(
+          `hotel-search:${searchId}`
+        );
+        const parsedSearch = storedSearch
+          ? (JSON.parse(storedSearch) as StoredSearch)
+          : null;
+
+        setDetails(
+          createEmptyDetails(
+            parsedSearch?.search?.adults ?? 2,
+            parsedSearch?.search?.children ?? 0
+          )
+        );
+      } catch (error) {
+        console.error("Unable to restore guest details:", error);
       }
+    }, 0);
 
-      const storedSearch = sessionStorage.getItem(
-        `hotel-search:${searchId}`
-      );
-      const parsedSearch = storedSearch
-        ? (JSON.parse(storedSearch) as StoredSearch)
-        : null;
-
-      setDetails(
-        createEmptyDetails(
-          parsedSearch?.search?.adults ?? 2,
-          parsedSearch?.search?.children ?? 0
-        )
-      );
-    } catch (error) {
-      console.error("Unable to restore guest details:", error);
-    }
+    return () => window.clearTimeout(timer);
   }, [searchId, storageKey]);
 
   function updateField(

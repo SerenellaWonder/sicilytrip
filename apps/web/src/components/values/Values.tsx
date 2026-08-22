@@ -60,7 +60,7 @@ export default function Values() {
           <p className="mt-6 text-lg leading-8 text-slate-600">
             Non organizziamo semplici vacanze.
             Creiamo esperienze capaci di raccontare
-            l'anima più autentica della Sicilia.
+            l&apos;anima più autentica della Sicilia.
           </p>
 
         </div>

@@ -147,8 +147,12 @@ export default function HotelPreviewImage({
       typeof IntersectionObserver ===
       "undefined"
     ) {
-      setShouldLoad(true);
-      return;
+      const timer = window.setTimeout(
+        () => setShouldLoad(true),
+        0
+      );
+
+      return () => window.clearTimeout(timer);
     }
 
     const observer =

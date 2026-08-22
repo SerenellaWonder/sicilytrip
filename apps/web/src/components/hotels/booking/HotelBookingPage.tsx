@@ -4,6 +4,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import Link from "next/link";
 
 import {
   ArrowLeft,
@@ -81,37 +82,41 @@ export default function HotelBookingPage({
     useState(false);
 
   useEffect(() => {
-    try {
-      const stored =
-        sessionStorage.getItem(
-          `hotel-rate:${searchId}:${hotelId}`
+    const timer = window.setTimeout(() => {
+      try {
+        const stored =
+          sessionStorage.getItem(
+            `hotel-rate:${searchId}:${hotelId}`
+          );
+
+        if (!stored) {
+          return;
+        }
+
+        const parsed =
+          JSON.parse(
+            stored
+          ) as HotelRoomRate;
+
+        if (
+          parsed.SelectCode !==
+          rateId
+        ) {
+          return;
+        }
+
+        setRate(parsed);
+      } catch (error) {
+        console.error(
+          "Unable to restore selected hotel rate:",
+          error
         );
-
-      if (!stored) {
-        return;
+      } finally {
+        setLoading(false);
       }
+    }, 0);
 
-      const parsed =
-        JSON.parse(
-          stored
-        ) as HotelRoomRate;
-
-      if (
-        parsed.SelectCode !==
-        rateId
-      ) {
-        return;
-      }
-
-      setRate(parsed);
-    } catch (error) {
-      console.error(
-        "Unable to restore selected hotel rate:",
-        error
-      );
-    } finally {
-      setLoading(false);
-    }
+    return () => window.clearTimeout(timer);
   }, [
     searchId,
     hotelId,
@@ -563,6 +568,7 @@ export default function HotelBookingPage({
                 disabled:cursor-not-allowed
                 disabled:opacity-60
               "
+              aria-busy={preBooking}
             >
               {preBooking ? (
                 <>
@@ -587,6 +593,7 @@ export default function HotelBookingPage({
 
             {preBookError ? (
               <div
+                role="alert"
                 className="
                   mt-4
                   rounded-xl
@@ -600,7 +607,7 @@ export default function HotelBookingPage({
               >
                 <p>{preBookError}</p>
 
-                <a
+                <Link
                   href="/"
                   className="
                     mt-2
@@ -611,7 +618,7 @@ export default function HotelBookingPage({
                   "
                 >
                   Effettua una nuova ricerca
-                </a>
+                </Link>
               </div>
             ) : (
               <p

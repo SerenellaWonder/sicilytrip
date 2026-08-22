@@ -433,11 +433,13 @@ export default function DestinationsMap() {
             >
               {/* SAGOMA REALE */}
 
-              <img
+              <Image
                 src="/images/sicily-map.svg"
                 alt=""
                 aria-hidden="true"
                 draggable={false}
+                fill
+                sizes="(min-width: 1024px) 55vw, 100vw"
                 className="
                   absolute
                   inset-0

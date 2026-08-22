@@ -1,6 +1,7 @@
 "use client";
 
 import { Clock3 } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const SEARCH_TTL_MS = 20 * 60 * 1000;
@@ -81,7 +82,8 @@ export default function SearchExpiryNotice({
 
   return (
     <div
-      role={expired ? "alert" : "status"}
+      role={expired ? "alert" : undefined}
+      aria-live={expired ? "assertive" : "off"}
       className={`mt-6 flex flex-col gap-3 rounded-2xl border px-5 py-4 sm:flex-row sm:items-center sm:justify-between ${
         expired
           ? "border-red-200 bg-red-50 text-red-800"
@@ -107,12 +109,12 @@ export default function SearchExpiryNotice({
       </div>
 
       {expired && (
-        <a
+        <Link
           href="/"
           className="text-xs font-bold uppercase tracking-[0.12em] underline"
         >
           Effettua una nuova ricerca
-        </a>
+        </Link>
       )}
     </div>
   );

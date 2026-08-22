@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import {
   IconArrowRight,
@@ -110,41 +110,9 @@ const initialSuggestions = [
 export default function ConciergeSearch() {
   const [query, setQuery] = useState("");
 
-  const [suggestions, setSuggestions] =
-    useState(initialSuggestions);
+  const suggestions = initialSuggestions;
 
   const { openConcierge } = useConcierge();
-
-  /* ==========================================================
-     RANDOMIZE AFTER MOUNT
-  ========================================================== */
-
-  useEffect(() => {
-    const shuffled = [...randomSuggestions];
-
-    /*
-     * Fisher-Yates shuffle.
-     *
-     * Lo facciamo nel useEffect, quindi soltanto sul client
-     * dopo l'hydration.
-     */
-
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const randomIndex = Math.floor(
-        Math.random() * (i + 1)
-      );
-
-      [shuffled[i], shuffled[randomIndex]] = [
-        shuffled[randomIndex],
-        shuffled[i],
-      ];
-    }
-
-    setSuggestions([
-      ...shuffled.slice(0, 3),
-      fixedSuggestion,
-    ]);
-  }, []);
 
   /* ==========================================================
      SUBMIT

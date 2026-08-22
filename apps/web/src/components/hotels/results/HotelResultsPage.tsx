@@ -4,6 +4,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import Link from "next/link";
 
 import {
   ArrowLeft,
@@ -121,6 +122,7 @@ export default function HotelResultsPage({
   if (loading) {
     return (
       <main
+        aria-busy="true"
         className="
           flex
           min-h-screen
@@ -163,6 +165,7 @@ export default function HotelResultsPage({
   if (error) {
     return (
       <main
+        aria-live="polite"
         className="
           flex
           min-h-screen
@@ -208,7 +211,7 @@ export default function HotelResultsPage({
             {error}
           </p>
 
-          <a
+          <Link
             href="/"
             className="
               mt-8
@@ -228,7 +231,7 @@ export default function HotelResultsPage({
             "
           >
             Nuova ricerca
-          </a>
+          </Link>
         </div>
       </main>
     );
@@ -266,7 +269,7 @@ export default function HotelResultsPage({
       >
         {/* BACK */}
 
-        <a
+        <Link
           href="/"
           className="
             inline-flex
@@ -287,7 +290,7 @@ export default function HotelResultsPage({
           />
 
           Modifica ricerca
-        </a>
+        </Link>
 
         <SearchExpiryNotice searchId={searchId} />
 
