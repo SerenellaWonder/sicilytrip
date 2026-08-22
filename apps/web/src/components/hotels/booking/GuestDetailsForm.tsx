@@ -6,6 +6,7 @@ import { FormEvent, useEffect, useState } from "react";
 type Guest = {
   firstName: string;
   lastName: string;
+  age?: string;
 };
 
 type GuestDetails = {
@@ -15,6 +16,8 @@ type GuestDetails = {
   email: string;
   phone: string;
   country: string;
+  leadIsGuest: boolean;
+  dataProcessingAccepted: boolean;
   adults: Guest[];
   children: Guest[];
 };
@@ -53,7 +56,13 @@ export default function GuestDetailsForm({
       const savedDetails = sessionStorage.getItem(storageKey);
 
       if (savedDetails) {
-        setDetails(JSON.parse(savedDetails) as GuestDetails);
+        const parsed = JSON.parse(savedDetails) as GuestDetails;
+        setDetails({
+          ...parsed,
+          leadIsGuest: parsed.leadIsGuest ?? true,
+          dataProcessingAccepted:
+            parsed.dataProcessingAccepted ?? false,
+        });
         return;
       }
 
@@ -80,7 +89,44 @@ export default function GuestDetailsForm({
     value: string
   ) {
     setSaved(false);
-    setDetails(current => ({ ...current, [field]: value }));
+    setDetails(current => {
+      const next = { ...current, [field]: value };
+
+      if (
+        current.leadIsGuest &&
+        (field === "firstName" || field === "lastName")
+      ) {
+        next.adults = current.adults.map((guest, index) =>
+          index === 0 ? { ...guest, [field]: value } : guest
+        );
+      }
+
+      return next;
+    });
+  }
+
+  function updateBoolean(
+    field: "leadIsGuest" | "dataProcessingAccepted",
+    value: boolean
+  ) {
+    setSaved(false);
+    setDetails(current => {
+      const next = { ...current, [field]: value };
+
+      if (field === "leadIsGuest" && value) {
+        next.adults = current.adults.map((guest, index) =>
+          index === 0
+            ? {
+                ...guest,
+                firstName: current.firstName,
+                lastName: current.lastName,
+              }
+            : guest
+        );
+      }
+
+      return next;
+    });
   }
 
   function updateGuest(
@@ -170,11 +216,24 @@ export default function GuestDetailsForm({
             />
           </div>
 
+          <label className="mt-5 flex cursor-pointer items-start gap-3 text-sm text-slate-600">
+            <input
+              type="checkbox"
+              checked={details.leadIsGuest}
+              onChange={event =>
+                updateBoolean("leadIsGuest", event.target.checked)
+              }
+              className="mt-0.5 size-4 accent-[#F58220]"
+            />
+            L&apos;intestatario è il primo ospite adulto.
+          </label>
+
           <GuestGroup
             title="Adulti"
             guests={details.adults}
             group="adults"
             onChange={updateGuest}
+            firstGuestLocked={details.leadIsGuest}
           />
 
           {details.children.length > 0 && (
@@ -183,9 +242,27 @@ export default function GuestDetailsForm({
               guests={details.children}
               group="children"
               onChange={updateGuest}
+              firstGuestLocked={false}
             />
           )}
         </fieldset>
+
+        <label className="mt-7 flex cursor-pointer items-start gap-3 rounded-2xl bg-[#F7F5F1] p-5 text-xs leading-5 text-slate-600">
+          <input
+            required
+            type="checkbox"
+            disabled={disabled}
+            checked={details.dataProcessingAccepted}
+            onChange={event =>
+              updateBoolean(
+                "dataProcessingAccepted",
+                event.target.checked
+              )
+            }
+            className="mt-0.5 size-4 shrink-0 accent-[#F58220]"
+          />
+          Autorizzo l&apos;utilizzo dei dati inseriti esclusivamente per gestire questa richiesta di prenotazione.
+        </label>
 
         <div className="mt-7 flex flex-col gap-4 border-t border-slate-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="max-w-xl text-xs leading-5 text-slate-500">
@@ -217,6 +294,7 @@ function GuestGroup({
   guests,
   group,
   onChange,
+  firstGuestLocked,
 }: {
   title: string;
   guests: Guest[];
@@ -227,6 +305,7 @@ function GuestGroup({
     field: keyof Guest,
     value: string
   ) => void;
+  firstGuestLocked: boolean;
 }) {
   return (
     <div className="mt-8 border-t border-slate-100 pt-7">
@@ -244,12 +323,24 @@ function GuestGroup({
                 label="Nome"
                 value={guest.firstName}
                 onChange={value => onChange(group, index, "firstName", value)}
+                readOnly={firstGuestLocked && index === 0}
               />
               <InputField
                 label="Cognome"
                 value={guest.lastName}
                 onChange={value => onChange(group, index, "lastName", value)}
+                readOnly={firstGuestLocked && index === 0}
               />
+              {group === "children" && (
+                <InputField
+                  label="Età"
+                  type="number"
+                  value={guest.age ?? ""}
+                  onChange={value => onChange(group, index, "age", value)}
+                  min="0"
+                  max="17"
+                />
+              )}
             </div>
           </div>
         ))}
@@ -264,12 +355,18 @@ function InputField({
   onChange,
   type = "text",
   autoComplete,
+  readOnly = false,
+  min,
+  max,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   type?: string;
   autoComplete?: string;
+  readOnly?: boolean;
+  min?: string;
+  max?: string;
 }) {
   return (
     <label className="block text-xs font-semibold text-[#0D2340]">
@@ -279,8 +376,11 @@ function InputField({
         type={type}
         value={value}
         autoComplete={autoComplete}
+        readOnly={readOnly}
+        min={min}
+        max={max}
         onChange={event => onChange(event.target.value)}
-        className="mt-2 h-12 w-full rounded-xl border border-[#0D2340]/10 bg-white px-4 text-sm font-normal outline-none transition focus:border-[#F58220] focus:ring-2 focus:ring-[#F58220]/10"
+        className="mt-2 h-12 w-full rounded-xl border border-[#0D2340]/10 bg-white px-4 text-sm font-normal outline-none transition focus:border-[#F58220] focus:ring-2 focus:ring-[#F58220]/10 read-only:bg-slate-100 read-only:text-slate-500"
       />
     </label>
   );
@@ -324,11 +424,14 @@ function createEmptyDetails(adults: number, children: number): GuestDetails {
     email: "",
     phone: "",
     country: "Italia",
+    leadIsGuest: true,
+    dataProcessingAccepted: false,
     adults: Array.from({ length: Math.max(1, adults) }, () => ({
       ...EMPTY_GUEST,
     })),
     children: Array.from({ length: Math.max(0, children) }, () => ({
       ...EMPTY_GUEST,
+      age: "",
     })),
   };
 }
