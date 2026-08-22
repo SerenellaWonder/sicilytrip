@@ -33,6 +33,11 @@ const items = [
     pathname: "/journal",
   },
   {
+    label: "FAQ",
+    href: "/faq",
+    pathname: "/faq",
+  },
+  {
     label: "Contatti",
     href: "/#footer",
   },

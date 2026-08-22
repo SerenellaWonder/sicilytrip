@@ -35,6 +35,10 @@ const menu = [
     label: "Journal",
     href: "/journal",
   },
+  {
+    label: "FAQ",
+    href: "/faq",
+  },
 ];
 
 export default function FooterSection() {
