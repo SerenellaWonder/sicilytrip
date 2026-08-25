@@ -4,6 +4,7 @@ import { PartnerSolutionHotelBookService } from '../../partnersolution/services/
 import { HotelBookDto } from '../dto/hotel-book.dto';
 import { HotelSearchRepository } from '../repositories/hotel-search.repository';
 import { HotelSearchResultRepository } from '../repositories/hotel-search-result.repository';
+import { ProviderBookingAttemptRepository } from '../repositories/provider-booking-attempt.repository';
 import { HotelBookService } from './hotel-book.service';
 
 describe('HotelBookService', () => {
@@ -35,12 +36,17 @@ describe('HotelBookService', () => {
   const provider = { book: jest.fn() };
   const hotelSearchRepository = { findById: jest.fn() };
   const hotelSearchResultRepository = { findBySearchId: jest.fn() };
+  const bookingAttemptRepository = {
+    createPending: jest.fn(),
+    updateResult: jest.fn(),
+  };
 
   function createService() {
     return new HotelBookService(
       provider as unknown as PartnerSolutionHotelBookService,
       hotelSearchRepository as unknown as HotelSearchRepository,
       hotelSearchResultRepository as unknown as HotelSearchResultRepository,
+      bookingAttemptRepository as unknown as ProviderBookingAttemptRepository,
     );
   }
 
@@ -56,6 +62,10 @@ describe('HotelBookService', () => {
         payload: { GiataID: 35324 },
       },
     ]);
+    bookingAttemptRepository.createPending.mockResolvedValue({
+      id: 'attempt-id',
+    });
+    bookingAttemptRepository.updateResult.mockResolvedValue(undefined);
   });
 
   it('sends the exact provider payload and preserves empty strings', async () => {
@@ -74,6 +84,12 @@ describe('HotelBookService', () => {
       GiataId: '35324',
       RoomId: 'room-id',
     });
+    expect(bookingAttemptRepository.updateResult).toHaveBeenCalledWith(
+      'attempt-id',
+      'CONFIRMED',
+      '123-48789',
+      '',
+    );
   });
 
   it('rejects booking after the search validity window', async () => {
@@ -92,6 +108,7 @@ describe('HotelBookService', () => {
     provider.book.mockResolvedValue({ Error: 'Booking failed', RefCode: '' });
 
     await service.book(dto);
+    bookingAttemptRepository.createPending.mockResolvedValueOnce(null);
     await expect(service.book(dto)).rejects.toBeInstanceOf(ConflictException);
     expect(provider.book).toHaveBeenCalledTimes(1);
   });
@@ -101,6 +118,7 @@ describe('HotelBookService', () => {
     provider.book.mockRejectedValueOnce(new Error('Network timeout'));
 
     await expect(service.book(dto)).rejects.toThrow('Network timeout');
+    bookingAttemptRepository.createPending.mockResolvedValueOnce(null);
     await expect(service.book(dto)).rejects.toBeInstanceOf(ConflictException);
     expect(provider.book).toHaveBeenCalledTimes(1);
   });

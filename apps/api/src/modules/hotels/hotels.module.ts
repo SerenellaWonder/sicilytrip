@@ -18,6 +18,7 @@ import { SearchPollingService } from './services/search-polling.service';
 import { HotelSearchResultRepository } from './repositories/hotel-search-result.repository';
 import { HotelSearchResultsService } from './services/hotel-search-results.service';
 import { HotelDetailRepository } from './repositories/hotel-detail.repository';
+import { ProviderBookingAttemptRepository } from './repositories/provider-booking-attempt.repository';
 
 @Module({
   imports: [PlacesModule, PartnerSolutionModule],
@@ -28,6 +29,7 @@ import { HotelDetailRepository } from './repositories/hotel-detail.repository';
     HotelSearchRepository,
     HotelSearchResultRepository,
     HotelDetailRepository,
+    ProviderBookingAttemptRepository,
 
     HotelSearchService,
     HotelSearchResultsService,

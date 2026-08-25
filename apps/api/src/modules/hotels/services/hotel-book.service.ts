@@ -4,26 +4,25 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { ProviderBookingStatus } from '@prisma/client';
 
 import { PartnerSolutionHotelBookService } from '../../partnersolution/services/hotel-book.service';
 
 import { HotelBookDto } from '../dto/hotel-book.dto';
 import { HotelSearchRepository } from '../repositories/hotel-search.repository';
 import { HotelSearchResultRepository } from '../repositories/hotel-search-result.repository';
+import { ProviderBookingAttemptRepository } from '../repositories/provider-booking-attempt.repository';
 import { getHotelPayloadString } from '../utils/hotel-payload';
 
 const SEARCH_TTL_MS = 20 * 60 * 1000;
 
-type BookingAttempt = 'PENDING' | 'COMPLETED' | 'FAILED' | 'UNCERTAIN';
-
 @Injectable()
 export class HotelBookService {
-  private readonly attempts = new Map<string, BookingAttempt>();
-
   constructor(
     private readonly provider: PartnerSolutionHotelBookService,
     private readonly hotelSearchRepository: HotelSearchRepository,
     private readonly hotelSearchResultRepository: HotelSearchResultRepository,
+    private readonly bookingAttemptRepository: ProviderBookingAttemptRepository,
   ) {}
 
   async book(dto: HotelBookDto) {
@@ -58,15 +57,19 @@ export class HotelBookService {
       throw new NotFoundException('GiataId non disponibile per questo hotel');
     }
 
-    const attemptKey = `${search.providerSearchId}:${giataId}:${dto.rateId}`;
+    const attempt = await this.bookingAttemptRepository.createPending({
+      hotelSearchId: search.id,
+      providerSearchId: search.providerSearchId,
+      providerHotelId: dto.hotelId,
+      giataId,
+      roomId: dto.rateId,
+    });
 
-    if (this.attempts.has(attemptKey)) {
+    if (!attempt) {
       throw new ConflictException(
         'Questa prenotazione è già stata inviata. Non ripetere la richiesta: verifica l’esito con il fornitore.',
       );
     }
-
-    this.attempts.set(attemptKey, 'PENDING');
 
     try {
       const response = await this.provider.book({
@@ -85,17 +88,24 @@ export class HotelBookService {
         RefCode?: string;
       };
 
-      this.attempts.set(
-        attemptKey,
+      await this.bookingAttemptRepository.updateResult(
+        attempt.id,
         providerResponse.RefCode && !providerResponse.Error
-          ? 'COMPLETED'
-          : 'FAILED',
+          ? ProviderBookingStatus.CONFIRMED
+          : ProviderBookingStatus.FAILED,
+        providerResponse.RefCode,
+        providerResponse.Error,
       );
 
       return response;
     } catch (error) {
       // Un errore di trasporto non prova che la pratica non sia stata creata.
-      this.attempts.set(attemptKey, 'UNCERTAIN');
+      await this.bookingAttemptRepository.updateResult(
+        attempt.id,
+        ProviderBookingStatus.UNCERTAIN,
+        undefined,
+        error instanceof Error ? error.message : 'Unknown provider error',
+      );
       throw error;
     }
   }
