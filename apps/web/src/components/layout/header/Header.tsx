@@ -111,7 +111,7 @@ export default function Header() {
               }
             `}
           >
-            <Logo />
+            <Logo solidHeader={solidHeader} />
           </div>
 
           {/* DESKTOP NAVIGATION */}

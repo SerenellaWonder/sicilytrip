@@ -357,7 +357,7 @@ export default function DestinationsHero() {
                   text-[#0D2340]/40
                 "
               >
-                9 province · 1 isola · infinite possibilità
+                Città · territori · arcipelaghi · infinite possibilità
               </p>
             </div>
           </div>

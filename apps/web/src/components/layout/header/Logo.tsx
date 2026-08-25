@@ -1,7 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 
-export default function Logo() {
+type LogoProps = {
+  solidHeader: boolean;
+};
+
+export default function Logo({ solidHeader }: LogoProps) {
   return (
     <Link
       href="/"
@@ -13,21 +17,27 @@ export default function Logo() {
       "
     >
       <Image
-        src="/images/logo.png"
+        src={
+          solidHeader
+            ? "/images/logo-sicilytrip.svg"
+            : "/images/logo-sicilytrip-light.svg"
+        }
         alt="SicilyTrip"
         priority
-        width={180}
-        height={54}
+        width={208}
+        height={90}
         className="
-          h-auto
-          w-[120px]
+          h-[48px]
+          w-auto
           object-contain
 
-          sm:w-[130px]
+          sm:h-[52px]
 
-          lg:w-[145px]
+          lg:h-[58px]
 
-          xl:w-[150px]
+          drop-shadow-[0_2px_8px_rgba(0,0,0,0.18)]
+
+          xl:h-[62px]
         "
       />
     </Link>

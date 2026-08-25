@@ -9,126 +9,59 @@ import {
   IconMapPin,
 } from "@tabler/icons-react";
 
-type Destination = {
-  id: string;
-  number: string;
-  name: string;
-  area: string;
-  description: string;
-  image: string;
-  href: string;
-};
+import {
+  destinationCatalog,
+  destinationMacroAreas,
+  type DestinationMacroArea,
+} from "@/data/destinations";
 
-const destinations: Destination[] = [
-  {
-    id: "palermo",
-    number: "01",
-    name: "Palermo",
-    area: "Sicilia Occidentale",
-    description:
-      "Mercati, palazzi, giardini e culture diverse si incontrano in una delle città più sorprendenti del Mediterraneo.",
-    image: "/images/palermo.jpg",
-    href: "/destinazioni/palermo",
-  },
-  {
-    id: "cefalu",
-    number: "02",
-    name: "Cefalù",
-    area: "Costa Settentrionale",
-    description:
-      "Un borgo sul Tirreno tra spiagge, vicoli medievali e la grande Rocca che domina il mare.",
-    image: "/images/cefalu.jpg",
-    href: "/destinazioni/cefalu",
-  },
-  {
-    id: "eolie",
-    number: "03",
-    name: "Isole Eolie",
-    area: "Arcipelago Eoliano",
-    description:
-      "Sette isole vulcaniche da vivere seguendo il mare, tra baie remote, barche e tramonti.",
-    image: "/images/yacht.jpg",
-    href: "/destinazioni/isole-eolie",
-  },
-  {
-    id: "taormina",
-    number: "04",
-    name: "Taormina",
-    area: "Costa Orientale",
-    description:
-      "Il Teatro Antico, terrazze sul Mediterraneo e l'Etna all'orizzonte in uno dei luoghi più iconici della Sicilia.",
-    image: "/images/taormina.jpg",
-    href: "/destinazioni/taormina",
-  },
-  {
-    id: "catania",
-    number: "05",
-    name: "Catania",
-    area: "Costa Orientale",
-    description:
-      "Pietra lavica, architettura barocca, mercati e vita mediterranea ai piedi dell'Etna.",
-    image: "/images/catania.jpg",
-    href: "/destinazioni/catania",
-  },
-  {
-    id: "etna",
-    number: "06",
-    name: "Etna",
-    area: "Terre dell'Etna",
-    description:
-      "Crateri, boschi e vigneti cresciuti sulla lava raccontano il paesaggio più potente dell'isola.",
-    image: "/images/etna.jpg",
-    href: "/destinazioni/etna",
-  },
-  {
-    id: "siracusa",
-    number: "07",
-    name: "Siracusa",
-    area: "Sicilia Sud-Orientale",
-    description:
-      "Ortigia, pietra chiara e millenni di storia affacciati sulle acque del Mediterraneo.",
-    image: "/images/siracusa.jpg",
-    href: "/destinazioni/siracusa",
-  },
-  {
-    id: "noto",
-    number: "08",
-    name: "Noto",
-    area: "Val di Noto",
-    description:
-      "Palazzi barocchi e pietra dorata trasformano la città in una delle scenografie più eleganti della Sicilia.",
-    image: "/images/noto.jpg",
-    href: "/destinazioni/noto",
-  },
-  {
-    id: "ragusa",
-    number: "09",
-    name: "Ragusa",
-    area: "Monti Iblei",
-    description:
-      "Cupole, scalinate e palazzi disegnano Ragusa Ibla nel cuore della Sicilia barocca.",
-    image: "/images/ragusa.jpg",
-    href: "/destinazioni/ragusa",
-  },
-  {
-    id: "agrigento",
-    number: "10",
-    name: "Agrigento",
-    area: "Costa Meridionale",
-    description:
-      "Templi greci, colline e Mediterraneo raccontano uno dei paesaggi culturali più straordinari dell'isola.",
-    image: "/images/agrigento.jpg",
-    href: "/destinazioni/agrigento",
-  },
-];
+const destinations = destinationCatalog;
 
 export default function DestinationShowcase() {
-  const [activeId, setActiveId] = useState("taormina");
+  const [macroArea, setMacroArea] =
+    useState<DestinationMacroArea>("Sicilia Occidentale");
+  const [province, setProvince] = useState("Tutte");
+  const [activeId, setActiveId] = useState("palermo");
+
+  const provinces = Array.from(
+    new Set(
+      destinations
+        .filter(destination => destination.macroArea === macroArea)
+        .map(destination => destination.province)
+    )
+  );
+
+  const filteredDestinations = destinations.filter(
+    destination =>
+      destination.macroArea === macroArea &&
+      (province === "Tutte" || destination.province === province)
+  );
 
   const active =
-    destinations.find(
+    filteredDestinations.find(
       (destination) => destination.id === activeId
-    ) ?? destinations[0];
+    ) ?? filteredDestinations[0];
+
+  function selectMacroArea(nextMacroArea: DestinationMacroArea) {
+    setMacroArea(nextMacroArea);
+    setProvince("Tutte");
+    setActiveId(
+      destinations.find(
+        destination => destination.macroArea === nextMacroArea
+      )?.id ?? "palermo"
+    );
+  }
+
+  function selectProvince(nextProvince: string) {
+    setProvince(nextProvince);
+    setActiveId(
+      destinations.find(
+        destination =>
+          destination.macroArea === macroArea &&
+          (nextProvince === "Tutte" || destination.province === nextProvince)
+      )?.id ?? "palermo"
+    );
+  }
 
   return (
     <section
@@ -200,11 +133,11 @@ export default function DestinationShowcase() {
                 xl:text-[68px]
               "
             >
-              Dieci luoghi.
+              Territori da scoprire.
               <br />
 
               <span className="text-[#0D2340]/35">
-                Dieci Sicilie diverse.
+                Una Sicilia, infinite mete.
               </span>
             </h2>
           </div>
@@ -223,6 +156,40 @@ export default function DestinationShowcase() {
             Ogni destinazione racconta un volto diverso
             della Sicilia.
           </p>
+        </div>
+
+        <div className="mt-10 flex flex-wrap gap-3" aria-label="Filtra per macroarea">
+          {destinationMacroAreas.map(item => (
+            <button
+              key={item}
+              type="button"
+              onClick={() => selectMacroArea(item)}
+              className={`rounded-full border px-5 py-3 text-[10px] font-bold uppercase tracking-[0.12em] transition ${
+                macroArea === item
+                  ? "border-[#F58220] bg-[#F58220] text-white"
+                  : "border-[#0D2340]/10 bg-white text-[#0D2340]/55 hover:border-[#F58220] hover:text-[#F58220]"
+              }`}
+            >
+              {item}
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-2" aria-label="Filtra per provincia">
+          {["Tutte", ...provinces].map(item => (
+            <button
+              key={item}
+              type="button"
+              onClick={() => selectProvince(item)}
+              className={`rounded-full px-4 py-2 text-[9px] font-semibold uppercase tracking-[0.12em] transition ${
+                province === item
+                  ? "bg-[#0D2340] text-white"
+                  : "bg-[#0D2340]/[0.05] text-[#0D2340]/50 hover:text-[#0D2340]"
+              }`}
+            >
+              {item}
+            </button>
+          ))}
         </div>
 
         {/* =====================================================
@@ -244,7 +211,7 @@ export default function DestinationShowcase() {
           ================================================= */}
 
           <div className="border-t border-[#0D2340]/10">
-            {destinations.map((destination) => {
+            {filteredDestinations.map((destination) => {
               const activeDestination =
                 destination.id === activeId;
 
@@ -581,7 +548,7 @@ export default function DestinationShowcase() {
             lg:hidden
           "
         >
-          {destinations.map((destination) => (
+          {filteredDestinations.map((destination) => (
             <Link
               key={destination.id}
               href={destination.href}

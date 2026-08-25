@@ -459,23 +459,15 @@ export default function FooterSection() {
               md:pt-11
             "
           >
-            <Image
-              src="/images/logo.png"
-              alt="SicilyTrip"
-              width={300}
-              height={110}
-              className="
-                mx-auto
-                h-auto
-
-                w-[190px]
-
-                object-contain
-
-                sm:w-[250px]
-                lg:w-[270px]
-              "
-            />
+            <div className="mx-auto w-fit">
+              <Image
+                src="/images/logo-sicilytrip-light.svg"
+                alt="SicilyTrip"
+                width={300}
+                height={130}
+                className="h-auto w-[190px] object-contain sm:w-[250px] lg:w-[270px]"
+              />
+            </div>
 
             <p
               className="

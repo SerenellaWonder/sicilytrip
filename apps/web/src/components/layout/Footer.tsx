@@ -25,12 +25,14 @@ export default function Footer() {
 
           <div>
 
-            <Image
-              src="/images/logo.png"
-              alt="SicilyTrip"
-              width={190}
-              height={60}
-            />
+            <div className="w-fit">
+              <Image
+                src="/images/logo-sicilytrip-light.svg"
+                alt="SicilyTrip"
+                width={208}
+                height={90}
+              />
+            </div>
 
             <p className="mt-8 max-w-md text-lg leading-8 text-white/70">
               SicilyTrip seleziona hotel, destinazioni ed esperienze

@@ -11,6 +11,12 @@ import {
   IconSparkles,
 } from "@tabler/icons-react";
 
+import {
+  destinationCatalog,
+  destinationMacroAreas,
+  type DestinationMacroArea,
+} from "@/data/destinations";
+
 type MapDestination = {
   id: string;
   name: string;
@@ -73,129 +79,7 @@ function project(longitude: number, latitude: number) {
    DESTINAZIONI
 ========================================================= */
 
-const destinations: MapDestination[] = [
-  {
-    id: "palermo",
-    name: "Palermo",
-    area: "Sicilia Occidentale",
-    description:
-      "Un intreccio di culture, mercati storici, palazzi e sapori nel cuore più vibrante dell'isola.",
-    image: "/images/palermo.jpg",
-    href: "/destinazioni/palermo",
-    longitude: 13.3615,
-    latitude: 38.1157,
-    labelPosition: "bottom",
-  },
-  {
-    id: "cefalu",
-    name: "Cefalù",
-    area: "Costa Settentrionale",
-    description:
-      "Un borgo affacciato sul Tirreno, tra vicoli medievali, spiagge e la grande Rocca.",
-    image: "/images/cefalu.jpg",
-    href: "/destinazioni/cefalu",
-    longitude: 14.0229,
-    latitude: 38.0386,
-    labelPosition: "bottom",
-  },
-  {
-    id: "eolie",
-    name: "Isole Eolie",
-    area: "Arcipelago Eoliano",
-    description:
-      "Sette isole vulcaniche, baie remote e tramonti da vivere seguendo il ritmo del Mediterraneo.",
-    image: "/images/yacht.jpg",
-    href: "/destinazioni/isole-eolie",
-    longitude: 14.956,
-    latitude: 38.467,
-    labelPosition: "top",
-  },
-  {
-    id: "taormina",
-    name: "Taormina",
-    area: "Costa Orientale",
-    description:
-      "Teatro antico, mare e panorami sull'Etna in una delle destinazioni più iconiche della Sicilia.",
-    image: "/images/taormina.jpg",
-    href: "/destinazioni/taormina",
-    longitude: 15.2866,
-    latitude: 37.8516,
-    labelPosition: "right",
-  },
-  {
-    id: "etna",
-    name: "Etna",
-    area: "Sicilia Orientale",
-    description:
-      "Crateri, vigneti e paesaggi vulcanici disegnano uno dei territori più sorprendenti dell'isola.",
-    image: "/images/etna.jpg",
-    href: "/destinazioni/etna",
-    longitude: 14.999,
-    latitude: 37.751,
-    labelPosition: "left",
-  },
-  {
-    id: "siracusa",
-    name: "Siracusa",
-    area: "Sicilia Sud-Orientale",
-    description:
-      "Ortigia, il mare e la storia millenaria della Magna Grecia in una città da vivere lentamente.",
-    image: "/images/siracusa.jpg",
-    href: "/destinazioni/siracusa",
-    longitude: 15.2933,
-    latitude: 37.0755,
-    labelPosition: "right",
-  },
-  {
-    id: "noto",
-    name: "Noto",
-    area: "Val di Noto",
-    description:
-      "Facciate barocche e pietra dorata trasformano ogni passeggiata in una scenografia siciliana.",
-    image: "/images/noto.jpg",
-    href: "/destinazioni/noto",
-    longitude: 15.0698,
-    latitude: 36.8919,
-    labelPosition: "bottom",
-  },
-  {
-    id: "ragusa",
-    name: "Ragusa",
-    area: "Monti Iblei",
-    description:
-      "Ragusa Ibla scende tra cupole, scalinate e palazzi barocchi nel cuore della Sicilia sud-orientale.",
-    image: "/images/ragusa.jpg",
-    href: "/destinazioni/ragusa",
-    longitude: 14.7307,
-    latitude: 36.9269,
-    labelPosition: "bottom",
-  },
-  {
-    id: "agrigento",
-    name: "Agrigento",
-    area: "Costa Meridionale",
-    description:
-      "Templi greci, colline e Mediterraneo raccontano uno dei paesaggi culturali più straordinari dell'isola.",
-    image: "/images/agrigento.jpg",
-    href: "/destinazioni/agrigento",
-    longitude: 13.5765,
-    latitude: 37.3111,
-    labelPosition: "bottom",
-  },
-
-  {
-  id: "catania",
-  name: "Catania",
-  area: "Costa Orientale",
-  description:
-    "Pietra lavica, palazzi barocchi, mercati e vita mediterranea ai piedi dell'Etna.",
-  image: "/images/catania.jpg",
-  href: "/destinazioni/catania",
-  longitude: 15.0873,
-  latitude: 37.5027,
-  labelPosition: "right",
-},
-];
+const destinations = destinationCatalog;
 
 function getLabelClasses(
   position: MapDestination["labelPosition"]
@@ -232,13 +116,28 @@ function getLabelClasses(
 }
 
 export default function DestinationsMap() {
+  const [macroArea, setMacroArea] =
+    useState<DestinationMacroArea>("Sicilia Occidentale");
   const [selectedId, setSelectedId] =
-    useState("taormina");
+    useState("palermo");
+
+  const filteredDestinations = destinations.filter(
+    destination => destination.macroArea === macroArea
+  );
 
   const selected =
-    destinations.find(
+    filteredDestinations.find(
       (destination) => destination.id === selectedId
-    ) ?? destinations[0];
+    ) ?? filteredDestinations[0];
+
+  function selectMacroArea(nextMacroArea: DestinationMacroArea) {
+    setMacroArea(nextMacroArea);
+    setSelectedId(
+      destinations.find(
+        destination => destination.macroArea === nextMacroArea
+      )?.id ?? "palermo"
+    );
+  }
 
   return (
     <section
@@ -356,6 +255,23 @@ export default function DestinationsMap() {
             Seleziona un luogo sulla mappa e scopri da dove
             iniziare il tuo viaggio.
           </p>
+        </div>
+
+        <div className="mt-9 flex flex-wrap gap-3" aria-label="Filtra la mappa per macroarea">
+          {destinationMacroAreas.map(item => (
+            <button
+              key={item}
+              type="button"
+              onClick={() => selectMacroArea(item)}
+              className={`rounded-full border px-5 py-3 text-[9px] font-bold uppercase tracking-[0.12em] transition ${
+                macroArea === item
+                  ? "border-[#F58220] bg-[#F58220] text-white"
+                  : "border-white/15 bg-white/[0.04] text-white/55 hover:border-white/30 hover:text-white"
+              }`}
+            >
+              {item}
+            </button>
+          ))}
         </div>
 
         {/* MAP + CARD */}
@@ -478,7 +394,7 @@ export default function DestinationsMap() {
                       height: "100%",
                     }}
                   >
-                    {destinations.map((destination) => {
+                    {filteredDestinations.map((destination) => {
                       const point = project(
                         destination.longitude,
                         destination.latitude
