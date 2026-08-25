@@ -518,7 +518,7 @@ function InputField({
         min={min}
         max={max}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-2 h-12 w-full rounded-xl border border-[#0D2340]/10 bg-white px-4 text-sm font-normal outline-none transition focus:border-[#F58220] focus:ring-2 focus:ring-[#F58220]/10 read-only:bg-slate-100 read-only:text-slate-500"
+        className="mt-2 h-12 w-full rounded-xl border border-[#0D2340]/10 bg-white px-4 text-sm font-normal outline-none transition focus:border-[#0D2340]/25 focus:ring-2 focus:ring-[#0D2340]/[0.04] read-only:bg-slate-100 read-only:text-slate-500"
       />
     </label>
   );
@@ -542,7 +542,7 @@ function SelectField({
         required
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-2 h-12 w-full rounded-xl border border-[#0D2340]/10 bg-white px-4 text-sm font-normal outline-none transition focus:border-[#F58220] focus:ring-2 focus:ring-[#F58220]/10"
+        className="mt-2 h-12 w-full rounded-xl border border-[#0D2340]/10 bg-white px-4 text-sm font-normal outline-none transition focus:border-[#0D2340]/25 focus:ring-2 focus:ring-[#0D2340]/[0.04]"
       >
         {options.map((option) => (
           <option key={option} value={option}>
