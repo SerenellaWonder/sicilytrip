@@ -50,7 +50,9 @@ export class PartnerSolutionClient {
 
     if (body) {
       this.logger.log('REQUEST BODY');
-      this.logger.log(JSON.stringify(body, null, 2));
+      this.logger.log(
+        JSON.stringify(this.getLogSafeBody(endpoint, body), null, 2),
+      );
     }
 
     try {
@@ -103,5 +105,20 @@ export class PartnerSolutionClient {
         err.response?.status ?? HttpStatus.BAD_GATEWAY,
       );
     }
+  }
+
+  private getLogSafeBody(endpoint: string, body: unknown): unknown {
+    if (endpoint !== '/api/HotelBook' || !this.isRecord(body)) {
+      return body;
+    }
+
+    return {
+      ...body,
+      Names: '[REDACTED GUEST DATA]',
+    };
+  }
+
+  private isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
   }
 }

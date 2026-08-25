@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import {
@@ -59,69 +56,45 @@ export default function HotelBookingPage({
   hotelId: string;
   rateId: string;
 }) {
-  const [rate, setRate] =
-    useState<HotelRoomRate | null>(
-      null
-    );
+  const [rate, setRate] = useState<HotelRoomRate | null>(null);
 
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const [preBook, setPreBook] =
-    useState<HotelPreBookResponse | null>(
-      null
-    );
+  const [preBook, setPreBook] = useState<HotelPreBookResponse | null>(null);
 
-  const [preBooking, setPreBooking] =
-    useState(false);
+  const [preBooking, setPreBooking] = useState(false);
 
-  const [preBookError, setPreBookError] =
-    useState("");
+  const [preBookError, setPreBookError] = useState("");
 
-  const [searchExpired, setSearchExpired] =
-    useState(false);
+  const [searchExpired, setSearchExpired] = useState(false);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
       try {
-        const stored =
-          sessionStorage.getItem(
-            `hotel-rate:${searchId}:${hotelId}`
-          );
+        const stored = sessionStorage.getItem(
+          `hotel-rate:${searchId}:${hotelId}`,
+        );
 
         if (!stored) {
           return;
         }
 
-        const parsed =
-          JSON.parse(
-            stored
-          ) as HotelRoomRate;
+        const parsed = JSON.parse(stored) as HotelRoomRate;
 
-        if (
-          parsed.SelectCode !==
-          rateId
-        ) {
+        if (parsed.SelectCode !== rateId) {
           return;
         }
 
         setRate(parsed);
       } catch (error) {
-        console.error(
-          "Unable to restore selected hotel rate:",
-          error
-        );
+        console.error("Unable to restore selected hotel rate:", error);
       } finally {
         setLoading(false);
       }
     }, 0);
 
     return () => window.clearTimeout(timer);
-  }, [
-    searchId,
-    hotelId,
-    rateId,
-  ]);
+  }, [searchId, hotelId, rateId]);
 
   if (loading) {
     return (
@@ -189,16 +162,13 @@ export default function HotelBookingPage({
               text-slate-500
             "
           >
-            Torna all&apos;hotel e seleziona
-            nuovamente una tariffa.
+            Torna all&apos;hotel e seleziona nuovamente una tariffa.
           </p>
 
           <a
             href={`/hotel/${encodeURIComponent(
-              hotelId
-            )}?searchId=${encodeURIComponent(
-              searchId
-            )}`}
+              hotelId,
+            )}?searchId=${encodeURIComponent(searchId)}`}
             className="
               mt-7
               inline-flex
@@ -218,20 +188,14 @@ export default function HotelBookingPage({
     );
   }
 
-  const price =
-    formatPrice(
-      rate.Price,
-      rate.Currency
-    );
+  const price = formatPrice(rate.Price, rate.Currency);
 
-  const freeCancellation =
-    rate.CancellationPolicyCode ===
-    "FREE";
+  const freeCancellation = rate.CancellationPolicyCode === "FREE";
 
   async function handlePreBook() {
     if (searchExpired) {
       setPreBookError(
-        "La ricerca è scaduta. Effettua una nuova ricerca per verificare nuovamente disponibilità e prezzo."
+        "La ricerca è scaduta. Effettua una nuova ricerca per verificare nuovamente disponibilità e prezzo.",
       );
       return;
     }
@@ -240,23 +204,17 @@ export default function HotelBookingPage({
       setPreBooking(true);
       setPreBookError("");
 
-      const response =
-        await apiFetch<HotelPreBookResponse>(
-          "/hotels/prebook",
-          {
-            method: "POST",
-            body: JSON.stringify({
-              searchId,
-              hotelId,
-              rateId,
-            }),
-          }
-        );
+      const response = await apiFetch<HotelPreBookResponse>("/hotels/prebook", {
+        method: "POST",
+        body: JSON.stringify({
+          searchId,
+          hotelId,
+          rateId,
+        }),
+      });
 
       if (response.Error) {
-        throw new Error(
-          response.Error
-        );
+        throw new Error(response.Error);
       }
 
       setPreBook(response);
@@ -265,7 +223,7 @@ export default function HotelBookingPage({
       setPreBookError(
         error instanceof Error
           ? error.message
-          : "Impossibile riconfermare la tariffa."
+          : "Impossibile riconfermare la tariffa.",
       );
     } finally {
       setPreBooking(false);
@@ -276,8 +234,7 @@ export default function HotelBookingPage({
     preBook?.FinalPrice != null
       ? formatPrice(
           preBook.FinalPrice,
-          preBook.OriginalCurrency ||
-            rate.Currency
+          preBook.OriginalCurrency || rate.Currency,
         )
       : price;
 
@@ -301,10 +258,8 @@ export default function HotelBookingPage({
       >
         <a
           href={`/hotel/${encodeURIComponent(
-            hotelId
-          )}?searchId=${encodeURIComponent(
-            searchId
-          )}#rooms`}
+            hotelId,
+          )}?searchId=${encodeURIComponent(searchId)}#rooms`}
           className="
             inline-flex
             items-center
@@ -317,7 +272,6 @@ export default function HotelBookingPage({
           "
         >
           <ArrowLeft size={14} />
-
           Cambia tariffa
         </a>
 
@@ -361,9 +315,8 @@ export default function HotelBookingPage({
               text-slate-500
             "
           >
-            Controlla i dettagli della tariffa
-            selezionata prima di continuare con
-            la prenotazione.
+            Controlla i dettagli della tariffa selezionata prima di continuare
+            con la prenotazione.
           </p>
         </div>
 
@@ -404,32 +357,15 @@ export default function HotelBookingPage({
               "
             >
               <SummaryItem
-                icon={
-                  <BedDouble
-                    size={17}
-                  />
-                }
+                icon={<BedDouble size={17} />}
                 label="Camera"
-                value={
-                  rate.Rooms?.join(
-                    ", "
-                  ) ?? "Camera"
-                }
+                value={rate.Rooms?.join(", ") ?? "Camera"}
               />
 
               <SummaryItem
-                icon={
-                  <Coffee
-                    size={17}
-                  />
-                }
+                icon={<Coffee size={17} />}
                 label="Trattamento"
-                value={
-                  rate.Boards?.join(
-                    ", "
-                  ) ??
-                  "Trattamento"
-                }
+                value={rate.Boards?.join(", ") ?? "Trattamento"}
               />
             </div>
 
@@ -487,8 +423,8 @@ export default function HotelBookingPage({
                       text-slate-500
                     "
                   >
-                    Le condizioni definitive saranno
-                    riconfermate durante il prebook.
+                    Le condizioni definitive saranno riconfermate durante il
+                    prebook.
                   </p>
                 </div>
               </div>
@@ -525,8 +461,7 @@ export default function HotelBookingPage({
                 tracking-[-0.04em]
               "
             >
-              {confirmedPrice ??
-                "Su richiesta"}
+              {confirmedPrice ?? "Su richiesta"}
             </strong>
 
             <p
@@ -537,18 +472,13 @@ export default function HotelBookingPage({
                 text-white/55
               "
             >
-              Il prezzo sarà riconfermato prima
-              della prenotazione definitiva.
+              Il prezzo sarà riconfermato prima della prenotazione definitiva.
             </p>
 
             <button
               type="button"
               onClick={handlePreBook}
-              disabled={
-                preBooking ||
-                preBook != null ||
-                searchExpired
-              }
+              disabled={preBooking || preBook != null || searchExpired}
               className="
                 mt-7
                 inline-flex
@@ -579,7 +509,6 @@ export default function HotelBookingPage({
                       animate-spin
                     "
                   />
-
                   Riconferma...
                 </>
               ) : preBook ? (
@@ -630,8 +559,7 @@ export default function HotelBookingPage({
                   text-white/40
                 "
               >
-                La disponibilità della ricerca
-                resta valida per 20 minuti.
+                La disponibilità della ricerca resta valida per 20 minuti.
               </p>
             )}
           </aside>
@@ -648,49 +576,48 @@ export default function HotelBookingPage({
                 shadow-[0_12px_40px_rgba(13,35,64,0.05)]
               "
             >
-            <div
-              className="
+              <div
+                className="
                 flex
                 items-start
                 gap-3
               "
-            >
-              <CheckCircle2
-                size={22}
-                className="
+              >
+                <CheckCircle2
+                  size={22}
+                  className="
                   mt-0.5
                   shrink-0
                   text-emerald-600
                 "
-              />
+                />
 
-              <div>
-                <h2
-                  className="
+                <div>
+                  <h2
+                    className="
                     text-2xl
                     font-semibold
                     text-[#0D2340]
                   "
-                >
-                  Tariffa riconfermata
-                </h2>
+                  >
+                    Tariffa riconfermata
+                  </h2>
 
-                {preBook.DeadlineDate && (
-                  <p
-                    className="
+                  {preBook.DeadlineDate && (
+                    <p
+                      className="
                       mt-2
                       text-sm
                       text-slate-500
                     "
-                  >
-                    Termine cancellazione: {preBook.DeadlineDate}
-                  </p>
-                )}
+                    >
+                      Termine cancellazione: {preBook.DeadlineDate}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
 
-            {preBook.CancellationDetails?.map(
-              (detail, detailIndex) => (
+              {preBook.CancellationDetails?.map((detail, detailIndex) => (
                 <div
                   key={`${detail.Room ?? "room"}-${detailIndex}`}
                   className="
@@ -711,38 +638,36 @@ export default function HotelBookingPage({
                   </p>
 
                   <div className="mt-3 grid gap-2">
-                    {detail.CancellationData?.map(
-                      (item, itemIndex) => (
-                        <p
-                          key={`${item.DeadLine ?? "deadline"}-${itemIndex}`}
-                          className="
+                    {detail.CancellationData?.map((item, itemIndex) => (
+                      <p
+                        key={`${item.DeadLine ?? "deadline"}-${itemIndex}`}
+                        className="
                             text-xs
                             leading-5
                             text-slate-600
                           "
-                        >
-                          Dal {formatDeadline(item.DeadLine)}: penale {item.Fee ?? "non indicata"}
-                        </p>
-                      )
-                    )}
+                      >
+                        Dal {formatDeadline(item.DeadLine)}: penale{" "}
+                        {item.Fee ?? "non indicata"}
+                      </p>
+                    ))}
                   </div>
                 </div>
-              )
-            )}
+              ))}
 
-            {preBook.Remarks && (
-              <p
-                className="
+              {preBook.Remarks && (
+                <p
+                  className="
                   mt-6
                   whitespace-pre-line
                   text-xs
                   leading-6
                   text-slate-500
                 "
-              >
-                {cleanRemarks(preBook.Remarks)}
-              </p>
-            )}
+                >
+                  {cleanRemarks(preBook.Remarks)}
+                </p>
+              )}
             </section>
 
             <GuestDetailsForm
@@ -750,6 +675,7 @@ export default function HotelBookingPage({
               hotelId={hotelId}
               rateId={rateId}
               disabled={searchExpired}
+              preBook={preBook}
             />
           </>
         )}
@@ -812,84 +738,48 @@ function SummaryItem({
   );
 }
 
-function formatPrice(
-  price?: number,
-  currency = "EUR"
-) {
+function formatPrice(price?: number, currency = "EUR") {
   if (price == null) {
     return null;
   }
 
-  return new Intl.NumberFormat(
-    "it-IT",
-    {
-      style: "currency",
-      currency,
-      maximumFractionDigits: 2,
-    }
-  ).format(price);
+  return new Intl.NumberFormat("it-IT", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 2,
+  }).format(price);
 }
 
-function formatDeadline(
-  value?: string
-) {
+function formatDeadline(value?: string) {
   if (!value) {
     return "data non indicata";
   }
 
   const date = new Date(value);
 
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
+  if (Number.isNaN(date.getTime())) {
     return value;
   }
 
-  return new Intl.DateTimeFormat(
-    "it-IT",
-    {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    }
-  ).format(date);
+  return new Intl.DateTimeFormat("it-IT", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
 }
 
-function cleanRemarks(
-  value: string
-) {
-  const withBreaks =
-    value
-      .replace(
-        /<br\s*\/?>/gi,
-        "\n"
-      )
-      .replace(
-        /<[^>]+>/g,
-        ""
-      );
+function cleanRemarks(value: string) {
+  const withBreaks = value
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<[^>]+>/g, "");
 
-  if (
-    typeof document ===
-    "undefined"
-  ) {
+  if (typeof document === "undefined") {
     return withBreaks.trim();
   }
 
-  const textarea =
-    document.createElement(
-      "textarea"
-    );
+  const textarea = document.createElement("textarea");
 
-  textarea.innerHTML =
-    withBreaks;
+  textarea.innerHTML = withBreaks;
 
-  return textarea.value
-    .replace(
-      /\n{3,}/g,
-      "\n\n"
-    )
-    .trim();
+  return textarea.value.replace(/\n{3,}/g, "\n\n").trim();
 }
