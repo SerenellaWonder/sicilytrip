@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 
 import { apiFetch } from "@/lib/api";
+import { destinationCatalog } from "@/data/destinations";
 
 import type {
   Destination,
@@ -133,12 +134,17 @@ export default function SearchBox({
       return;
     }
 
+    const localSuggestions = getLocalDestinationSuggestions(query);
+
     const controller =
       new AbortController();
 
     const timer =
       window.setTimeout(
         async () => {
+          setSuggestions(localSuggestions);
+          setShowSuggestions(localSuggestions.length > 0);
+
           try {
             setLoadingDestinations(
               true
@@ -157,9 +163,7 @@ export default function SearchBox({
                 }
               );
 
-            setSuggestions(
-              results
-            );
+            setSuggestions(results.length > 0 ? results : localSuggestions);
 
             setShowSuggestions(
               true
@@ -179,7 +183,8 @@ export default function SearchBox({
               err
             );
 
-            setSuggestions([]);
+            setSuggestions(localSuggestions);
+            setShowSuggestions(localSuggestions.length > 0);
           } finally {
             setLoadingDestinations(
               false
@@ -965,6 +970,44 @@ export default function SearchBox({
       )}
     </div>
   );
+}
+
+function getLocalDestinationSuggestions(query: string): Destination[] {
+  const normalizedQuery = normalizeSearchText(query);
+
+  return destinationCatalog
+    .filter(item =>
+      normalizeSearchText(
+        `${item.name} ${item.area} ${item.province} ${item.macroArea}`
+      ).includes(normalizedQuery)
+    )
+    .slice(0, 8)
+    .map(item => ({
+      id: `catalog-${item.id}`,
+      slug: item.id,
+      name: item.name,
+      displayName: `${item.name}, ${item.province}, Sicilia`,
+      region: "Sicilia",
+      province: item.province,
+      country: "Italia",
+      latitude: item.latitude,
+      longitude: item.longitude,
+      northEast: {
+        latitude: item.latitude + 0.18,
+        longitude: item.longitude + 0.22,
+      },
+      southWest: {
+        latitude: item.latitude - 0.18,
+        longitude: item.longitude - 0.22,
+      },
+    }));
+}
+
+function normalizeSearchText(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
 }
 
 /* =========================================================
