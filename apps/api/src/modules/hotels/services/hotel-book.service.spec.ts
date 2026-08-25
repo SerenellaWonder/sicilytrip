@@ -1,6 +1,7 @@
 import { ConflictException, GoneException } from '@nestjs/common';
 
 import { PartnerSolutionHotelBookService } from '../../partnersolution/services/hotel-book.service';
+import { CustomerIdentityService } from '../../customer-area/customer-identity.service';
 import { HotelBookDto } from '../dto/hotel-book.dto';
 import { HotelSearchRepository } from '../repositories/hotel-search.repository';
 import { HotelSearchResultRepository } from '../repositories/hotel-search-result.repository';
@@ -9,6 +10,7 @@ import { HotelBookService } from './hotel-book.service';
 
 describe('HotelBookService', () => {
   const dto: HotelBookDto = {
+    customerEmail: 'mario@example.com',
     searchId: 'internal-search-id',
     hotelId: 'provider-hotel-id',
     rateId: 'room-id',
@@ -40,6 +42,7 @@ describe('HotelBookService', () => {
     createPending: jest.fn(),
     updateResult: jest.fn(),
   };
+  const customerIdentity = { hashEmail: jest.fn() };
 
   function createService() {
     return new HotelBookService(
@@ -47,6 +50,7 @@ describe('HotelBookService', () => {
       hotelSearchRepository as unknown as HotelSearchRepository,
       hotelSearchResultRepository as unknown as HotelSearchResultRepository,
       bookingAttemptRepository as unknown as ProviderBookingAttemptRepository,
+      customerIdentity as unknown as CustomerIdentityService,
     );
   }
 
@@ -66,6 +70,7 @@ describe('HotelBookService', () => {
       id: 'attempt-id',
     });
     bookingAttemptRepository.updateResult.mockResolvedValue(undefined);
+    customerIdentity.hashEmail.mockReturnValue('customer-email-hash');
   });
 
   it('sends the exact provider payload and preserves empty strings', async () => {
@@ -84,6 +89,9 @@ describe('HotelBookService', () => {
       GiataId: '35324',
       RoomId: 'room-id',
     });
+    expect(bookingAttemptRepository.createPending).toHaveBeenCalledWith(
+      expect.objectContaining({ customerEmailHash: 'customer-email-hash' }),
+    );
     expect(bookingAttemptRepository.updateResult).toHaveBeenCalledWith(
       'attempt-id',
       'CONFIRMED',

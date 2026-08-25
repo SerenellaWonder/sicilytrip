@@ -7,6 +7,7 @@ import {
 import { ProviderBookingStatus } from '@prisma/client';
 
 import { PartnerSolutionHotelBookService } from '../../partnersolution/services/hotel-book.service';
+import { CustomerIdentityService } from '../../customer-area/customer-identity.service';
 
 import { HotelBookDto } from '../dto/hotel-book.dto';
 import { HotelSearchRepository } from '../repositories/hotel-search.repository';
@@ -23,6 +24,7 @@ export class HotelBookService {
     private readonly hotelSearchRepository: HotelSearchRepository,
     private readonly hotelSearchResultRepository: HotelSearchResultRepository,
     private readonly bookingAttemptRepository: ProviderBookingAttemptRepository,
+    private readonly customerIdentity: CustomerIdentityService,
   ) {}
 
   async book(dto: HotelBookDto) {
@@ -63,6 +65,7 @@ export class HotelBookService {
       providerHotelId: dto.hotelId,
       giataId,
       roomId: dto.rateId,
+      customerEmailHash: this.customerIdentity.hashEmail(dto.customerEmail),
     });
 
     if (!attempt) {

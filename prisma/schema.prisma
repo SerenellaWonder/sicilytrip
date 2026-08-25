@@ -326,9 +326,10 @@ model ProviderBookingAttempt {
   giataId          String
   roomId           String
 
-  status        ProviderBookingStatus @default(PENDING)
-  referenceCode String?
-  providerError String?
+  status            ProviderBookingStatus @default(PENDING)
+  referenceCode     String?
+  providerError     String?
+  customerEmailHash String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -338,6 +339,34 @@ model ProviderBookingAttempt {
   @@unique([providerSearchId, roomId])
   @@index([hotelSearchId])
   @@index([referenceCode])
+  @@index([customerEmailHash])
+}
+
+model CustomerAccessCode {
+  id String @id @default(cuid())
+
+  emailHash String
+  codeHash  String
+  expiresAt DateTime
+  usedAt    DateTime?
+  attempts  Int       @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@index([emailHash, createdAt])
+}
+
+model CustomerSession {
+  id String @id @default(cuid())
+
+  emailHash String
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([emailHash])
 }
 
 model HotelSearchResult {

@@ -1,6 +1,7 @@
 "use client";
 
-import { IconSparkles } from "@tabler/icons-react";
+import Link from "next/link";
+import { IconSparkles, IconUserCircle } from "@tabler/icons-react";
 
 import { useConcierge } from "@/components/concierge/ConciergeProvider";
 
@@ -18,9 +19,39 @@ export default function HeaderActions({
       className="
         hidden
         items-center
+        gap-3
         lg:flex
       "
     >
+      <Link
+        href="/area-clienti"
+        className={`
+          inline-flex
+          h-12
+          items-center
+          gap-2
+          rounded-full
+          border
+          px-4
+          text-[13px]
+          font-semibold
+          transition-all
+          duration-300
+          hover:-translate-y-0.5
+          hover:border-[#F58220]
+          hover:text-[#F58220]
+
+          ${
+            scrolled
+              ? "border-[#0D2340]/10 text-[#0D2340]"
+              : "border-white/30 text-white shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
+          }
+        `}
+      >
+        <IconUserCircle size={18} stroke={1.7} />
+        <span className="hidden xl:inline">Area clienti</span>
+      </Link>
+
       <button
         type="button"
         onClick={() =>

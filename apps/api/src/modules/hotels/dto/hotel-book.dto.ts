@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsEmail,
   IsIn,
   IsInt,
   IsNotEmpty,
@@ -47,6 +48,9 @@ export class HotelBookRoomDto {
 }
 
 export class HotelBookDto {
+  @IsEmail()
+  customerEmail!: string;
+
   @IsString()
   @IsNotEmpty()
   searchId!: string;

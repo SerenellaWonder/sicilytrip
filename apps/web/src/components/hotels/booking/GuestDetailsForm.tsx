@@ -208,6 +208,7 @@ export default function GuestDetailsForm({
             searchId,
             hotelId,
             rateId,
+            customerEmail: details.email.trim(),
             Names: buildNames(details),
             PurchaseToken: preBook.PurchaseToken ?? "",
             Spui: preBook.Spui ?? "",

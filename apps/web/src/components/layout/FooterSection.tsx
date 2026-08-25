@@ -43,6 +43,10 @@ const menu = [
     label: "Contatti",
     href: "/contatti",
   },
+  {
+    label: "Area clienti",
+    href: "/area-clienti",
+  },
 ];
 
 export default function FooterSection() {
@@ -196,7 +200,6 @@ export default function FooterSection() {
                     sm:w-9
                   "
                 />
-
                 Il tuo viaggio inizia qui
               </div>
 
@@ -221,10 +224,7 @@ export default function FooterSection() {
                 <br />
                 che immagini.
                 <br />
-
-                <span className="text-white/70">
-                  E qualcosa in più.
-                </span>
+                <span className="text-white/70">E qualcosa in più.</span>
               </h2>
 
               <p
@@ -244,9 +244,8 @@ export default function FooterSection() {
                   lg:leading-9
                 "
               >
-                Hotel selezionati, esperienze autentiche e
-                itinerari costruiti intorno al tuo modo di
-                viaggiare.
+                Hotel selezionati, esperienze autentiche e itinerari costruiti
+                intorno al tuo modo di viaggiare.
               </p>
 
               <div
@@ -265,9 +264,7 @@ export default function FooterSection() {
                 <button
                   type="button"
                   onClick={() =>
-                    openConcierge(
-                      "Aiutami a creare il mio viaggio in Sicilia"
-                    )
+                    openConcierge("Aiutami a creare il mio viaggio in Sicilia")
                   }
                   className="
                     group
@@ -300,7 +297,6 @@ export default function FooterSection() {
                   "
                 >
                   Inizia il tuo viaggio
-
                   <IconArrowRight
                     size={18}
                     stroke={1.8}
@@ -358,12 +354,8 @@ export default function FooterSection() {
                       group-hover:bg-[#F58220]
                     "
                   >
-                    <IconSparkles
-                      size={16}
-                      stroke={1.7}
-                    />
+                    <IconSparkles size={16} stroke={1.7} />
                   </span>
-
                   Chiedi al Concierge
                 </button>
               </div>
@@ -391,12 +383,7 @@ export default function FooterSection() {
               lg:right-10
             "
           >
-            <IconSparkles
-              size={12}
-              stroke={1.7}
-              className="text-[#F58220]"
-            />
-
+            <IconSparkles size={12} stroke={1.7} className="text-[#F58220]" />
             SicilyTrip
           </div>
         </div>
@@ -611,8 +598,8 @@ export default function FooterSection() {
                 sm:leading-8
               "
             >
-              Luoghi da scoprire, esperienze esclusive e nuove
-              idee per il tuo prossimo viaggio.
+              Luoghi da scoprire, esperienze esclusive e nuove idee per il tuo
+              prossimo viaggio.
             </p>
 
             <form
@@ -709,10 +696,7 @@ export default function FooterSection() {
                   sm:w-14
                 "
               >
-                <IconArrowRight
-                  size={20}
-                  stroke={1.8}
-                />
+                <IconArrowRight size={20} stroke={1.8} />
               </button>
             </form>
           </div>
@@ -772,8 +756,7 @@ export default function FooterSection() {
                   md:max-w-[500px]
                 "
               >
-                Un nuovo modo di scoprire, organizzare e vivere
-                la Sicilia.
+                Un nuovo modo di scoprire, organizzare e vivere la Sicilia.
               </p>
             </div>
 
@@ -787,24 +770,15 @@ export default function FooterSection() {
               "
             >
               <SocialLink label="Instagram">
-                <IconBrandInstagram
-                  size={20}
-                  stroke={1.6}
-                />
+                <IconBrandInstagram size={20} stroke={1.6} />
               </SocialLink>
 
               <SocialLink label="Facebook">
-                <IconBrandFacebook
-                  size={20}
-                  stroke={1.6}
-                />
+                <IconBrandFacebook size={20} stroke={1.6} />
               </SocialLink>
 
               <SocialLink label="LinkedIn">
-                <IconBrandLinkedin
-                  size={20}
-                  stroke={1.6}
-                />
+                <IconBrandLinkedin size={20} stroke={1.6} />
               </SocialLink>
             </div>
           </div>
@@ -838,9 +812,7 @@ export default function FooterSection() {
               md:text-left
             "
           >
-            <p>
-              © 2026 SicilyTrip · Tutti i diritti riservati.
-            </p>
+            <p>© 2026 SicilyTrip · Tutti i diritti riservati.</p>
 
             <div
               className="

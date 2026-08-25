@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 
 import { PlacesModule } from '../places/places.module';
 import { PartnerSolutionModule } from '../partnersolution/partnersolution.module';
+import { CustomerAreaModule } from '../customer-area/customer-area.module';
 
 import { HotelsController } from './hotels.controller';
 import { HotelsService } from './hotels.service';
@@ -21,7 +22,7 @@ import { HotelDetailRepository } from './repositories/hotel-detail.repository';
 import { ProviderBookingAttemptRepository } from './repositories/provider-booking-attempt.repository';
 
 @Module({
-  imports: [PlacesModule, PartnerSolutionModule],
+  imports: [PlacesModule, PartnerSolutionModule, CustomerAreaModule],
   controllers: [HotelsController],
   providers: [
     HotelsService,

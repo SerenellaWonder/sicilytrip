@@ -3,11 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-import {
-  IconMenu2,
-  IconSparkles,
-  IconX,
-} from "@tabler/icons-react";
+import { IconMenu2, IconSparkles, IconX } from "@tabler/icons-react";
 
 import { useConcierge } from "@/components/concierge/ConciergeProvider";
 
@@ -42,6 +38,11 @@ const items = [
     href: "/contatti",
     pathname: "/contatti",
   },
+  {
+    label: "Area clienti",
+    href: "/area-clienti",
+    pathname: "/area-clienti",
+  },
 ];
 
 type MobileMenuProps = {
@@ -49,10 +50,7 @@ type MobileMenuProps = {
   pathname: string;
 };
 
-export default function MobileMenu({
-  solidHeader,
-  pathname,
-}: MobileMenuProps) {
+export default function MobileMenu({ solidHeader, pathname }: MobileMenuProps) {
   const [open, setOpen] = useState(false);
 
   const { openConcierge } = useConcierge();
@@ -77,9 +75,7 @@ export default function MobileMenu({
   function handleConcierge() {
     setOpen(false);
 
-    openConcierge(
-      "Aiutami a organizzare il mio viaggio in Sicilia"
-    );
+    openConcierge("Aiutami a organizzare il mio viaggio in Sicilia");
   }
 
   return (
@@ -120,10 +116,7 @@ export default function MobileMenu({
           }
         `}
       >
-        <IconMenu2
-          size={23}
-          stroke={1.8}
-        />
+        <IconMenu2 size={23} stroke={1.8} />
       </button>
 
       {/* =====================================================
@@ -141,11 +134,7 @@ export default function MobileMenu({
           duration-300
           lg:hidden
 
-          ${
-            open
-              ? "visible opacity-100"
-              : "invisible opacity-0"
-          }
+          ${open ? "visible opacity-100" : "invisible opacity-0"}
         `}
         onClick={closeMenu}
       />
@@ -176,11 +165,7 @@ export default function MobileMenu({
           ease-out
           lg:hidden
 
-          ${
-            open
-              ? "translate-x-0"
-              : "translate-x-full"
-          }
+          ${open ? "translate-x-0" : "translate-x-full"}
         `}
       >
         {/* ===================================================
@@ -225,10 +210,7 @@ export default function MobileMenu({
               text-white
             "
           >
-            <IconX
-              size={22}
-              stroke={1.7}
-            />
+            <IconX size={22} stroke={1.7} />
           </button>
         </div>
 
@@ -246,10 +228,8 @@ export default function MobileMenu({
           {items.map((item, index) => {
             const active =
               item.pathname &&
-              (
-                pathname === item.pathname ||
-                pathname.startsWith(`${item.pathname}/`)
-              );
+              (pathname === item.pathname ||
+                pathname.startsWith(`${item.pathname}/`));
 
             return (
               <Link
@@ -290,11 +270,7 @@ export default function MobileMenu({
                     font-semibold
                     tracking-[0.18em]
 
-                    ${
-                      active
-                        ? "text-[#F58220]"
-                        : "text-white/25"
-                    }
+                    ${active ? "text-[#F58220]" : "text-white/25"}
                   `}
                 >
                   {String(index + 1).padStart(2, "0")}
@@ -328,11 +304,7 @@ export default function MobileMenu({
               shadow-[0_12px_30px_rgba(245,130,32,0.20)]
             "
           >
-            <IconSparkles
-              size={18}
-              stroke={1.8}
-            />
-
+            <IconSparkles size={18} stroke={1.8} />
             Organizza il viaggio
           </button>
 

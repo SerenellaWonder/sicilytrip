@@ -13,6 +13,7 @@ import { PartnerSolutionModule } from './modules/partnersolution/partnersolution
 import { PlacesModule } from './modules/places/places.module';
 
 import { HotelsModule } from './modules/hotels/hotels.module';
+import { CustomerAreaModule } from './modules/customer-area/customer-area.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { HotelsModule } from './modules/hotels/hotels.module';
     PartnerSolutionModule,
     PlacesModule,
     HotelsModule,
+    CustomerAreaModule,
   ],
   controllers: [AppController],
   providers: [AppService],

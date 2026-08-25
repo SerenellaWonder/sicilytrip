@@ -9,6 +9,7 @@ type CreateAttemptInput = {
   providerHotelId: string;
   giataId: string;
   roomId: string;
+  customerEmailHash: string;
 };
 
 @Injectable()
