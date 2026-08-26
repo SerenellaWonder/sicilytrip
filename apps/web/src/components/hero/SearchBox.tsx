@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useRouter } from "next/navigation";
 
@@ -22,10 +18,7 @@ import {
 import { apiFetch } from "@/lib/api";
 import { destinationCatalog } from "@/data/destinations";
 
-import type {
-  Destination,
-  HotelSearchResponse,
-} from "@/types/hotel";
+import type { Destination, HotelSearchResponse } from "@/types/hotel";
 
 /* =========================================================
    TYPES
@@ -35,6 +28,12 @@ type SearchBoxInitialValues = {
   destination: Destination;
   checkIn: string;
   checkOut: string;
+  adults?: number;
+  children?: number;
+  rooms?: RoomGuests[];
+};
+
+type RoomGuests = {
   adults: number;
   children: number;
 };
@@ -47,88 +46,60 @@ type SearchBoxProps = {
    SEARCH BOX
 ========================================================= */
 
-export default function SearchBox({
-  initialValues,
-}: SearchBoxProps) {
+export default function SearchBox({ initialValues }: SearchBoxProps) {
   const router = useRouter();
 
-  const destinationRef =
-    useRef<HTMLDivElement>(null);
+  const destinationRef = useRef<HTMLDivElement>(null);
 
-  const guestsRef =
-    useRef<HTMLDivElement>(null);
+  const guestsRef = useRef<HTMLDivElement>(null);
 
   /*
    * SEARCH STATE
    */
 
-  const [destinationQuery, setDestinationQuery] =
-    useState(
-      initialValues?.destination.name ?? ""
-    );
+  const [destinationQuery, setDestinationQuery] = useState(
+    initialValues?.destination.name ?? "",
+  );
 
-  const [destination, setDestination] =
-    useState<Destination | null>(
-      initialValues?.destination ?? null
-    );
+  const [destination, setDestination] = useState<Destination | null>(
+    initialValues?.destination ?? null,
+  );
 
-  const [suggestions, setSuggestions] =
-    useState<Destination[]>([]);
+  const [suggestions, setSuggestions] = useState<Destination[]>([]);
 
-  const [
-    loadingDestinations,
-    setLoadingDestinations,
-  ] = useState(false);
+  const [loadingDestinations, setLoadingDestinations] = useState(false);
 
-  const [
-    showSuggestions,
-    setShowSuggestions,
-  ] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
-  const [showGuests, setShowGuests] =
-    useState(false);
+  const [showGuests, setShowGuests] = useState(false);
 
-  const [checkIn, setCheckIn] =
-    useState(
-      initialValues?.checkIn ?? ""
-    );
+  const [checkIn, setCheckIn] = useState(initialValues?.checkIn ?? "");
 
-  const [checkOut, setCheckOut] =
-    useState(
-      initialValues?.checkOut ?? ""
-    );
+  const [checkOut, setCheckOut] = useState(initialValues?.checkOut ?? "");
 
-  const [adults, setAdults] =
-    useState(
-      initialValues?.adults ?? 2
-    );
+  const [rooms, setRooms] = useState<RoomGuests[]>(
+    initialValues?.rooms ?? [
+      {
+        adults: initialValues?.adults ?? 2,
+        children: initialValues?.children ?? 0,
+      },
+    ],
+  );
 
-  const [children, setChildren] =
-    useState(
-      initialValues?.children ?? 0
-    );
+  const [loading, setLoading] = useState(false);
 
-  const [loading, setLoading] =
-    useState(false);
-
-  const [error, setError] =
-    useState("");
+  const [error, setError] = useState("");
 
   /*
    * AUTOCOMPLETE DESTINAZIONE
    */
 
   useEffect(() => {
-    if (
-      destination &&
-      destinationQuery ===
-        destination.name
-    ) {
+    if (destination && destinationQuery === destination.name) {
       return;
     }
 
-    const query =
-      destinationQuery.trim();
+    const query = destinationQuery.trim();
 
     if (query.length < 2) {
       return;
@@ -136,118 +107,67 @@ export default function SearchBox({
 
     const localSuggestions = getLocalDestinationSuggestions(query);
 
-    const controller =
-      new AbortController();
+    const controller = new AbortController();
 
-    const timer =
-      window.setTimeout(
-        async () => {
-          setSuggestions(localSuggestions);
-          setShowSuggestions(localSuggestions.length > 0);
+    const timer = window.setTimeout(async () => {
+      setSuggestions(localSuggestions);
+      setShowSuggestions(localSuggestions.length > 0);
 
-          try {
-            setLoadingDestinations(
-              true
-            );
+      try {
+        setLoadingDestinations(true);
 
-            const results =
-              await apiFetch<
-                Destination[]
-              >(
-                `/places/autocomplete?q=${encodeURIComponent(
-                  query
-                )}`,
-                {
-                  signal:
-                    controller.signal,
-                }
-              );
+        const results = await apiFetch<Destination[]>(
+          `/places/autocomplete?q=${encodeURIComponent(query)}`,
+          {
+            signal: controller.signal,
+          },
+        );
 
-            setSuggestions(results.length > 0 ? results : localSuggestions);
+        setSuggestions(results.length > 0 ? results : localSuggestions);
 
-            setShowSuggestions(
-              true
-            );
-          } catch (err) {
-            if (
-              err instanceof
-                DOMException &&
-              err.name ===
-                "AbortError"
-            ) {
-              return;
-            }
+        setShowSuggestions(true);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") {
+          return;
+        }
 
-            console.error(
-              "Destination autocomplete error:",
-              err
-            );
+        console.error("Destination autocomplete error:", err);
 
-            setSuggestions(localSuggestions);
-            setShowSuggestions(localSuggestions.length > 0);
-          } finally {
-            setLoadingDestinations(
-              false
-            );
-          }
-        },
-        350
-      );
+        setSuggestions(localSuggestions);
+        setShowSuggestions(localSuggestions.length > 0);
+      } finally {
+        setLoadingDestinations(false);
+      }
+    }, 350);
 
     return () => {
-      window.clearTimeout(
-        timer
-      );
+      window.clearTimeout(timer);
 
       controller.abort();
     };
-  }, [
-    destinationQuery,
-    destination,
-  ]);
+  }, [destinationQuery, destination]);
 
   /*
    * CHIUSURA DROPDOWN
    */
 
   useEffect(() => {
-    function handleOutsideClick(
-      event: MouseEvent
-    ) {
-      const target =
-        event.target as Node;
+    function handleOutsideClick(event: MouseEvent) {
+      const target = event.target as Node;
 
-      if (
-        destinationRef.current &&
-        !destinationRef.current.contains(
-          target
-        )
-      ) {
-        setShowSuggestions(
-          false
-        );
+      if (destinationRef.current && !destinationRef.current.contains(target)) {
+        setShowSuggestions(false);
       }
 
-      if (
-        guestsRef.current &&
-        !guestsRef.current.contains(
-          target
-        )
-      ) {
+      if (guestsRef.current && !guestsRef.current.contains(target)) {
         setShowGuests(false);
       }
     }
 
-    document.addEventListener(
-      "mousedown",
-      handleOutsideClick
-    );
+    document.addEventListener("mousedown", handleOutsideClick);
 
     return () => {
-      document.removeEventListener(
-        "mousedown",
-        handleOutsideClick
-      );
+      document.removeEventListener("mousedown", handleOutsideClick);
     };
   }, []);
 
@@ -255,20 +175,14 @@ export default function SearchBox({
    * DESTINATION
    */
 
-  function selectDestination(
-    item: Destination
-  ) {
+  function selectDestination(item: Destination) {
     setDestination(item);
 
-    setDestinationQuery(
-      item.name
-    );
+    setDestinationQuery(item.name);
 
     setSuggestions([]);
 
-    setShowSuggestions(
-      false
-    );
+    setShowSuggestions(false);
 
     setError("");
   }
@@ -281,36 +195,25 @@ export default function SearchBox({
     setError("");
 
     if (!destination) {
-      setError(
-        "Seleziona una destinazione dai suggerimenti."
-      );
+      setError("Seleziona una destinazione dai suggerimenti.");
 
       return;
     }
 
     if (!checkIn) {
-      setError(
-        "Seleziona la data di check-in."
-      );
+      setError("Seleziona la data di check-in.");
 
       return;
     }
 
     if (!checkOut) {
-      setError(
-        "Seleziona la data di check-out."
-      );
+      setError("Seleziona la data di check-out.");
 
       return;
     }
 
-    if (
-      new Date(checkOut) <=
-      new Date(checkIn)
-    ) {
-      setError(
-        "Il check-out deve essere successivo al check-in."
-      );
+    if (new Date(checkOut) <= new Date(checkIn)) {
+      setError("Il check-out deve essere successivo al check-in.");
 
       return;
     }
@@ -318,45 +221,27 @@ export default function SearchBox({
     try {
       setLoading(true);
 
-      const response =
-        await apiFetch<
-          HotelSearchResponse
-        >(
-          "/hotels/search",
-          {
-            method: "POST",
+      const response = await apiFetch<HotelSearchResponse>("/hotels/search", {
+        method: "POST",
 
-            body:
-              JSON.stringify({
-                placeId:
-                  destination.id,
+        body: JSON.stringify({
+          placeId: destination.id,
 
-                northEast:
-                  `${destination.northEast.latitude},${destination.northEast.longitude}`,
+          northEast: `${destination.northEast.latitude},${destination.northEast.longitude}`,
 
-                southWest:
-                  `${destination.southWest.latitude},${destination.southWest.longitude}`,
+          southWest: `${destination.southWest.latitude},${destination.southWest.longitude}`,
 
-                checkIn,
+          checkIn,
 
-                checkOut,
+          checkOut,
 
-                rooms: [
-                  {
-                    adults,
-                    children,
-                  },
-                ],
-              }),
-          }
-        );
+          rooms,
+        }),
+      });
 
-      if (
-        response.status ===
-        "FAILED"
-      ) {
+      if (response.status === "FAILED") {
         throw new Error(
-          "La ricerca non è stata completata. Riprova tra qualche istante."
+          "La ricerca non è stata completata. Riprova tra qualche istante.",
         );
       }
 
@@ -380,34 +265,27 @@ export default function SearchBox({
           ...response,
 
           createdAt: Date.now(),
-          expiresAt:
-            Date.now() + 20 * 60 * 1000,
+          expiresAt: Date.now() + 20 * 60 * 1000,
 
           search: {
             destination,
             checkIn,
             checkOut,
-            adults,
-            children,
+            rooms,
+            adults: rooms.reduce((total, room) => total + room.adults, 0),
+            children: rooms.reduce((total, room) => total + room.children, 0),
           },
-        })
+        }),
       );
 
-      router.push(
-        `/hotel?searchId=${encodeURIComponent(
-          response.searchId
-        )}`
-      );
+      router.push(`/hotel?searchId=${encodeURIComponent(response.searchId)}`);
     } catch (err) {
-      console.error(
-        "Hotel search error:",
-        err
-      );
+      console.error("Hotel search error:", err);
 
       setError(
         err instanceof Error
           ? err.message
-          : "Impossibile effettuare la ricerca."
+          : "Impossibile effettuare la ricerca.",
       );
     } finally {
       setLoading(false);
@@ -418,27 +296,31 @@ export default function SearchBox({
    * DATE
    */
 
-  const today =
-    new Date()
-      .toISOString()
-      .split("T")[0];
+  const today = new Date().toISOString().split("T")[0];
 
   /*
    * GUEST LABEL
    */
 
-  const guestsLabel =
-    children > 0
-      ? `${adults} adulti, ${children} ${
-          children === 1
-            ? "bambino"
-            : "bambini"
-        }`
-      : `${adults} ${
-          adults === 1
-            ? "adulto"
-            : "adulti"
-        }`;
+  const totalAdults = rooms.reduce((total, room) => total + room.adults, 0);
+  const totalChildren = rooms.reduce((total, room) => total + room.children, 0);
+  const guestsLabel = `${rooms.length} ${rooms.length === 1 ? "camera" : "camere"}, ${totalAdults} ${totalAdults === 1 ? "adulto" : "adulti"}${
+    totalChildren > 0
+      ? `, ${totalChildren} ${totalChildren === 1 ? "bambino" : "bambini"}`
+      : ""
+  }`;
+
+  function updateRoom(
+    roomIndex: number,
+    field: keyof RoomGuests,
+    value: number,
+  ) {
+    setRooms((current) =>
+      current.map((room, index) =>
+        index === roomIndex ? { ...room, [field]: value } : room,
+      ),
+    );
+  }
 
   return (
     <div className="relative">
@@ -509,20 +391,11 @@ export default function SearchBox({
                 </span>
 
                 <input
-                  value={
-                    destinationQuery
-                  }
-                  onChange={(
-                    event
-                  ) => {
-                    setDestinationQuery(
-                      event.target
-                        .value
-                    );
+                  value={destinationQuery}
+                  onChange={(event) => {
+                    setDestinationQuery(event.target.value);
 
-                    setDestination(
-                      null
-                    );
+                    setDestination(null);
 
                     setSuggestions([]);
                     setShowSuggestions(false);
@@ -530,13 +403,8 @@ export default function SearchBox({
                     setError("");
                   }}
                   onFocus={() => {
-                    if (
-                      suggestions.length >
-                      0
-                    ) {
-                      setShowSuggestions(
-                        true
-                      );
+                    if (suggestions.length > 0) {
+                      setShowSuggestions(true);
                     }
                   }}
                   placeholder="Dove vuoi andare?"
@@ -589,21 +457,13 @@ export default function SearchBox({
                   shadow-[0_18px_50px_rgba(13,35,64,0.18)]
                 "
               >
-                {suggestions.length >
-                0 ? (
-                  suggestions.map(
-                    (item) => (
-                      <button
-                        key={
-                          item.id
-                        }
-                        type="button"
-                        onClick={() =>
-                          selectDestination(
-                            item
-                          )
-                        }
-                        className="
+                {suggestions.length > 0 ? (
+                  suggestions.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => selectDestination(item)}
+                      className="
                           flex
                           w-full
                           items-start
@@ -623,9 +483,9 @@ export default function SearchBox({
 
                           hover:bg-slate-50
                         "
-                      >
-                        <div
-                          className="
+                    >
+                      <div
+                        className="
                             mt-0.5
                             flex
                             h-8
@@ -637,49 +497,40 @@ export default function SearchBox({
                             bg-[#F58220]/10
                             text-[#F58220]
                           "
-                        >
-                          <MapPin
-                            size={
-                              15
-                            }
-                          />
-                        </div>
+                      >
+                        <MapPin size={15} />
+                      </div>
 
-                        <div
-                          className="
+                      <div
+                        className="
                             min-w-0
                           "
-                        >
-                          <span
-                            className="
+                      >
+                        <span
+                          className="
                               block
                               text-sm
                               font-semibold
                               text-[#0D2340]
                             "
-                          >
-                            {
-                              item.name
-                            }
-                          </span>
+                        >
+                          {item.name}
+                        </span>
 
-                          <span
-                            className="
+                        <span
+                          className="
                               mt-0.5
                               block
                               truncate
                               text-xs
                               text-slate-500
                             "
-                          >
-                            {
-                              item.displayName
-                            }
-                          </span>
-                        </div>
-                      </button>
-                    )
-                  )
+                        >
+                          {item.displayName}
+                        </span>
+                      </div>
+                    </button>
+                  ))
                 ) : (
                   <div
                     className="
@@ -689,9 +540,7 @@ export default function SearchBox({
                       text-slate-500
                     "
                   >
-                    Nessuna
-                    destinazione
-                    trovata.
+                    Nessuna destinazione trovata.
                   </div>
                 )}
               </div>
@@ -707,10 +556,7 @@ export default function SearchBox({
             onChange={(value) => {
               setCheckIn(value);
 
-              if (
-                checkOut &&
-                value >= checkOut
-              ) {
+              if (checkOut && value >= checkOut) {
                 setCheckOut("");
               }
 
@@ -723,9 +569,7 @@ export default function SearchBox({
           <DateField
             label="Check-out"
             value={checkOut}
-            min={
-              checkIn || today
-            }
+            min={checkIn || today}
             onChange={(value) => {
               setCheckOut(value);
               setError("");
@@ -747,12 +591,7 @@ export default function SearchBox({
           >
             <button
               type="button"
-              onClick={() =>
-                setShowGuests(
-                  (current) =>
-                    !current
-                )
-              }
+              onClick={() => setShowGuests((current) => !current)}
               className="
                 flex
                 h-[64px]
@@ -834,33 +673,68 @@ export default function SearchBox({
                   shadow-[0_18px_50px_rgba(13,35,64,0.18)]
                 "
               >
-                <GuestRow
-                  label="Adulti"
-                  description="Da 18 anni"
-                  value={adults}
-                  minimum={1}
-                  onChange={
-                    setAdults
-                  }
-                />
+                {rooms.map((room, roomIndex) => (
+                  <div
+                    key={`room-${roomIndex}`}
+                    className="border-b border-slate-100 py-4 first:pt-0 last:border-b-0"
+                  >
+                    <div className="mb-4 flex items-center justify-between">
+                      <strong className="text-xs text-[#0D2340]">
+                        Camera {roomIndex + 1}
+                      </strong>
+                      {rooms.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setRooms((current) =>
+                              current.filter((_, index) => index !== roomIndex),
+                            )
+                          }
+                          className="text-[10px] font-semibold uppercase tracking-[0.1em] text-red-500"
+                        >
+                          Rimuovi
+                        </button>
+                      )}
+                    </div>
+                    <GuestRow
+                      label="Adulti"
+                      description="Da 18 anni"
+                      value={room.adults}
+                      minimum={1}
+                      maximum={6}
+                      onChange={(value) =>
+                        updateRoom(roomIndex, "adults", value)
+                      }
+                    />
+                    <div className="my-4 h-px bg-slate-100" />
+                    <GuestRow
+                      label="Bambini"
+                      description="0 – 17 anni"
+                      value={room.children}
+                      minimum={0}
+                      maximum={3}
+                      onChange={(value) =>
+                        updateRoom(roomIndex, "children", value)
+                      }
+                    />
+                  </div>
+                ))}
 
-                <div
-                  className="
-                    my-4
-                    h-px
-                    bg-slate-100
-                  "
-                />
-
-                <GuestRow
-                  label="Bambini"
-                  description="0 – 17 anni"
-                  value={children}
-                  minimum={0}
-                  onChange={
-                    setChildren
-                  }
-                />
+                {rooms.length < 3 && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setRooms((current) => [
+                        ...current,
+                        { adults: 2, children: 0 },
+                      ])
+                    }
+                    className="mt-4 inline-flex w-full items-center justify-center rounded-xl border border-[#0D2340]/10 px-4 py-3 text-xs font-semibold text-[#0D2340] hover:border-[#F58220]/40"
+                  >
+                    <Plus size={15} className="mr-2 text-[#F58220]" />
+                    Aggiungi camera
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -876,9 +750,7 @@ export default function SearchBox({
           >
             <button
               type="button"
-              onClick={
-                handleSearch
-              }
+              onClick={handleSearch}
               disabled={loading}
               className="
                 flex
@@ -914,15 +786,11 @@ export default function SearchBox({
                       animate-spin
                     "
                   />
-
                   Cerco...
                 </>
               ) : (
                 <>
-                  <Search
-                    size={17}
-                  />
-
+                  <Search size={17} />
                   Cerca
                 </>
               )}
@@ -962,9 +830,7 @@ export default function SearchBox({
             text-slate-500
           "
         >
-          Stiamo cercando le
-          migliori disponibilità
-          per te. Potrebbero essere
+          Stiamo cercando le migliori disponibilità per te. Potrebbero essere
           necessari alcuni secondi.
         </p>
       )}
@@ -976,13 +842,13 @@ function getLocalDestinationSuggestions(query: string): Destination[] {
   const normalizedQuery = normalizeSearchText(query);
 
   return destinationCatalog
-    .filter(item =>
+    .filter((item) =>
       normalizeSearchText(
-        `${item.name} ${item.area} ${item.province} ${item.macroArea}`
-      ).includes(normalizedQuery)
+        `${item.name} ${item.area} ${item.province} ${item.macroArea}`,
+      ).includes(normalizedQuery),
     )
     .slice(0, 8)
-    .map(item => ({
+    .map((item) => ({
       id: `catalog-${item.id}`,
       slug: item.id,
       name: item.name,
@@ -1023,9 +889,7 @@ function DateField({
   label: string;
   value: string;
   min: string;
-  onChange: (
-    value: string
-  ) => void;
+  onChange: (value: string) => void;
 }) {
   return (
     <label
@@ -1076,13 +940,7 @@ function DateField({
           type="date"
           value={value}
           min={min}
-          onChange={(
-            event
-          ) =>
-            onChange(
-              event.target.value
-            )
-          }
+          onChange={(event) => onChange(event.target.value)}
           className="
             mt-0.5
             w-full
@@ -1107,15 +965,15 @@ function GuestRow({
   description,
   value,
   minimum,
+  maximum,
   onChange,
 }: {
   label: string;
   description: string;
   value: number;
   minimum: number;
-  onChange: (
-    value: number
-  ) => void;
+  maximum: number;
+  onChange: (value: number) => void;
 }) {
   return (
     <div
@@ -1157,17 +1015,8 @@ function GuestRow({
       >
         <button
           type="button"
-          disabled={
-            value <= minimum
-          }
-          onClick={() =>
-            onChange(
-              Math.max(
-                minimum,
-                value - 1
-              )
-            )
-          }
+          disabled={value <= minimum}
+          onClick={() => onChange(Math.max(minimum, value - 1))}
           className="
             flex
             h-8
@@ -1190,9 +1039,7 @@ function GuestRow({
             disabled:opacity-30
           "
         >
-          <Minus
-            size={14}
-          />
+          <Minus size={14} />
         </button>
 
         <span
@@ -1209,11 +1056,8 @@ function GuestRow({
 
         <button
           type="button"
-          onClick={() =>
-            onChange(
-              value + 1
-            )
-          }
+          disabled={value >= maximum}
+          onClick={() => onChange(Math.min(maximum, value + 1))}
           className="
             flex
             h-8
@@ -1231,11 +1075,12 @@ function GuestRow({
 
             hover:border-[#F58220]
             hover:text-[#F58220]
+
+            disabled:cursor-not-allowed
+            disabled:opacity-30
           "
         >
-          <Plus
-            size={14}
-          />
+          <Plus size={14} />
         </button>
       </div>
     </div>

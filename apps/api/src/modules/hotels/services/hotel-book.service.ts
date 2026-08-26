@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   GoneException,
   Injectable,
@@ -39,6 +40,8 @@ export class HotelBookService {
         'La ricerca è scaduta. Effettua una nuova ricerca prima di prenotare.',
       );
     }
+
+    this.validateGuestRooms(dto, search.rooms);
 
     const hotel = await this.hotelSearchResultRepository
       .findBySearchId(dto.searchId)
@@ -111,5 +114,38 @@ export class HotelBookService {
       );
       throw error;
     }
+  }
+
+  private validateGuestRooms(dto: HotelBookDto, searchRooms: unknown) {
+    const expectedRooms = Array.isArray(searchRooms) ? searchRooms.length : 0;
+
+    if (!expectedRooms || dto.Names.length !== expectedRooms) {
+      throw new BadRequestException(
+        'La composizione delle camere non corrisponde alla ricerca.',
+      );
+    }
+
+    let expectedAbsoluteNumber = 1;
+
+    dto.Names.forEach((room, roomIndex) => {
+      if (room.Cam !== roomIndex + 1) {
+        throw new BadRequestException('Numerazione delle camere non valida.');
+      }
+
+      const relativeNumbers = { Adult: 1, Child: 1 };
+
+      room.Paxes.forEach((pax) => {
+        const type = pax.Type as 'Adult' | 'Child';
+        if (
+          pax.AbosultePaxNumber !== expectedAbsoluteNumber ||
+          pax.RelativePaxNumber !== relativeNumbers[type]
+        ) {
+          throw new BadRequestException('Numerazione degli ospiti non valida.');
+        }
+
+        expectedAbsoluteNumber += 1;
+        relativeNumbers[type] += 1;
+      });
+    });
   }
 }

@@ -1,6 +1,8 @@
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  ArrayMaxSize,
+  ArrayMinSize,
   IsEmail,
   IsIn,
   IsInt,
@@ -42,6 +44,7 @@ export class HotelBookRoomDto {
   Cam!: number;
 
   @IsArray()
+  @ArrayMinSize(1)
   @ValidateNested({ each: true })
   @Type(() => HotelBookPaxDto)
   Paxes!: HotelBookPaxDto[];
@@ -64,6 +67,8 @@ export class HotelBookDto {
   rateId!: string;
 
   @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(3)
   @ValidateNested({ each: true })
   @Type(() => HotelBookRoomDto)
   Names!: HotelBookRoomDto[];

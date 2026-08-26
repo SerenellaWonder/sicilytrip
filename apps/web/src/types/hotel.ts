@@ -59,11 +59,7 @@ export interface PartnerHotelSearchResult {
 }
 
 export type HotelSearchStatus =
-  | "PENDING"
-  | "RUNNING"
-  | "PROCESSING"
-  | "COMPLETED"
-  | "FAILED";
+  "PENDING" | "RUNNING" | "PROCESSING" | "COMPLETED" | "FAILED";
 
 export interface HotelSearchResponse {
   searchId: string;
@@ -120,5 +116,6 @@ export interface StoredHotelSearch {
     checkOut: string;
     adults: number;
     children: number;
+    rooms?: HotelSearchRoom[];
   };
 }

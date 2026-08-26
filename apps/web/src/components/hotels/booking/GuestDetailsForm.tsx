@@ -21,6 +21,10 @@ type GuestDetails = {
   country: string;
   leadIsGuest: boolean;
   dataProcessingAccepted: boolean;
+  rooms: GuestRoom[];
+};
+
+type GuestRoom = {
   adults: Guest[];
   children: Guest[];
 };
@@ -29,6 +33,7 @@ type StoredSearch = {
   search?: {
     adults?: number;
     children?: number;
+    rooms?: Array<{ adults: number; children: number }>;
   };
 };
 
@@ -59,7 +64,7 @@ export default function GuestDetailsForm({
   const storageKey = `hotel-guests:${searchId}:${hotelId}:${rateId}`;
   const attemptStorageKey = `hotel-book-attempt:${searchId}:${hotelId}:${rateId}`;
   const [details, setDetails] = useState<GuestDetails>(() =>
-    createEmptyDetails(2, 0),
+    createEmptyDetails([{ adults: 2, children: 0 }]),
   );
   const [saved, setSaved] = useState(false);
   const [booking, setBooking] = useState(false);
@@ -74,9 +79,18 @@ export default function GuestDetailsForm({
         const savedDetails = sessionStorage.getItem(storageKey);
 
         if (savedDetails) {
-          const parsed = JSON.parse(savedDetails) as GuestDetails;
+          const parsed = JSON.parse(savedDetails) as GuestDetails & {
+            adults?: Guest[];
+            children?: Guest[];
+          };
           setDetails({
             ...parsed,
+            rooms: parsed.rooms ?? [
+              {
+                adults: parsed.adults ?? [],
+                children: parsed.children ?? [],
+              },
+            ],
             leadIsGuest: parsed.leadIsGuest ?? true,
             dataProcessingAccepted: parsed.dataProcessingAccepted ?? false,
           });
@@ -90,8 +104,12 @@ export default function GuestDetailsForm({
 
           setDetails(
             createEmptyDetails(
-              parsedSearch?.search?.adults ?? 2,
-              parsedSearch?.search?.children ?? 0,
+              parsedSearch?.search?.rooms ?? [
+                {
+                  adults: parsedSearch?.search?.adults ?? 2,
+                  children: parsedSearch?.search?.children ?? 0,
+                },
+              ],
             ),
           );
         }
@@ -120,7 +138,7 @@ export default function GuestDetailsForm({
   }, [attemptStorageKey, searchId, storageKey]);
 
   function updateField(
-    field: keyof Omit<GuestDetails, "adults" | "children">,
+    field: keyof Omit<GuestDetails, "rooms">,
     value: string,
   ) {
     setSaved(false);
@@ -131,9 +149,14 @@ export default function GuestDetailsForm({
         current.leadIsGuest &&
         (field === "title" || field === "firstName" || field === "lastName")
       ) {
-        next.adults = current.adults.map((guest, index) =>
-          index === 0 ? { ...guest, [field]: value } : guest,
-        );
+        next.rooms = current.rooms.map((room, roomIndex) => ({
+          ...room,
+          adults: room.adults.map((guest, guestIndex) =>
+            roomIndex === 0 && guestIndex === 0
+              ? { ...guest, [field]: value }
+              : guest,
+          ),
+        }));
       }
 
       return next;
@@ -149,16 +172,19 @@ export default function GuestDetailsForm({
       const next = { ...current, [field]: value };
 
       if (field === "leadIsGuest" && value) {
-        next.adults = current.adults.map((guest, index) =>
-          index === 0
-            ? {
-                ...guest,
-                title: current.title,
-                firstName: current.firstName,
-                lastName: current.lastName,
-              }
-            : guest,
-        );
+        next.rooms = current.rooms.map((room, roomIndex) => ({
+          ...room,
+          adults: room.adults.map((guest, guestIndex) =>
+            roomIndex === 0 && guestIndex === 0
+              ? {
+                  ...guest,
+                  title: current.title,
+                  firstName: current.firstName,
+                  lastName: current.lastName,
+                }
+              : guest,
+          ),
+        }));
       }
 
       return next;
@@ -166,6 +192,7 @@ export default function GuestDetailsForm({
   }
 
   function updateGuest(
+    roomIndex: number,
     group: "adults" | "children",
     index: number,
     field: keyof Guest,
@@ -174,8 +201,15 @@ export default function GuestDetailsForm({
     setSaved(false);
     setDetails((current) => ({
       ...current,
-      [group]: current[group].map((guest, guestIndex) =>
-        guestIndex === index ? { ...guest, [field]: value } : guest,
+      rooms: current.rooms.map((room, currentRoomIndex) =>
+        currentRoomIndex === roomIndex
+          ? {
+              ...room,
+              [group]: room[group].map((guest, guestIndex) =>
+                guestIndex === index ? { ...guest, [field]: value } : guest,
+              ),
+            }
+          : room,
       ),
     }));
   }
@@ -320,23 +354,34 @@ export default function GuestDetailsForm({
             L&apos;intestatario è il primo ospite adulto.
           </label>
 
-          <GuestGroup
-            title="Adulti"
-            guests={details.adults}
-            group="adults"
-            onChange={updateGuest}
-            firstGuestLocked={details.leadIsGuest}
-          />
-
-          {details.children.length > 0 && (
-            <GuestGroup
-              title="Bambini"
-              guests={details.children}
-              group="children"
-              onChange={updateGuest}
-              firstGuestLocked={false}
-            />
-          )}
+          {details.rooms.map((room, roomIndex) => (
+            <div
+              key={`booking-room-${roomIndex}`}
+              className="mt-8 rounded-2xl border border-[#0D2340]/[0.06] p-5"
+            >
+              <h3 className="text-base font-semibold text-[#0D2340]">
+                Camera {roomIndex + 1}
+              </h3>
+              <GuestGroup
+                title="Adulti"
+                guests={room.adults}
+                group="adults"
+                roomIndex={roomIndex}
+                onChange={updateGuest}
+                firstGuestLocked={details.leadIsGuest && roomIndex === 0}
+              />
+              {room.children.length > 0 && (
+                <GuestGroup
+                  title="Bambini"
+                  guests={room.children}
+                  group="children"
+                  roomIndex={roomIndex}
+                  onChange={updateGuest}
+                  firstGuestLocked={false}
+                />
+              )}
+            </div>
+          ))}
         </fieldset>
 
         <label className="mt-7 flex cursor-pointer items-start gap-3 rounded-2xl bg-[#F7F5F1] p-5 text-xs leading-5 text-slate-600">
@@ -423,13 +468,16 @@ function GuestGroup({
   title,
   guests,
   group,
+  roomIndex,
   onChange,
   firstGuestLocked,
 }: {
   title: string;
   guests: Guest[];
   group: "adults" | "children";
+  roomIndex: number;
   onChange: (
+    roomIndex: number,
     group: "adults" | "children",
     index: number,
     field: keyof Guest,
@@ -455,19 +503,25 @@ function GuestGroup({
               <SelectField
                 label="Titolo"
                 value={guest.title}
-                onChange={(value) => onChange(group, index, "title", value)}
+                onChange={(value) =>
+                  onChange(roomIndex, group, index, "title", value)
+                }
                 options={["Sig.", "Sig.ra"]}
               />
               <InputField
                 label="Nome"
                 value={guest.firstName}
-                onChange={(value) => onChange(group, index, "firstName", value)}
+                onChange={(value) =>
+                  onChange(roomIndex, group, index, "firstName", value)
+                }
                 readOnly={firstGuestLocked && index === 0}
               />
               <InputField
                 label="Cognome"
                 value={guest.lastName}
-                onChange={(value) => onChange(group, index, "lastName", value)}
+                onChange={(value) =>
+                  onChange(roomIndex, group, index, "lastName", value)
+                }
                 readOnly={firstGuestLocked && index === 0}
               />
               {group === "children" && (
@@ -475,7 +529,9 @@ function GuestGroup({
                   label="Età"
                   type="number"
                   value={guest.age ?? ""}
-                  onChange={(value) => onChange(group, index, "age", value)}
+                  onChange={(value) =>
+                    onChange(roomIndex, group, index, "age", value)
+                  }
                   min="0"
                   max="17"
                 />
@@ -555,7 +611,9 @@ function SelectField({
   );
 }
 
-function createEmptyDetails(adults: number, children: number): GuestDetails {
+function createEmptyDetails(
+  rooms: Array<{ adults: number; children: number }>,
+): GuestDetails {
   return {
     title: "Sig.",
     firstName: "",
@@ -565,12 +623,14 @@ function createEmptyDetails(adults: number, children: number): GuestDetails {
     country: "Italia",
     leadIsGuest: true,
     dataProcessingAccepted: false,
-    adults: Array.from({ length: Math.max(1, adults) }, () => ({
-      ...EMPTY_GUEST,
-    })),
-    children: Array.from({ length: Math.max(0, children) }, () => ({
-      ...EMPTY_GUEST,
-      age: "",
+    rooms: rooms.map((room) => ({
+      adults: Array.from({ length: Math.max(1, room.adults) }, () => ({
+        ...EMPTY_GUEST,
+      })),
+      children: Array.from({ length: Math.max(0, room.children) }, () => ({
+        ...EMPTY_GUEST,
+        age: "",
+      })),
     })),
   };
 }
@@ -578,25 +638,27 @@ function createEmptyDetails(adults: number, children: number): GuestDetails {
 function buildNames(details: GuestDetails) {
   let absolutePaxNumber = 0;
 
-  const adults = details.adults.map((guest, index) => ({
-    Title: toProviderTitle(guest.title),
-    Name: guest.firstName.trim(),
-    LastName: guest.lastName.trim(),
-    Type: "Adult",
-    AbosultePaxNumber: ++absolutePaxNumber,
-    RelativePaxNumber: index + 1,
-  }));
+  return details.rooms.map((room, roomIndex) => {
+    const adults = room.adults.map((guest, index) => ({
+      Title: toProviderTitle(guest.title),
+      Name: guest.firstName.trim(),
+      LastName: guest.lastName.trim(),
+      Type: "Adult",
+      AbosultePaxNumber: ++absolutePaxNumber,
+      RelativePaxNumber: index + 1,
+    }));
 
-  const children = details.children.map((guest, index) => ({
-    Title: toProviderTitle(guest.title),
-    Name: guest.firstName.trim(),
-    LastName: guest.lastName.trim(),
-    Type: "Child",
-    AbosultePaxNumber: ++absolutePaxNumber,
-    RelativePaxNumber: index + 1,
-  }));
+    const children = room.children.map((guest, index) => ({
+      Title: toProviderTitle(guest.title),
+      Name: guest.firstName.trim(),
+      LastName: guest.lastName.trim(),
+      Type: "Child",
+      AbosultePaxNumber: ++absolutePaxNumber,
+      RelativePaxNumber: index + 1,
+    }));
 
-  return [{ Cam: 1, Paxes: [...adults, ...children] }];
+    return { Cam: roomIndex + 1, Paxes: [...adults, ...children] };
+  });
 }
 
 function toProviderTitle(title: string) {

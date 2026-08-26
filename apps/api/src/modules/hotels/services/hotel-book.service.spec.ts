@@ -59,6 +59,7 @@ describe('HotelBookService', () => {
     hotelSearchRepository.findById.mockResolvedValue({
       providerSearchId: 'provider-search-id',
       createdAt: new Date(),
+      rooms: [{ adults: 1, children: 0 }],
     });
     hotelSearchResultRepository.findBySearchId.mockResolvedValue([
       {
