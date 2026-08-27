@@ -3,11 +3,13 @@ import {
   ConflictException,
   GoneException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { ProviderBookingStatus } from '@prisma/client';
 
 import { PartnerSolutionHotelBookService } from '../../partnersolution/services/hotel-book.service';
+import { CustomerEmailService } from '../../customer-area/customer-email.service';
 import { CustomerIdentityService } from '../../customer-area/customer-identity.service';
 
 import { HotelBookDto } from '../dto/hotel-book.dto';
@@ -20,12 +22,15 @@ const SEARCH_TTL_MS = 20 * 60 * 1000;
 
 @Injectable()
 export class HotelBookService {
+  private readonly logger = new Logger(HotelBookService.name);
+
   constructor(
     private readonly provider: PartnerSolutionHotelBookService,
     private readonly hotelSearchRepository: HotelSearchRepository,
     private readonly hotelSearchResultRepository: HotelSearchResultRepository,
     private readonly bookingAttemptRepository: ProviderBookingAttemptRepository,
     private readonly customerIdentity: CustomerIdentityService,
+    private readonly customerEmail: CustomerEmailService,
   ) {}
 
   async book(dto: HotelBookDto) {
@@ -77,8 +82,10 @@ export class HotelBookService {
       );
     }
 
+    let response: unknown;
+
     try {
-      const response = await this.provider.book({
+      response = await this.provider.book({
         Names: dto.Names,
         PurchaseToken: dto.PurchaseToken,
         Spui: dto.Spui,
@@ -102,8 +109,6 @@ export class HotelBookService {
         providerResponse.RefCode,
         providerResponse.Error,
       );
-
-      return response;
     } catch (error) {
       // Un errore di trasporto non prova che la pratica non sia stata creata.
       await this.bookingAttemptRepository.updateResult(
@@ -113,6 +118,42 @@ export class HotelBookService {
         error instanceof Error ? error.message : 'Unknown provider error',
       );
       throw error;
+    }
+
+    const providerResponse = response as {
+      Error?: string;
+      RefCode?: string;
+    };
+
+    if (providerResponse.RefCode && !providerResponse.Error) {
+      await this.sendConfirmationEmailSafely({
+        referenceCode: providerResponse.RefCode,
+        hotelName: hotel.hotelName,
+        checkIn: search.checkIn,
+        checkOut: search.checkOut,
+      });
+    }
+
+    return response;
+  }
+
+  private async sendConfirmationEmailSafely(input: {
+    referenceCode: string;
+    hotelName: string;
+    checkIn: Date;
+    checkOut: Date;
+  }) {
+    if (!this.customerEmail.isConfigured()) {
+      return;
+    }
+
+    try {
+      await this.customerEmail.sendBookingConfirmation(input);
+    } catch {
+      // L'email è accessoria: non deve modificare l'esito né ripetere il Book.
+      this.logger.warn(
+        `Invio email di conferma non riuscito per la pratica ${input.referenceCode}`,
+      );
     }
   }
 

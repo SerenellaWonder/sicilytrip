@@ -12,6 +12,6 @@ import { CustomerIdentityService } from './customer-identity.service';
     CustomerEmailService,
     CustomerIdentityService,
   ],
-  exports: [CustomerIdentityService],
+  exports: [CustomerEmailService, CustomerIdentityService],
 })
 export class CustomerAreaModule {}

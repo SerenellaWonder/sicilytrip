@@ -2,6 +2,7 @@ import { ConflictException, GoneException } from '@nestjs/common';
 
 import { PartnerSolutionHotelBookService } from '../../partnersolution/services/hotel-book.service';
 import { CustomerIdentityService } from '../../customer-area/customer-identity.service';
+import { CustomerEmailService } from '../../customer-area/customer-email.service';
 import { HotelBookDto } from '../dto/hotel-book.dto';
 import { HotelSearchRepository } from '../repositories/hotel-search.repository';
 import { HotelSearchResultRepository } from '../repositories/hotel-search-result.repository';
@@ -43,6 +44,10 @@ describe('HotelBookService', () => {
     updateResult: jest.fn(),
   };
   const customerIdentity = { hashEmail: jest.fn() };
+  const customerEmail = {
+    isConfigured: jest.fn(),
+    sendBookingConfirmation: jest.fn(),
+  };
 
   function createService() {
     return new HotelBookService(
@@ -51,6 +56,7 @@ describe('HotelBookService', () => {
       hotelSearchResultRepository as unknown as HotelSearchResultRepository,
       bookingAttemptRepository as unknown as ProviderBookingAttemptRepository,
       customerIdentity as unknown as CustomerIdentityService,
+      customerEmail as unknown as CustomerEmailService,
     );
   }
 
@@ -59,11 +65,14 @@ describe('HotelBookService', () => {
     hotelSearchRepository.findById.mockResolvedValue({
       providerSearchId: 'provider-search-id',
       createdAt: new Date(),
+      checkIn: new Date('2026-10-30T00:00:00.000Z'),
+      checkOut: new Date('2026-11-02T00:00:00.000Z'),
       rooms: [{ adults: 1, children: 0 }],
     });
     hotelSearchResultRepository.findBySearchId.mockResolvedValue([
       {
         providerHotelId: dto.hotelId,
+        hotelName: 'Hotel Test',
         payload: { GiataID: 35324 },
       },
     ]);
@@ -72,6 +81,8 @@ describe('HotelBookService', () => {
     });
     bookingAttemptRepository.updateResult.mockResolvedValue(undefined);
     customerIdentity.hashEmail.mockReturnValue('customer-email-hash');
+    customerEmail.isConfigured.mockReturnValue(true);
+    customerEmail.sendBookingConfirmation.mockResolvedValue(undefined);
   });
 
   it('sends the exact provider payload and preserves empty strings', async () => {
@@ -99,6 +110,39 @@ describe('HotelBookService', () => {
       '123-48789',
       '',
     );
+    expect(customerEmail.sendBookingConfirmation).toHaveBeenCalledWith({
+      referenceCode: '123-48789',
+      hotelName: 'Hotel Test',
+      checkIn: new Date('2026-10-30T00:00:00.000Z'),
+      checkOut: new Date('2026-11-02T00:00:00.000Z'),
+    });
+  });
+
+  it('keeps a confirmed booking when the confirmation email fails', async () => {
+    const service = createService();
+    const response = { Error: '', RefCode: '123-48789' };
+    provider.book.mockResolvedValue(response);
+    customerEmail.sendBookingConfirmation.mockRejectedValue(
+      new Error('Email unavailable'),
+    );
+
+    await expect(service.book(dto)).resolves.toBe(response);
+    expect(provider.book).toHaveBeenCalledTimes(1);
+    expect(bookingAttemptRepository.updateResult).toHaveBeenCalledWith(
+      'attempt-id',
+      'CONFIRMED',
+      '123-48789',
+      '',
+    );
+  });
+
+  it('does not send a confirmation email for a failed booking', async () => {
+    const service = createService();
+    provider.book.mockResolvedValue({ Error: 'Booking failed', RefCode: '' });
+
+    await service.book(dto);
+
+    expect(customerEmail.sendBookingConfirmation).not.toHaveBeenCalled();
   });
 
   it('rejects booking after the search validity window', async () => {
