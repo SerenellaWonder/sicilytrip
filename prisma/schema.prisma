@@ -336,10 +336,30 @@ model HotelPreBookSnapshot {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  hotelSearch HotelSearch @relation(fields: [hotelSearchId], references: [id], onDelete: Cascade)
+  hotelSearch HotelSearch   @relation(fields: [hotelSearchId], references: [id], onDelete: Cascade)
+  payment     HotelPayment?
 
   @@unique([hotelSearchId, roomId])
   @@index([expiresAt])
+}
+
+model HotelPayment {
+  id String @id @default(cuid())
+
+  preBookSnapshotId     String        @unique
+  stripePaymentIntentId String        @unique
+  amount                Int
+  currency              String
+  customerEmailHash     String
+  status                PaymentStatus
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  preBookSnapshot HotelPreBookSnapshot @relation(fields: [preBookSnapshotId], references: [id], onDelete: Restrict)
+
+  @@index([customerEmailHash])
+  @@index([status])
 }
 
 model ProviderBookingAttempt {

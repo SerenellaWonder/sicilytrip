@@ -43,4 +43,10 @@ export class HotelPreBookSnapshotRepository {
       },
     });
   }
+
+  findByIdValid(id: string) {
+    return this.prisma.hotelPreBookSnapshot.findFirst({
+      where: { id, expiresAt: { gt: new Date() } },
+    });
+  }
 }

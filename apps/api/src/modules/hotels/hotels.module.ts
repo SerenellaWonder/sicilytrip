@@ -21,6 +21,7 @@ import { HotelSearchResultsService } from './services/hotel-search-results.servi
 import { HotelDetailRepository } from './repositories/hotel-detail.repository';
 import { ProviderBookingAttemptRepository } from './repositories/provider-booking-attempt.repository';
 import { HotelPreBookSnapshotRepository } from './repositories/hotel-prebook-snapshot.repository';
+import { HotelPaymentService } from './services/hotel-payment.service';
 
 @Module({
   imports: [PlacesModule, PartnerSolutionModule, CustomerAreaModule],
@@ -41,6 +42,7 @@ import { HotelPreBookSnapshotRepository } from './repositories/hotel-prebook-sna
     HotelRoomsService,
     HotelPreBookService,
     HotelBookService,
+    HotelPaymentService,
 
     SearchPollingService,
   ],

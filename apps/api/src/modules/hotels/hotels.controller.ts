@@ -8,10 +8,12 @@ import { HotelDetailsService } from './services/hotel-details.service';
 import { HotelRoomsService } from './services/hotel-rooms.service';
 import { HotelPreBookService } from './services/hotel-prebook.service';
 import { HotelBookService } from './services/hotel-book.service';
+import { HotelPaymentService } from './services/hotel-payment.service';
 
 import { HotelSearchDto } from './dto/hotel-search.dto';
 import { HotelPreBookDto } from './dto/hotel-prebook.dto';
 import { HotelBookDto } from './dto/hotel-book.dto';
+import { HotelPaymentIntentDto } from './dto/hotel-payment-intent.dto';
 
 @Controller('hotels')
 export class HotelsController {
@@ -29,6 +31,8 @@ export class HotelsController {
     private readonly hotelPreBookService: HotelPreBookService,
 
     private readonly hotelBookService: HotelBookService,
+
+    private readonly hotelPaymentService: HotelPaymentService,
   ) {}
 
   /*
@@ -116,5 +120,15 @@ export class HotelsController {
     dto: HotelBookDto,
   ) {
     return this.hotelBookService.book(dto);
+  }
+
+  @Get('payment/configuration')
+  paymentConfiguration() {
+    return this.hotelPaymentService.getConfiguration();
+  }
+
+  @Post('payment/intent')
+  createPaymentIntent(@Body() dto: HotelPaymentIntentDto) {
+    return this.hotelPaymentService.createIntent(dto);
   }
 }
