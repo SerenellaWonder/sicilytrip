@@ -1,10 +1,12 @@
 import { GoneException, Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 
 import { PartnerSolutionHotelPreBookService } from '../../partnersolution/services/hotel-prebook.service';
 
 import { HotelPreBookDto } from '../dto/hotel-prebook.dto';
 import { HotelSearchRepository } from '../repositories/hotel-search.repository';
 import { HotelSearchResultRepository } from '../repositories/hotel-search-result.repository';
+import { HotelPreBookSnapshotRepository } from '../repositories/hotel-prebook-snapshot.repository';
 import { getHotelPayloadString } from '../utils/hotel-payload';
 
 const SEARCH_TTL_MS = 20 * 60 * 1000;
@@ -17,6 +19,7 @@ export class HotelPreBookService {
     private readonly hotelSearchRepository: HotelSearchRepository,
 
     private readonly hotelSearchResultRepository: HotelSearchResultRepository,
+    private readonly preBookSnapshotRepository: HotelPreBookSnapshotRepository,
   ) {}
 
   async preBook(dto: HotelPreBookDto) {
@@ -52,10 +55,36 @@ export class HotelPreBookService {
       throw new NotFoundException('GiataId non disponibile per questo hotel');
     }
 
-    return this.provider.preBook({
+    const response = (await this.provider.preBook({
       SearchId: search.providerSearchId,
       GiataId: giataId,
       RoomId: dto.rateId,
+    })) as Record<string, unknown>;
+
+    if (typeof response.Error === 'string' && response.Error) {
+      return response;
+    }
+
+    const snapshot = await this.preBookSnapshotRepository.save({
+      hotelSearchId: search.id,
+      providerHotelId: dto.hotelId,
+      roomId: dto.rateId,
+      purchaseToken: this.stringValue(response.PurchaseToken),
+      spui: this.stringValue(response.Spui),
+      originalCurrency: this.stringValue(response.OriginalCurrency),
+      deadlineDate: this.stringValue(response.DeadlineDate),
+      finalPrice:
+        typeof response.FinalPrice === 'number'
+          ? response.FinalPrice
+          : undefined,
+      providerResponse: response as Prisma.InputJsonValue,
+      expiresAt: new Date(search.createdAt.getTime() + SEARCH_TTL_MS),
     });
+
+    return { ...response, preBookId: snapshot.id };
+  }
+
+  private stringValue(value: unknown) {
+    return typeof value === 'string' ? value : '';
   }
 }

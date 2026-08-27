@@ -37,6 +37,7 @@ type CancellationDetail = {
 };
 
 type HotelPreBookResponse = {
+  preBookId?: string;
   Error?: string;
   Remarks?: string;
   DeadlineDate?: string;

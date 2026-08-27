@@ -56,10 +56,7 @@ export default function GuestDetailsForm({
   rateId: string;
   disabled: boolean;
   preBook: {
-    PurchaseToken?: string;
-    Spui?: string;
-    OriginalCurrency?: string;
-    DeadlineDate?: string;
+    preBookId?: string;
   };
 }) {
   const storageKey = `hotel-guests:${searchId}:${hotelId}:${rateId}`;
@@ -245,10 +242,7 @@ export default function GuestDetailsForm({
             rateId,
             customerEmail: details.email.trim(),
             Names: buildNames(details),
-            PurchaseToken: preBook.PurchaseToken ?? "",
-            Spui: preBook.Spui ?? "",
-            OriginalCurrency: preBook.OriginalCurrency ?? "",
-            DeadlineDate: preBook.DeadlineDate ?? "",
+            preBookId: preBook.preBookId ?? "",
           }),
         },
       );

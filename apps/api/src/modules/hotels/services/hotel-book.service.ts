@@ -16,6 +16,7 @@ import { HotelBookDto } from '../dto/hotel-book.dto';
 import { HotelSearchRepository } from '../repositories/hotel-search.repository';
 import { HotelSearchResultRepository } from '../repositories/hotel-search-result.repository';
 import { ProviderBookingAttemptRepository } from '../repositories/provider-booking-attempt.repository';
+import { HotelPreBookSnapshotRepository } from '../repositories/hotel-prebook-snapshot.repository';
 import { getHotelPayloadString } from '../utils/hotel-payload';
 
 const SEARCH_TTL_MS = 20 * 60 * 1000;
@@ -31,6 +32,7 @@ export class HotelBookService {
     private readonly bookingAttemptRepository: ProviderBookingAttemptRepository,
     private readonly customerIdentity: CustomerIdentityService,
     private readonly customerEmail: CustomerEmailService,
+    private readonly preBookSnapshotRepository: HotelPreBookSnapshotRepository,
   ) {}
 
   async book(dto: HotelBookDto) {
@@ -67,6 +69,19 @@ export class HotelBookService {
       throw new NotFoundException('GiataId non disponibile per questo hotel');
     }
 
+    const preBook = await this.preBookSnapshotRepository.findValid({
+      id: dto.preBookId,
+      hotelSearchId: search.id,
+      providerHotelId: dto.hotelId,
+      roomId: dto.rateId,
+    });
+
+    if (!preBook) {
+      throw new GoneException(
+        'La riconferma della tariffa non è più valida. Riconferma prezzo e disponibilità prima di prenotare.',
+      );
+    }
+
     const attempt = await this.bookingAttemptRepository.createPending({
       hotelSearchId: search.id,
       providerSearchId: search.providerSearchId,
@@ -87,10 +102,10 @@ export class HotelBookService {
     try {
       response = await this.provider.book({
         Names: dto.Names,
-        PurchaseToken: dto.PurchaseToken,
-        Spui: dto.Spui,
-        OriginalCurrency: dto.OriginalCurrency,
-        DeadlineDate: dto.DeadlineDate,
+        PurchaseToken: preBook.purchaseToken,
+        Spui: preBook.spui,
+        OriginalCurrency: preBook.originalCurrency,
+        DeadlineDate: preBook.deadlineDate,
         SearchId: search.providerSearchId,
         GiataId: giataId,
         RoomId: dto.rateId,

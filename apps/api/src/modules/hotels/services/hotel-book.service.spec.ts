@@ -7,6 +7,7 @@ import { HotelBookDto } from '../dto/hotel-book.dto';
 import { HotelSearchRepository } from '../repositories/hotel-search.repository';
 import { HotelSearchResultRepository } from '../repositories/hotel-search-result.repository';
 import { ProviderBookingAttemptRepository } from '../repositories/provider-booking-attempt.repository';
+import { HotelPreBookSnapshotRepository } from '../repositories/hotel-prebook-snapshot.repository';
 import { HotelBookService } from './hotel-book.service';
 
 describe('HotelBookService', () => {
@@ -15,6 +16,7 @@ describe('HotelBookService', () => {
     searchId: 'internal-search-id',
     hotelId: 'provider-hotel-id',
     rateId: 'room-id',
+    preBookId: 'prebook-id',
     Names: [
       {
         Cam: 1,
@@ -30,10 +32,6 @@ describe('HotelBookService', () => {
         ],
       },
     ],
-    PurchaseToken: '',
-    Spui: '',
-    OriginalCurrency: '',
-    DeadlineDate: '30/10/2026',
   };
 
   const provider = { book: jest.fn() };
@@ -48,6 +46,7 @@ describe('HotelBookService', () => {
     isConfigured: jest.fn(),
     sendBookingConfirmation: jest.fn(),
   };
+  const preBookSnapshotRepository = { findValid: jest.fn() };
 
   function createService() {
     return new HotelBookService(
@@ -57,12 +56,14 @@ describe('HotelBookService', () => {
       bookingAttemptRepository as unknown as ProviderBookingAttemptRepository,
       customerIdentity as unknown as CustomerIdentityService,
       customerEmail as unknown as CustomerEmailService,
+      preBookSnapshotRepository as unknown as HotelPreBookSnapshotRepository,
     );
   }
 
   beforeEach(() => {
     jest.clearAllMocks();
     hotelSearchRepository.findById.mockResolvedValue({
+      id: 'internal-search-id',
       providerSearchId: 'provider-search-id',
       createdAt: new Date(),
       checkIn: new Date('2026-10-30T00:00:00.000Z'),
@@ -83,6 +84,12 @@ describe('HotelBookService', () => {
     customerIdentity.hashEmail.mockReturnValue('customer-email-hash');
     customerEmail.isConfigured.mockReturnValue(true);
     customerEmail.sendBookingConfirmation.mockResolvedValue(undefined);
+    preBookSnapshotRepository.findValid.mockResolvedValue({
+      purchaseToken: '',
+      spui: '',
+      originalCurrency: '',
+      deadlineDate: '30/10/2026',
+    });
   });
 
   it('sends the exact provider payload and preserves empty strings', async () => {
@@ -154,6 +161,15 @@ describe('HotelBookService', () => {
 
     await expect(service.book(dto)).rejects.toBeInstanceOf(GoneException);
     expect(provider.book).not.toHaveBeenCalled();
+  });
+
+  it('rejects booking when the server-side prebook is missing or expired', async () => {
+    const service = createService();
+    preBookSnapshotRepository.findValid.mockResolvedValue(null);
+
+    await expect(service.book(dto)).rejects.toBeInstanceOf(GoneException);
+    expect(provider.book).not.toHaveBeenCalled();
+    expect(bookingAttemptRepository.createPending).not.toHaveBeenCalled();
   });
 
   it('never calls HotelBook twice for the same selection', async () => {

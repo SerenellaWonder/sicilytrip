@@ -66,23 +66,14 @@ export class HotelBookDto {
   @IsNotEmpty()
   rateId!: string;
 
+  @IsString()
+  @IsNotEmpty()
+  preBookId!: string;
+
   @IsArray()
   @ArrayMinSize(1)
   @ArrayMaxSize(3)
   @ValidateNested({ each: true })
   @Type(() => HotelBookRoomDto)
   Names!: HotelBookRoomDto[];
-
-  // PartnerSolutions richiede questi valori anche quando sono stringhe vuote.
-  @IsString()
-  PurchaseToken!: string;
-
-  @IsString()
-  Spui!: string;
-
-  @IsString()
-  OriginalCurrency!: string;
-
-  @IsString()
-  DeadlineDate!: string;
 }

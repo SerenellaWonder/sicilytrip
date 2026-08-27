@@ -313,8 +313,33 @@ model HotelSearch {
 
   updatedAt DateTime @updatedAt
 
-  results         HotelSearchResult[]
-  bookingAttempts ProviderBookingAttempt[]
+  results          HotelSearchResult[]
+  bookingAttempts  ProviderBookingAttempt[]
+  preBookSnapshots HotelPreBookSnapshot[]
+}
+
+model HotelPreBookSnapshot {
+  id String @id @default(cuid())
+
+  hotelSearchId   String
+  providerHotelId String
+  roomId          String
+
+  purchaseToken    String
+  spui             String
+  originalCurrency String
+  deadlineDate     String
+  finalPrice       Decimal? @db.Decimal(10, 2)
+  providerResponse Json
+  expiresAt        DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  hotelSearch HotelSearch @relation(fields: [hotelSearchId], references: [id], onDelete: Cascade)
+
+  @@unique([hotelSearchId, roomId])
+  @@index([expiresAt])
 }
 
 model ProviderBookingAttempt {

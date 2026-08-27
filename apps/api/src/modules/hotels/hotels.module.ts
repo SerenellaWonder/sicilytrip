@@ -20,6 +20,7 @@ import { HotelSearchResultRepository } from './repositories/hotel-search-result.
 import { HotelSearchResultsService } from './services/hotel-search-results.service';
 import { HotelDetailRepository } from './repositories/hotel-detail.repository';
 import { ProviderBookingAttemptRepository } from './repositories/provider-booking-attempt.repository';
+import { HotelPreBookSnapshotRepository } from './repositories/hotel-prebook-snapshot.repository';
 
 @Module({
   imports: [PlacesModule, PartnerSolutionModule, CustomerAreaModule],
@@ -31,6 +32,7 @@ import { ProviderBookingAttemptRepository } from './repositories/provider-bookin
     HotelSearchResultRepository,
     HotelDetailRepository,
     ProviderBookingAttemptRepository,
+    HotelPreBookSnapshotRepository,
 
     HotelSearchService,
     HotelSearchResultsService,
