@@ -1,7 +1,14 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { CheckCircle2, KeyRound, Loader2, LogOut } from "lucide-react";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  KeyRound,
+  Loader2,
+  LogOut,
+  RotateCcw,
+} from "lucide-react";
 
 import { apiFetch } from "@/lib/api";
 
@@ -26,6 +33,7 @@ export default function CustomerAreaPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [resendCooldown, setResendCooldown] = useState(0);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -39,6 +47,18 @@ export default function CustomerAreaPage() {
     return () => window.clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    if (resendCooldown <= 0) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      setResendCooldown((current) => Math.max(0, current - 1));
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [resendCooldown]);
+
   async function loadBookings(sessionToken: string) {
     try {
       setLoading(true);
@@ -51,6 +71,7 @@ export default function CustomerAreaPage() {
       sessionStorage.removeItem(SESSION_KEY);
       setToken("");
       setStep("EMAIL");
+      setError("La sessione è scaduta. Richiedi un nuovo codice di accesso.");
     } finally {
       setLoading(false);
     }
@@ -58,6 +79,10 @@ export default function CustomerAreaPage() {
 
   async function requestCode(event: FormEvent) {
     event.preventDefault();
+    await sendCode();
+  }
+
+  async function sendCode() {
     try {
       setLoading(true);
       setError("");
@@ -69,6 +94,8 @@ export default function CustomerAreaPage() {
         body: JSON.stringify({ email }),
       });
       setDevelopmentCode(response.developmentCode ?? "");
+      setCode("");
+      setResendCooldown(60);
       setStep("CODE");
     } catch (requestError) {
       setError(
@@ -79,6 +106,14 @@ export default function CustomerAreaPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function changeEmail() {
+    setCode("");
+    setDevelopmentCode("");
+    setResendCooldown(0);
+    setError("");
+    setStep("EMAIL");
   }
 
   async function verifyCode(event: FormEvent) {
@@ -158,8 +193,9 @@ export default function CustomerAreaPage() {
             ) : (
               <form onSubmit={verifyCode} className="mt-6">
                 <p className="mb-5 text-sm leading-6 text-slate-500">
-                  Inserisci il codice di sei cifre. Scade dopo 10 minuti e può
-                  essere utilizzato una sola volta.
+                  Inserisci il codice di sei cifre inviato a{" "}
+                  <strong className="text-[#0D2340]">{maskEmail(email)}</strong>
+                  . Scade dopo 10 minuti e può essere utilizzato una sola volta.
                 </p>
                 {developmentCode && (
                   <p className="mb-5 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
@@ -174,6 +210,27 @@ export default function CustomerAreaPage() {
                   maxLength={6}
                 />
                 <SubmitButton loading={loading}>Accedi</SubmitButton>
+                <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-slate-100 pt-5">
+                  <button
+                    type="button"
+                    onClick={changeEmail}
+                    disabled={loading}
+                    className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 disabled:opacity-50"
+                  >
+                    <ArrowLeft size={14} /> Cambia email
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void sendCode()}
+                    disabled={loading || resendCooldown > 0}
+                    className="inline-flex items-center gap-2 text-xs font-semibold text-[#F58220] disabled:text-slate-400"
+                  >
+                    <RotateCcw size={14} />
+                    {resendCooldown > 0
+                      ? `Nuovo codice tra ${resendCooldown}s`
+                      : "Invia un nuovo codice"}
+                  </button>
+                </div>
               </form>
             )}
             {error && (
@@ -285,6 +342,17 @@ function formatDate(value: string) {
     month: "long",
     year: "numeric",
   }).format(new Date(value));
+}
+
+function maskEmail(value: string) {
+  const [localPart, domain] = value.split("@");
+
+  if (!localPart || !domain) {
+    return value;
+  }
+
+  const visible = localPart.slice(0, Math.min(2, localPart.length));
+  return `${visible}${"•".repeat(Math.max(3, localPart.length - visible.length))}@${domain}`;
 }
 
 function statusLabel(status: Booking["status"]) {
