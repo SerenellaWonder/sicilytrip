@@ -14,6 +14,7 @@ import { PlacesModule } from './modules/places/places.module';
 
 import { HotelsModule } from './modules/hotels/hotels.module';
 import { CustomerAreaModule } from './modules/customer-area/customer-area.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { CustomerAreaModule } from './modules/customer-area/customer-area.module
     PlacesModule,
     HotelsModule,
     CustomerAreaModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],
