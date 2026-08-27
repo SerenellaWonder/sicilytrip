@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import { ChevronDown, HelpCircle } from "lucide-react";
+import { HelpCircle } from "lucide-react";
 
+import FaqExplorer from "@/components/faq/FaqExplorer";
 import FooterSection from "@/components/layout/FooterSection";
 import Header from "@/components/layout/header";
+import { faqSections } from "@/content/faq";
 
 export const metadata: Metadata = {
   title: "Domande frequenti",
@@ -10,69 +12,6 @@ export const metadata: Metadata = {
     "Risposte alle domande più comuni su ricerca hotel, disponibilità, tariffe e prenotazioni con SicilyTrip.",
   alternates: { canonical: "/faq" },
 };
-
-const sections = [
-  {
-    title: "Ricerca e disponibilità",
-    questions: [
-      {
-        question: "Quanto resta valida una ricerca hotel?",
-        answer:
-          "La disponibilità e i riferimenti della ricerca restano validi per 20 minuti. Dopo questo intervallo è necessario effettuare una nuova ricerca per ottenere prezzi e camere aggiornati.",
-      },
-      {
-        question: "Perché il prezzo può cambiare durante la prenotazione?",
-        answer:
-          "Prezzi e disponibilità vengono forniti in tempo reale. Prima di raccogliere i dati degli ospiti, SicilyTrip riconferma la tariffa e mostra l’importo aggiornato e le condizioni applicabili.",
-      },
-      {
-        question: "Posso modificare date o numero di ospiti?",
-        answer:
-          "Sì. Torna alla ricerca, modifica date o composizione degli ospiti e avvia una nuova verifica della disponibilità.",
-      },
-    ],
-  },
-  {
-    title: "Tariffe e condizioni",
-    questions: [
-      {
-        question: "Dove trovo le condizioni di cancellazione?",
-        answer:
-          "Le condizioni preliminari sono indicate insieme alla camera. Dopo la riconferma della tariffa vengono mostrati il termine di cancellazione e le eventuali penali definitive.",
-      },
-      {
-        question: "La tassa di soggiorno è inclusa?",
-        answer:
-          "Quando prevista dalla destinazione, la tassa di soggiorno può essere richiesta direttamente dalla struttura. Le note definitive della tariffa indicano le condizioni comunicate dal fornitore.",
-      },
-      {
-        question: "I bambini hanno sempre un letto separato?",
-        answer:
-          "Non necessariamente. La sistemazione dei bambini dipende dalla camera e dalle condizioni della struttura. È importante controllare le note della tariffa prima di continuare.",
-      },
-    ],
-  },
-  {
-    title: "Prenotazione e assistenza",
-    questions: [
-      {
-        question: "Quando una prenotazione è confermata?",
-        answer:
-          "Una tariffa riconfermata non equivale ancora a una prenotazione. La prenotazione è conclusa solo quando viene mostrata la conferma finale con il relativo riferimento.",
-      },
-      {
-        question: "I dati inseriti vengono subito inviati all’hotel?",
-        answer:
-          "No. Durante la compilazione vengono conservati temporaneamente nella sessione del browser e saranno trasmessi soltanto nel passaggio finale della prenotazione.",
-      },
-      {
-        question: "Come posso richiedere assistenza?",
-        answer:
-          "Puoi utilizzare il concierge presente sul sito per ricevere supporto nella ricerca e nell’organizzazione del soggiorno.",
-      },
-    ],
-  },
-];
 
 export default function FaqPage() {
   return (
@@ -97,39 +36,12 @@ export default function FaqPage() {
               </h1>
 
               <p className="mt-6 max-w-2xl text-base leading-8 text-slate-500">
-                Tutto ciò che serve sapere per cercare un soggiorno, controllare una tariffa e procedere con tranquillità.
+                Tutto ciò che serve sapere per cercare un soggiorno, controllare
+                una tariffa e procedere con tranquillità.
               </p>
             </div>
 
-            <div className="mt-14 grid gap-8 lg:grid-cols-3">
-              {sections.map(section => (
-                <section key={section.title}>
-                  <h2 className="mb-4 text-sm font-bold uppercase tracking-[0.12em] text-[#0D2340]">
-                    {section.title}
-                  </h2>
-
-                  <div className="space-y-3">
-                    {section.questions.map(item => (
-                      <details
-                        key={item.question}
-                        className="group rounded-2xl border border-[#0D2340]/[0.07] bg-white p-5 shadow-[0_8px_28px_rgba(13,35,64,0.04)]"
-                      >
-                        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold leading-6 text-[#0D2340]">
-                          {item.question}
-                          <ChevronDown
-                            size={17}
-                            className="shrink-0 text-[#F58220] transition-transform group-open:rotate-180"
-                          />
-                        </summary>
-                        <p className="mt-4 border-t border-slate-100 pt-4 text-xs leading-6 text-slate-500">
-                          {item.answer}
-                        </p>
-                      </details>
-                    ))}
-                  </div>
-                </section>
-              ))}
-            </div>
+            <FaqExplorer sections={faqSections} />
           </div>
         </section>
 
