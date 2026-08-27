@@ -1,10 +1,7 @@
 import Image from "next/image";
+import Link from "next/link";
 
-import {
-  IconArrowUpRight,
-  IconClock,
-  IconSparkles,
-} from "@tabler/icons-react";
+import { IconArrowUpRight, IconClock, IconSparkles } from "@tabler/icons-react";
 
 export default function JournalStories() {
   return (
@@ -57,11 +54,7 @@ export default function JournalStories() {
                 sm:text-xs
               "
             >
-              <IconSparkles
-                size={15}
-                stroke={1.7}
-              />
-
+              <IconSparkles size={15} stroke={1.7} />
               Storie in evidenza
             </div>
 
@@ -81,10 +74,7 @@ export default function JournalStories() {
             >
               La Sicilia,
               <br />
-
-              <span className="text-[#0D2340]/35">
-                raccontata lentamente.
-              </span>
+              <span className="text-[#0D2340]/35">raccontata lentamente.</span>
             </h2>
           </div>
 
@@ -97,9 +87,8 @@ export default function JournalStories() {
               sm:text-[17px]
             "
           >
-            Non una lista di cose da vedere, ma storie
-            da leggere con il tempo necessario per
-            capire cosa rende speciale un luogo.
+            Non una lista di cose da vedere, ma storie da leggere con il tempo
+            necessario per capire cosa rende speciale un luogo.
           </p>
         </div>
 
@@ -219,12 +208,7 @@ export default function JournalStories() {
                   gap-2
                 "
               >
-                <IconClock
-                  size={13}
-                  stroke={1.7}
-                />
-
-                6 min
+                <IconClock size={13} stroke={1.7} />6 min
               </span>
             </div>
 
@@ -243,10 +227,7 @@ export default function JournalStories() {
             >
               Taormina oltre
               <br />
-
-              <span className="text-[#0D2340]/35">
-                la cartolina.
-              </span>
+              <span className="text-[#0D2340]/35">la cartolina.</span>
             </h3>
 
             <p
@@ -260,15 +241,13 @@ export default function JournalStories() {
                 sm:leading-8
               "
             >
-              Quando le strade si svuotano e il sole
-              scende dietro l&apos;Etna, Taormina mostra
-              un volto diverso. Cortili nascosti,
-              terrazze sul mare e indirizzi da scoprire
-              lontano dai percorsi più evidenti.
+              Quando le strade si svuotano e il sole scende dietro l&apos;Etna,
+              Taormina mostra un volto diverso. Cortili nascosti, terrazze sul
+              mare e indirizzi da scoprire lontano dai percorsi più evidenti.
             </p>
 
-            <button
-              type="button"
+            <Link
+              href="/journal/taormina-oltre-la-cartolina"
               className="
                 group
                 mt-9
@@ -283,7 +262,6 @@ export default function JournalStories() {
               "
             >
               Leggi la storia
-
               <span
                 className="
                   flex
@@ -299,12 +277,9 @@ export default function JournalStories() {
                   group-hover:bg-[#F58220]
                 "
               >
-                <IconArrowUpRight
-                  size={16}
-                  stroke={1.8}
-                />
+                <IconArrowUpRight size={16} stroke={1.8} />
               </span>
-            </button>
+            </Link>
           </div>
         </article>
 
@@ -327,69 +302,73 @@ export default function JournalStories() {
         >
           {/* FOOD */}
 
-          <article>
-            <div
-              className="
+          <Link
+            href="/journal/una-tavola-mille-sicilie"
+            className="group block"
+          >
+            <article>
+              <div
+                className="
                 relative
                 h-[360px]
                 overflow-hidden
                 rounded-[26px]
                 sm:h-[460px]
               "
-            >
-              <Image
-                src="/images/journal-food.jpg"
-                alt="Sapori della cucina siciliana"
-                fill
-                sizes="
+              >
+                <Image
+                  src="/images/journal-food.jpg"
+                  alt="Sapori della cucina siciliana"
+                  fill
+                  sizes="
                   (max-width: 1024px) 100vw,
                   50vw
                 "
-                className="
+                  className="
                   object-cover
                   transition-transform
                   duration-[1000ms]
                   hover:scale-[1.025]
                 "
-              />
-            </div>
+                />
+              </div>
 
-            <div className="mt-7">
-              <div
-                className="
+              <div className="mt-7">
+                <div
+                  className="
                   flex
                   items-center
                   justify-between
                   gap-6
                 "
-              >
-                <span
-                  className="
+                >
+                  <span
+                    className="
                     text-[9px]
                     font-bold
                     uppercase
                     tracking-[0.20em]
                     text-[#F58220]
                   "
-                >
-                  Sapori
-                </span>
+                  >
+                    Sapori
+                  </span>
 
-                <span
-                  className="
+                  <span
+                    className="
                     text-[9px]
                     font-semibold
                     uppercase
                     tracking-[0.15em]
                     text-[#0D2340]/35
                   "
-                >
-                  5 min
-                </span>
-              </div>
+                  >
+                    5 min
+                  </span>
+                </div>
 
-              <h3
-                className="
+                <h3
+                  className="
                   mt-4
                   max-w-[570px]
                   text-[30px]
@@ -399,95 +378,98 @@ export default function JournalStories() {
                   text-[#0D2340]
                   sm:text-[36px]
                 "
-              >
-                Una tavola,
-                <br />
+                >
+                  Una tavola,
+                  <br />
+                  mille Sicilie.
+                </h3>
 
-                mille Sicilie.
-              </h3>
-
-              <p
-                className="
+                <p
+                  className="
                   mt-5
                   max-w-[560px]
                   text-[14px]
                   leading-7
                   text-[#0D2340]/50
                 "
-              >
-                Dal mercato alla cucina, un viaggio
-                attraverso ingredienti, tradizioni e
-                gesti che cambiano da una provincia
-                all&apos;altra.
-              </p>
-            </div>
-          </article>
+                >
+                  Dal mercato alla cucina, un viaggio attraverso ingredienti,
+                  tradizioni e gesti che cambiano da una provincia
+                  all&apos;altra.
+                </p>
+              </div>
+            </article>
+          </Link>
 
           {/* ISLANDS */}
 
-          <article className="lg:mt-24">
-            <div
-              className="
+          <Link
+            href="/journal/eolie-mare-incontra-fuoco"
+            className="group block lg:mt-24"
+          >
+            <article>
+              <div
+                className="
                 relative
                 h-[360px]
                 overflow-hidden
                 rounded-[26px]
                 sm:h-[460px]
               "
-            >
-              <Image
-                src="/images/journal-islands.jpg"
-                alt="Isole Eolie"
-                fill
-                sizes="
+              >
+                <Image
+                  src="/images/journal-islands.jpg"
+                  alt="Isole Eolie"
+                  fill
+                  sizes="
                   (max-width: 1024px) 100vw,
                   50vw
                 "
-                className="
+                  className="
                   object-cover
                   transition-transform
                   duration-[1000ms]
                   hover:scale-[1.025]
                 "
-              />
-            </div>
+                />
+              </div>
 
-            <div className="mt-7">
-              <div
-                className="
+              <div className="mt-7">
+                <div
+                  className="
                   flex
                   items-center
                   justify-between
                   gap-6
                 "
-              >
-                <span
-                  className="
+                >
+                  <span
+                    className="
                     text-[9px]
                     font-bold
                     uppercase
                     tracking-[0.20em]
                     text-[#F58220]
                   "
-                >
-                  Isole
-                </span>
+                  >
+                    Isole
+                  </span>
 
-                <span
-                  className="
+                  <span
+                    className="
                     text-[9px]
                     font-semibold
                     uppercase
                     tracking-[0.15em]
                     text-[#0D2340]/35
                   "
-                >
-                  7 min
-                </span>
-              </div>
+                  >
+                    7 min
+                  </span>
+                </div>
 
-              <h3
-                className="
+                <h3
+                  className="
                   mt-4
                   max-w-[570px]
                   text-[30px]
@@ -497,28 +479,27 @@ export default function JournalStories() {
                   text-[#0D2340]
                   sm:text-[36px]
                 "
-              >
-                Eolie.
-                <br />
+                >
+                  Eolie.
+                  <br />
+                  Dove il mare incontra il fuoco.
+                </h3>
 
-                Dove il mare incontra il fuoco.
-              </h3>
-
-              <p
-                className="
+                <p
+                  className="
                   mt-5
                   max-w-[560px]
                   text-[14px]
                   leading-7
                   text-[#0D2340]/50
                 "
-              >
-                Sette isole, sette caratteri diversi.
-                Vulcani, baie, piccoli porti e giornate
-                scandite soltanto dal mare.
-              </p>
-            </div>
-          </article>
+                >
+                  Sette isole, sette caratteri diversi. Vulcani, baie, piccoli
+                  porti e giornate scandite soltanto dal mare.
+                </p>
+              </div>
+            </article>
+          </Link>
         </div>
       </div>
     </section>
