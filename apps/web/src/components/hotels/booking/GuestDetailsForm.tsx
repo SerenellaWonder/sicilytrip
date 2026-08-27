@@ -1,6 +1,7 @@
 "use client";
 
 import { CheckCircle2, Loader2, ShieldAlert, Users } from "lucide-react";
+import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 
 import { apiFetch } from "@/lib/api";
@@ -260,6 +261,7 @@ export default function GuestDetailsForm({
       }
 
       setRefCode(response.RefCode);
+      sessionStorage.removeItem(storageKey);
       sessionStorage.setItem(
         attemptStorageKey,
         JSON.stringify({ status: "CONFIRMED", refCode: response.RefCode }),
@@ -447,6 +449,16 @@ export default function GuestDetailsForm({
             <p className="mt-2 text-sm">
               Codice di riferimento: <strong>{refCode}</strong>
             </p>
+            <p className="mt-3 text-xs leading-5 text-emerald-700">
+              I dati degli ospiti salvati nel browser sono stati rimossi dopo la
+              conferma.
+            </p>
+            <Link
+              href="/area-clienti"
+              className="mt-4 inline-flex rounded-full bg-emerald-700 px-5 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em] text-white"
+            >
+              Vai alle tue prenotazioni
+            </Link>
           </div>
         )}
 
