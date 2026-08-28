@@ -16,6 +16,7 @@ import AdminOverview from "./AdminOverview";
 import AdminCustomers from "./AdminCustomers";
 import AdminPayments from "./AdminPayments";
 import AdminWishlists from "./AdminWishlists";
+import AdminExperiences from "./AdminExperiences";
 
 type Booking = {
   id: string;
@@ -46,6 +47,7 @@ export default function AdminDashboard() {
     | "customers"
     | "payments"
     | "wishlists"
+    | "experiences"
   >("overview");
 
   useEffect(() => {
@@ -233,6 +235,13 @@ export default function AdminDashboard() {
               >
                 Wishlist
               </button>
+              <button
+                type="button"
+                onClick={() => setSection("experiences")}
+                className={`rounded-xl px-5 py-2.5 text-xs font-bold transition ${section === "experiences" ? "bg-[#F58220] text-white shadow-md shadow-orange-200" : "text-[#0D2340]/60 hover:bg-[#F7F5F1]"}`}
+              >
+                Esperienze
+              </button>
             </nav>
             {section === "overview" ? (
               <AdminOverview token={token} />
@@ -246,6 +255,8 @@ export default function AdminDashboard() {
               <AdminPayments token={token} />
             ) : section === "wishlists" ? (
               <AdminWishlists token={token} />
+            ) : section === "experiences" ? (
+              <AdminExperiences token={token} />
             ) : (
               <>
                 <div className="mb-5 flex items-center justify-between">

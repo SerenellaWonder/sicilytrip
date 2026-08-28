@@ -3,6 +3,7 @@ import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 import { AdminService } from './admin.service';
 import { AdminJournalArticleDto } from './dto/admin-journal.dto';
 import { AdminFaqDto } from './dto/admin-faq.dto';
+import { AdminExperienceDto } from './dto/admin-experience.dto';
 class LoginDto {
   @IsEmail() email!: string;
   @IsString() @IsNotEmpty() password!: string;
@@ -27,6 +28,22 @@ export class AdminController {
   }
   @Get('wishlists') wishlists(@Headers('authorization') auth?: string) {
     return this.service.wishlists(auth);
+  }
+  @Get('experiences') experiences(@Headers('authorization') auth?: string) {
+    return this.service.experiences(auth);
+  }
+  @Post('experiences') createExperience(
+    @Headers('authorization') auth: string | undefined,
+    @Body() dto: AdminExperienceDto,
+  ) {
+    return this.service.createExperience(auth, dto);
+  }
+  @Post('experiences/:id') updateExperience(
+    @Headers('authorization') auth: string | undefined,
+    @Param('id') id: string,
+    @Body() dto: AdminExperienceDto,
+  ) {
+    return this.service.updateExperience(auth, id, dto);
   }
   @Get('journal') journal(@Headers('authorization') auth?: string) {
     return this.service.journalArticles(auth);

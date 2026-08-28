@@ -8,6 +8,7 @@ import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AdminJournalArticleDto } from './dto/admin-journal.dto';
 import { AdminFaqDto } from './dto/admin-faq.dto';
+import { AdminExperienceDto } from './dto/admin-experience.dto';
 @Injectable()
 export class AdminService {
   private readonly email?: string;
@@ -175,6 +176,41 @@ export class AdminService {
         };
       }),
     };
+  }
+  experiences(auth?: string) {
+    this.verify(auth);
+    return this.prisma.experience.findMany({
+      orderBy: { updatedAt: 'desc' },
+    });
+  }
+  createExperience(auth: string | undefined, dto: AdminExperienceDto) {
+    this.verify(auth);
+    return this.prisma.experience.create({
+      data: {
+        ...dto,
+        description: dto.description || null,
+        city: dto.city || null,
+        priceFrom: dto.priceFrom ?? null,
+        currency: (dto.currency || 'EUR').toUpperCase(),
+      },
+    });
+  }
+  updateExperience(
+    auth: string | undefined,
+    id: string,
+    dto: AdminExperienceDto,
+  ) {
+    this.verify(auth);
+    return this.prisma.experience.update({
+      where: { id },
+      data: {
+        ...dto,
+        description: dto.description || null,
+        city: dto.city || null,
+        priceFrom: dto.priceFrom ?? null,
+        currency: (dto.currency || 'EUR').toUpperCase(),
+      },
+    });
   }
   journalArticles(auth?: string) {
     this.verify(auth);
