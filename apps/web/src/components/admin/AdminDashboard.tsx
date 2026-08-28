@@ -14,6 +14,7 @@ import AdminJournal from "./AdminJournal";
 import AdminFaq from "./AdminFaq";
 import AdminOverview from "./AdminOverview";
 import AdminCustomers from "./AdminCustomers";
+import AdminPayments from "./AdminPayments";
 
 type Booking = {
   id: string;
@@ -37,7 +38,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [section, setSection] = useState<
-    "overview" | "bookings" | "journal" | "faq" | "customers"
+    "overview" | "bookings" | "journal" | "faq" | "customers" | "payments"
   >("overview");
 
   useEffect(() => {
@@ -211,6 +212,13 @@ export default function AdminDashboard() {
               >
                 Clienti
               </button>
+              <button
+                type="button"
+                onClick={() => setSection("payments")}
+                className={`rounded-xl px-5 py-2.5 text-xs font-bold transition ${section === "payments" ? "bg-[#F58220] text-white shadow-md shadow-orange-200" : "text-[#0D2340]/60 hover:bg-[#F7F5F1]"}`}
+              >
+                Pagamenti
+              </button>
             </nav>
             {section === "overview" ? (
               <AdminOverview token={token} />
@@ -220,6 +228,8 @@ export default function AdminDashboard() {
               <AdminFaq token={token} />
             ) : section === "customers" ? (
               <AdminCustomers token={token} />
+            ) : section === "payments" ? (
+              <AdminPayments token={token} />
             ) : (
               <>
                 <div className="mb-5 flex items-center justify-between">

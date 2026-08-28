@@ -22,6 +22,9 @@ export class AdminController {
   @Get('customers') customers(@Headers('authorization') auth?: string) {
     return this.service.customers(auth);
   }
+  @Get('payments') payments(@Headers('authorization') auth?: string) {
+    return this.service.payments(auth);
+  }
   @Get('journal') journal(@Headers('authorization') auth?: string) {
     return this.service.journalArticles(auth);
   }

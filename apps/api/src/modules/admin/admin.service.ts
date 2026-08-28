@@ -111,6 +111,38 @@ export class AdminService {
     });
     return [...customers.values()];
   }
+  async payments(auth?: string) {
+    this.verify(auth);
+    const payments = await this.prisma.hotelPayment.findMany({
+      include: {
+        preBookSnapshot: {
+          include: {
+            hotelSearch: { include: { results: true } },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+    });
+    return payments.map((payment) => {
+      const snapshot = payment.preBookSnapshot;
+      const search = snapshot.hotelSearch;
+      return {
+        id: payment.id,
+        status: payment.status,
+        amount: payment.amount,
+        currency: payment.currency,
+        customerId: `Cliente ${payment.customerEmailHash.slice(0, 8).toUpperCase()}`,
+        hotelName:
+          search.results.find(
+            (result) => result.providerHotelId === snapshot.providerHotelId,
+          )?.hotelName ?? 'Hotel',
+        checkIn: search.checkIn,
+        checkOut: search.checkOut,
+        createdAt: payment.createdAt,
+      };
+    });
+  }
   journalArticles(auth?: string) {
     this.verify(auth);
     return this.prisma.journalArticle.findMany({
