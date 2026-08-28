@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import Image from "next/image";
 import {
   CheckCircle2,
   Loader2,
@@ -93,33 +94,59 @@ export default function AdminDashboard() {
   }
 
   return (
-    <main className="min-h-screen bg-[#F7F5F1] px-5 py-16 sm:px-8">
-      <div className="mx-auto max-w-[1180px]">
-        <header className="flex items-start justify-between gap-5">
-          <div>
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#F58220]">
-              SicilyTrip Backend
-            </span>
-            <h1 className="mt-3 text-4xl font-bold tracking-[-0.04em] text-[#0D2340] sm:text-5xl">
-              Prenotazioni
-            </h1>
+    <main className="relative min-h-screen overflow-hidden bg-[#F7F5F1] px-5 py-8 sm:px-8 lg:py-10">
+      <div className="pointer-events-none absolute -right-32 top-32 size-[420px] rounded-full bg-[#F58220]/[0.07] blur-3xl" />
+      <div className="pointer-events-none absolute -left-40 bottom-0 size-[480px] rounded-full bg-[#0D2340]/[0.06] blur-3xl" />
+      <div className="relative mx-auto max-w-[1240px]">
+        <header className="relative overflow-hidden rounded-[30px] bg-[#0D2340] px-7 py-7 text-white shadow-[0_24px_70px_rgba(13,35,64,0.18)] sm:px-10 sm:py-9">
+          <div className="absolute -right-16 -top-28 size-72 rounded-full border border-white/[0.07]" />
+          <div className="absolute -bottom-28 right-28 size-56 rounded-full bg-[#F58220]/10 blur-2xl" />
+          <div className="relative flex items-start justify-between gap-5">
+            <div>
+              <Image
+                src="/images/logo-sicilytrip-light.svg"
+                alt="SicilyTrip"
+                width={154}
+                height={48}
+                priority
+                className="h-auto w-[138px] sm:w-[154px]"
+              />
+              <span className="mt-7 block text-[9px] font-bold uppercase tracking-[0.25em] text-[#F58220]">
+                Area amministrativa
+              </span>
+              <h1 className="mt-2 text-3xl font-bold tracking-[-0.04em] sm:text-5xl">
+                Il cuore operativo di SicilyTrip
+              </h1>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-white/50">
+                Controlla prenotazioni, contenuti e attività della piattaforma
+                da un unico spazio.
+              </p>
+            </div>
+            {token && (
+              <button
+                onClick={logout}
+                className="flex shrink-0 items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-4 py-2.5 text-xs font-semibold text-white/70 transition hover:bg-white/10 hover:text-white"
+              >
+                <LogOut size={17} /> Esci
+              </button>
+            )}
           </div>
-          {token && (
-            <button
-              onClick={logout}
-              className="flex items-center gap-2 text-sm font-semibold text-slate-500"
-            >
-              <LogOut size={17} /> Esci
-            </button>
-          )}
         </header>
 
         {!token ? (
           <form
             onSubmit={login}
-            className="mt-10 max-w-md rounded-[26px] bg-white p-7 shadow-[0_12px_40px_rgba(13,35,64,0.06)]"
+            className="mx-auto mt-10 max-w-md rounded-[28px] border border-[#0D2340]/[0.06] bg-white p-8 shadow-[0_18px_55px_rgba(13,35,64,0.08)]"
           >
-            <LockKeyhole className="text-[#F58220]" />
+            <div className="flex size-12 items-center justify-center rounded-2xl bg-[#F58220]/10">
+              <LockKeyhole className="text-[#F58220]" />
+            </div>
+            <h2 className="mt-5 text-2xl font-bold tracking-[-0.03em] text-[#0D2340]">
+              Accesso riservato
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-slate-500">
+              Inserisci le credenziali amministrative per continuare.
+            </p>
             <Field
               label="Email amministratore"
               type="email"
@@ -149,30 +176,30 @@ export default function AdminDashboard() {
           </form>
         ) : (
           <section className="mt-10">
-            <nav className="mb-7 flex flex-wrap gap-2">
+            <nav className="mb-8 flex w-fit flex-wrap gap-2 rounded-[20px] border border-[#0D2340]/[0.06] bg-white p-2 shadow-[0_10px_35px_rgba(13,35,64,0.05)]">
               <button
                 type="button"
                 onClick={() => setSection("overview")}
-                className={`rounded-full px-5 py-2 text-xs font-bold ${section === "overview" ? "bg-[#0D2340] text-white" : "bg-white"}`}
+                className={`rounded-xl px-5 py-2.5 text-xs font-bold transition ${section === "overview" ? "bg-[#F58220] text-white shadow-md shadow-orange-200" : "text-[#0D2340]/60 hover:bg-[#F7F5F1]"}`}
               >
                 Dashboard
               </button>
               <button
                 onClick={() => setSection("bookings")}
-                className={`rounded-full px-5 py-2 text-xs font-bold ${section === "bookings" ? "bg-[#0D2340] text-white" : "bg-white"}`}
+                className={`rounded-xl px-5 py-2.5 text-xs font-bold transition ${section === "bookings" ? "bg-[#F58220] text-white shadow-md shadow-orange-200" : "text-[#0D2340]/60 hover:bg-[#F7F5F1]"}`}
               >
                 Prenotazioni
               </button>
               <button
                 onClick={() => setSection("journal")}
-                className={`rounded-full px-5 py-2 text-xs font-bold ${section === "journal" ? "bg-[#0D2340] text-white" : "bg-white"}`}
+                className={`rounded-xl px-5 py-2.5 text-xs font-bold transition ${section === "journal" ? "bg-[#F58220] text-white shadow-md shadow-orange-200" : "text-[#0D2340]/60 hover:bg-[#F7F5F1]"}`}
               >
                 Journal
               </button>
               <button
                 type="button"
                 onClick={() => setSection("faq")}
-                className={`rounded-full px-5 py-2 text-xs font-bold ${section === "faq" ? "bg-[#0D2340] text-white" : "bg-white"}`}
+                className={`rounded-xl px-5 py-2.5 text-xs font-bold transition ${section === "faq" ? "bg-[#F58220] text-white shadow-md shadow-orange-200" : "text-[#0D2340]/60 hover:bg-[#F7F5F1]"}`}
               >
                 FAQ
               </button>
