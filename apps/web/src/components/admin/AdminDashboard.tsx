@@ -11,6 +11,7 @@ import {
 import { apiFetch } from "@/lib/api";
 import AdminJournal from "./AdminJournal";
 import AdminFaq from "./AdminFaq";
+import AdminOverview from "./AdminOverview";
 
 type Booking = {
   id: string;
@@ -33,9 +34,9 @@ export default function AdminDashboard() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [section, setSection] = useState<"bookings" | "journal" | "faq">(
-    "bookings",
-  );
+  const [section, setSection] = useState<
+    "overview" | "bookings" | "journal" | "faq"
+  >("overview");
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -150,6 +151,13 @@ export default function AdminDashboard() {
           <section className="mt-10">
             <nav className="mb-7 flex flex-wrap gap-2">
               <button
+                type="button"
+                onClick={() => setSection("overview")}
+                className={`rounded-full px-5 py-2 text-xs font-bold ${section === "overview" ? "bg-[#0D2340] text-white" : "bg-white"}`}
+              >
+                Dashboard
+              </button>
+              <button
                 onClick={() => setSection("bookings")}
                 className={`rounded-full px-5 py-2 text-xs font-bold ${section === "bookings" ? "bg-[#0D2340] text-white" : "bg-white"}`}
               >
@@ -169,7 +177,9 @@ export default function AdminDashboard() {
                 FAQ
               </button>
             </nav>
-            {section === "journal" ? (
+            {section === "overview" ? (
+              <AdminOverview token={token} />
+            ) : section === "journal" ? (
               <AdminJournal token={token} />
             ) : section === "faq" ? (
               <AdminFaq token={token} />

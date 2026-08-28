@@ -16,6 +16,9 @@ export class AdminController {
   @Get('bookings') bookings(@Headers('authorization') auth?: string) {
     return this.service.bookings(auth);
   }
+  @Get('summary') summary(@Headers('authorization') auth?: string) {
+    return this.service.summary(auth);
+  }
   @Get('journal') journal(@Headers('authorization') auth?: string) {
     return this.service.journalArticles(auth);
   }

@@ -55,6 +55,36 @@ export class AdminService {
       createdAt: x.createdAt,
     }));
   }
+  async summary(auth?: string) {
+    this.verify(auth);
+    const [bookings, articles, publishedArticles, faq, publishedFaq, payments] =
+      await Promise.all([
+        this.prisma.providerBookingAttempt.groupBy({
+          by: ['status'],
+          orderBy: { status: 'asc' },
+          _count: { id: true },
+        }),
+        this.prisma.journalArticle.count(),
+        this.prisma.journalArticle.count({ where: { isPublished: true } }),
+        this.prisma.faqItem.count(),
+        this.prisma.faqItem.count({ where: { isPublished: true } }),
+        this.prisma.hotelPayment.groupBy({
+          by: ['status'],
+          orderBy: { status: 'asc' },
+          _count: { id: true },
+        }),
+      ]);
+    return {
+      bookings: Object.fromEntries(
+        bookings.map((x) => [x.status, x._count.id]),
+      ),
+      articles: { total: articles, published: publishedArticles },
+      faq: { total: faq, published: publishedFaq },
+      payments: Object.fromEntries(
+        payments.map((x) => [x.status, x._count.id]),
+      ),
+    };
+  }
   journalArticles(auth?: string) {
     this.verify(auth);
     return this.prisma.journalArticle.findMany({
