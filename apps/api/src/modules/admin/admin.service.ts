@@ -11,6 +11,7 @@ import { AdminFaqDto } from './dto/admin-faq.dto';
 import { AdminExperienceDto } from './dto/admin-experience.dto';
 import { AdminPackageDto } from './dto/admin-package.dto';
 import { AdminDestinationDto } from './dto/admin-destination.dto';
+import { AdminHotelDto } from './dto/admin-hotel.dto';
 @Injectable()
 export class AdminService {
   private readonly email?: string;
@@ -339,6 +340,38 @@ export class AdminService {
       seoTitle: dto.seoTitle || null,
       seoDescription: dto.seoDescription || null,
       coverImage: dto.coverImage || null,
+    };
+  }
+  hotels(auth?: string) {
+    this.verify(auth);
+    return this.prisma.hotel.findMany({
+      include: { destination: true, municipality: true },
+      orderBy: { updatedAt: 'desc' },
+      take: 300,
+    });
+  }
+  createHotel(auth: string | undefined, dto: AdminHotelDto) {
+    this.verify(auth);
+    return this.prisma.hotel.create({ data: this.hotelData(dto) });
+  }
+  updateHotel(auth: string | undefined, id: string, dto: AdminHotelDto) {
+    this.verify(auth);
+    return this.prisma.hotel.update({
+      where: { id },
+      data: this.hotelData(dto),
+    });
+  }
+  private hotelData(dto: AdminHotelDto) {
+    return {
+      ...dto,
+      municipalityId: dto.municipalityId || null,
+      shortDescription: dto.shortDescription || null,
+      longDescription: dto.longDescription || null,
+      address: dto.address || null,
+      latitude: dto.latitude ?? null,
+      longitude: dto.longitude ?? null,
+      starRating: dto.starRating ?? null,
+      mainImageUrl: dto.mainImageUrl || null,
     };
   }
   journalArticles(auth?: string) {

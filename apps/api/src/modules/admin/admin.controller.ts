@@ -6,6 +6,7 @@ import { AdminFaqDto } from './dto/admin-faq.dto';
 import { AdminExperienceDto } from './dto/admin-experience.dto';
 import { AdminPackageDto } from './dto/admin-package.dto';
 import { AdminDestinationDto } from './dto/admin-destination.dto';
+import { AdminHotelDto } from './dto/admin-hotel.dto';
 class LoginDto {
   @IsEmail() email!: string;
   @IsString() @IsNotEmpty() password!: string;
@@ -88,6 +89,22 @@ export class AdminController {
     @Body() dto: AdminDestinationDto,
   ) {
     return this.service.updateDestination(auth, id, dto);
+  }
+  @Get('hotels') hotels(@Headers('authorization') auth?: string) {
+    return this.service.hotels(auth);
+  }
+  @Post('hotels') createHotel(
+    @Headers('authorization') auth: string | undefined,
+    @Body() dto: AdminHotelDto,
+  ) {
+    return this.service.createHotel(auth, dto);
+  }
+  @Post('hotels/:id') updateHotel(
+    @Headers('authorization') auth: string | undefined,
+    @Param('id') id: string,
+    @Body() dto: AdminHotelDto,
+  ) {
+    return this.service.updateHotel(auth, id, dto);
   }
   @Get('journal') journal(@Headers('authorization') auth?: string) {
     return this.service.journalArticles(auth);

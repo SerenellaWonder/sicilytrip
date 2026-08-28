@@ -20,6 +20,7 @@ import AdminExperiences from "./AdminExperiences";
 import AdminPackages from "./AdminPackages";
 import AdminDestinations from "./AdminDestinations";
 import AdminAssistant from "./AdminAssistant";
+import AdminHotels from "./AdminHotels";
 
 type Booking = {
   id: string;
@@ -54,6 +55,7 @@ export default function AdminDashboard() {
     | "packages"
     | "destinations"
     | "assistant"
+    | "hotels"
   >("overview");
 
   useEffect(() => {
@@ -269,6 +271,13 @@ export default function AdminDashboard() {
               >
                 Assistente
               </button>
+              <button
+                type="button"
+                onClick={() => setSection("hotels")}
+                className={`rounded-xl px-5 py-2.5 text-xs font-bold transition ${section === "hotels" ? "bg-[#F58220] text-white shadow-md shadow-orange-200" : "text-[#0D2340]/60 hover:bg-[#F7F5F1]"}`}
+              >
+                Hotel
+              </button>
             </nav>
             {section === "overview" ? (
               <AdminOverview token={token} />
@@ -290,6 +299,8 @@ export default function AdminDashboard() {
               <AdminDestinations token={token} />
             ) : section === "assistant" ? (
               <AdminAssistant token={token} />
+            ) : section === "hotels" ? (
+              <AdminHotels token={token} />
             ) : (
               <>
                 <div className="mb-5 flex items-center justify-between">
