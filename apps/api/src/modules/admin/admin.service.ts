@@ -10,6 +10,7 @@ import { AdminJournalArticleDto } from './dto/admin-journal.dto';
 import { AdminFaqDto } from './dto/admin-faq.dto';
 import { AdminExperienceDto } from './dto/admin-experience.dto';
 import { AdminPackageDto } from './dto/admin-package.dto';
+import { AdminDestinationDto } from './dto/admin-destination.dto';
 @Injectable()
 export class AdminService {
   private readonly email?: string;
@@ -229,6 +230,47 @@ export class AdminService {
       where: { id },
       data: { ...dto, description: dto.description || null },
     });
+  }
+  destinations(auth?: string) {
+    this.verify(auth);
+    return this.prisma.destination.findMany({
+      include: { municipality: { include: { province: true } } },
+      orderBy: [{ featured: 'desc' }, { name: 'asc' }],
+    });
+  }
+  municipalities(auth?: string) {
+    this.verify(auth);
+    return this.prisma.municipality.findMany({
+      include: { province: true },
+      orderBy: { name: 'asc' },
+    });
+  }
+  createDestination(auth: string | undefined, dto: AdminDestinationDto) {
+    this.verify(auth);
+    return this.prisma.destination.create({ data: this.destinationData(dto) });
+  }
+  updateDestination(
+    auth: string | undefined,
+    id: string,
+    dto: AdminDestinationDto,
+  ) {
+    this.verify(auth);
+    return this.prisma.destination.update({
+      where: { id },
+      data: this.destinationData(dto),
+    });
+  }
+  private destinationData(dto: AdminDestinationDto) {
+    return {
+      ...dto,
+      shortDescription: dto.shortDescription || null,
+      description: dto.description || null,
+      latitude: dto.latitude ?? null,
+      longitude: dto.longitude ?? null,
+      seoTitle: dto.seoTitle || null,
+      seoDescription: dto.seoDescription || null,
+      coverImage: dto.coverImage || null,
+    };
   }
   journalArticles(auth?: string) {
     this.verify(auth);
