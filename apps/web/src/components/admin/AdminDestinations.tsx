@@ -62,6 +62,7 @@ export default function AdminDestinations({ token }: { token: string }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [bootstrapping, setBootstrapping] = useState(false);
   const [error, setError] = useState("");
 
   const load = useCallback(async () => {
@@ -145,6 +146,26 @@ export default function AdminDestinations({ token }: { token: string }) {
     }
   }
 
+  async function bootstrap() {
+    try {
+      setBootstrapping(true);
+      setError("");
+      await apiFetch("/admin/geography/bootstrap", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      await load();
+    } catch (reason) {
+      setError(
+        reason instanceof Error
+          ? reason.message
+          : "Caricamento del territorio non riuscito",
+      );
+    } finally {
+      setBootstrapping(false);
+    }
+  }
+
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
@@ -180,10 +201,20 @@ export default function AdminDestinations({ token }: { token: string }) {
         </p>
       )}
       {!loading && !municipalities.length && (
-        <p className="mb-5 rounded-2xl bg-amber-50 p-4 text-sm text-amber-800">
-          Prima di creare destinazioni è necessario caricare comuni e province
-          nel database.
-        </p>
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-amber-50 p-5 text-sm text-amber-800">
+          <p>
+            Comuni e province non sono ancora presenti. Puoi caricare la base
+            territoriale SicilyTrip con un solo clic.
+          </p>
+          <button
+            type="button"
+            onClick={() => void bootstrap()}
+            disabled={bootstrapping}
+            className="rounded-full bg-[#0D2340] px-5 py-3 text-xs font-bold text-white disabled:opacity-60"
+          >
+            {bootstrapping ? "Caricamento…" : "Carica territorio siciliano"}
+          </button>
+        </div>
       )}
       {!items.length ? (
         <div className="rounded-[24px] bg-white p-7 text-sm text-slate-500">

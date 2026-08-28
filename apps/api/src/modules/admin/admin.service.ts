@@ -245,6 +245,75 @@ export class AdminService {
       orderBy: { name: 'asc' },
     });
   }
+  async bootstrapGeography(auth?: string) {
+    this.verify(auth);
+    const provinces = [
+      ['Agrigento', 'AG', 'agrigento'],
+      ['Caltanissetta', 'CL', 'caltanissetta'],
+      ['Catania', 'CT', 'catania'],
+      ['Enna', 'EN', 'enna'],
+      ['Messina', 'ME', 'messina'],
+      ['Palermo', 'PA', 'palermo'],
+      ['Ragusa', 'RG', 'ragusa'],
+      ['Siracusa', 'SR', 'siracusa'],
+      ['Trapani', 'TP', 'trapani'],
+    ] as const;
+    const municipalities = [
+      ['084001', 'Agrigento', 'agrigento', 'AG'],
+      ['087015', 'Catania', 'catania', 'CT'],
+      ['082027', 'Cefalù', 'cefalu', 'PA'],
+      ['081005', 'Castellammare del Golfo', 'castellammare-del-golfo', 'TP'],
+      ['081008', 'Erice', 'erice', 'TP'],
+      ['081009', 'Favignana', 'favignana', 'TP'],
+      ['083041', 'Lipari', 'lipari', 'ME'],
+      ['081011', 'Marsala', 'marsala', 'TP'],
+      ['081012', 'Mazara del Vallo', 'mazara-del-vallo', 'TP'],
+      ['089013', 'Noto', 'noto', 'SR'],
+      ['082053', 'Palermo', 'palermo', 'PA'],
+      ['088009', 'Ragusa', 'ragusa', 'RG'],
+      ['081020', 'San Vito Lo Capo', 'san-vito-lo-capo', 'TP'],
+      ['089017', 'Siracusa', 'siracusa', 'SR'],
+      ['083097', 'Taormina', 'taormina', 'ME'],
+      ['081021', 'Trapani', 'trapani', 'TP'],
+    ] as const;
+    const result = await this.prisma.$transaction(async (database) => {
+      const region = await database.region.upsert({
+        where: { code: '19' },
+        update: { name: 'Sicilia', slug: 'sicilia' },
+        create: { name: 'Sicilia', slug: 'sicilia', code: '19' },
+      });
+      const provinceIds = new Map<string, string>();
+      for (const [name, code, slug] of provinces) {
+        const province = await database.province.upsert({
+          where: { slug },
+          update: { name, code, regionId: region.id },
+          create: { name, code, slug, regionId: region.id },
+        });
+        provinceIds.set(code, province.id);
+      }
+      for (const [istatCode, name, slug, provinceCode] of municipalities) {
+        await database.municipality.upsert({
+          where: { istatCode },
+          update: {
+            name,
+            slug,
+            provinceId: provinceIds.get(provinceCode)!,
+          },
+          create: {
+            istatCode,
+            name,
+            slug,
+            provinceId: provinceIds.get(provinceCode)!,
+          },
+        });
+      }
+      return {
+        provinces: provinces.length,
+        municipalities: municipalities.length,
+      };
+    });
+    return { ok: true, ...result };
+  }
   createDestination(auth: string | undefined, dto: AdminDestinationDto) {
     this.verify(auth);
     return this.prisma.destination.create({ data: this.destinationData(dto) });

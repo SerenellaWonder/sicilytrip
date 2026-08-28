@@ -71,6 +71,11 @@ export class AdminController {
   ) {
     return this.service.municipalities(auth);
   }
+  @Post('geography/bootstrap') bootstrapGeography(
+    @Headers('authorization') auth?: string,
+  ) {
+    return this.service.bootstrapGeography(auth);
+  }
   @Post('destinations') createDestination(
     @Headers('authorization') auth: string | undefined,
     @Body() dto: AdminDestinationDto,
