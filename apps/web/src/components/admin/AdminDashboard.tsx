@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import AdminJournal from "./AdminJournal";
+import AdminFaq from "./AdminFaq";
 
 type Booking = {
   id: string;
@@ -32,7 +33,9 @@ export default function AdminDashboard() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [section, setSection] = useState<"bookings" | "journal">("bookings");
+  const [section, setSection] = useState<"bookings" | "journal" | "faq">(
+    "bookings",
+  );
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -145,7 +148,7 @@ export default function AdminDashboard() {
           </form>
         ) : (
           <section className="mt-10">
-            <nav className="mb-7 flex gap-2">
+            <nav className="mb-7 flex flex-wrap gap-2">
               <button
                 onClick={() => setSection("bookings")}
                 className={`rounded-full px-5 py-2 text-xs font-bold ${section === "bookings" ? "bg-[#0D2340] text-white" : "bg-white"}`}
@@ -158,9 +161,18 @@ export default function AdminDashboard() {
               >
                 Journal
               </button>
+              <button
+                type="button"
+                onClick={() => setSection("faq")}
+                className={`rounded-full px-5 py-2 text-xs font-bold ${section === "faq" ? "bg-[#0D2340] text-white" : "bg-white"}`}
+              >
+                FAQ
+              </button>
             </nav>
             {section === "journal" ? (
               <AdminJournal token={token} />
+            ) : section === "faq" ? (
+              <AdminFaq token={token} />
             ) : (
               <>
                 <div className="mb-5 flex items-center justify-between">

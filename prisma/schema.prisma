@@ -225,6 +225,19 @@ model JournalArticle {
   @@index([isPublished, publishedAt])
 }
 
+model FaqItem {
+  id          String   @id @default(cuid())
+  category    String
+  question    String
+  answer      String
+  sortOrder   Int      @default(0)
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isPublished, sortOrder])
+}
+
 model Region {
   id   String @id @default(cuid())
   name String

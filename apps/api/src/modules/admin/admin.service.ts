@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AdminJournalArticleDto } from './dto/admin-journal.dto';
+import { AdminFaqDto } from './dto/admin-faq.dto';
 @Injectable()
 export class AdminService {
   private readonly email?: string;
@@ -84,6 +85,20 @@ export class AdminService {
         publishedAt: dto.isPublished ? new Date() : null,
       },
     });
+  }
+  faqItems(auth?: string) {
+    this.verify(auth);
+    return this.prisma.faqItem.findMany({
+      orderBy: [{ sortOrder: 'asc' }, { updatedAt: 'desc' }],
+    });
+  }
+  createFaqItem(auth: string | undefined, dto: AdminFaqDto) {
+    this.verify(auth);
+    return this.prisma.faqItem.create({ data: dto });
+  }
+  updateFaqItem(auth: string | undefined, id: string, dto: AdminFaqDto) {
+    this.verify(auth);
+    return this.prisma.faqItem.update({ where: { id }, data: dto });
   }
   private verify(auth?: string) {
     this.configured();
