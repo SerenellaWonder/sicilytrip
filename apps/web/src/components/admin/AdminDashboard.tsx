@@ -9,6 +9,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
+import AdminJournal from "./AdminJournal";
 
 type Booking = {
   id: string;
@@ -31,6 +32,7 @@ export default function AdminDashboard() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [section, setSection] = useState<"bookings" | "journal">("bookings");
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -143,33 +145,53 @@ export default function AdminDashboard() {
           </form>
         ) : (
           <section className="mt-10">
-            <div className="mb-5 flex items-center justify-between">
-              <p className="text-sm text-slate-500">
-                {bookings.length} richieste recenti
-              </p>
+            <nav className="mb-7 flex gap-2">
               <button
-                onClick={() => void loadBookings(token)}
-                disabled={loading}
-                className="flex items-center gap-2 text-xs font-semibold text-[#0D2340]"
+                onClick={() => setSection("bookings")}
+                className={`rounded-full px-5 py-2 text-xs font-bold ${section === "bookings" ? "bg-[#0D2340] text-white" : "bg-white"}`}
               >
-                <RefreshCw
-                  size={15}
-                  className={loading ? "animate-spin" : ""}
-                />{" "}
-                Aggiorna
+                Prenotazioni
               </button>
-            </div>
-            <div className="grid gap-4">
-              {bookings.length === 0 ? (
-                <div className="rounded-2xl bg-white p-7 text-sm text-slate-500">
-                  Nessuna richiesta presente.
+              <button
+                onClick={() => setSection("journal")}
+                className={`rounded-full px-5 py-2 text-xs font-bold ${section === "journal" ? "bg-[#0D2340] text-white" : "bg-white"}`}
+              >
+                Journal
+              </button>
+            </nav>
+            {section === "journal" ? (
+              <AdminJournal token={token} />
+            ) : (
+              <>
+                <div className="mb-5 flex items-center justify-between">
+                  <p className="text-sm text-slate-500">
+                    {bookings.length} richieste recenti
+                  </p>
+                  <button
+                    onClick={() => void loadBookings(token)}
+                    disabled={loading}
+                    className="flex items-center gap-2 text-xs font-semibold text-[#0D2340]"
+                  >
+                    <RefreshCw
+                      size={15}
+                      className={loading ? "animate-spin" : ""}
+                    />{" "}
+                    Aggiorna
+                  </button>
                 </div>
-              ) : (
-                bookings.map((booking) => (
-                  <BookingCard key={booking.id} booking={booking} />
-                ))
-              )}
-            </div>
+                <div className="grid gap-4">
+                  {bookings.length === 0 ? (
+                    <div className="rounded-2xl bg-white p-7 text-sm text-slate-500">
+                      Nessuna richiesta presente.
+                    </div>
+                  ) : (
+                    bookings.map((booking) => (
+                      <BookingCard key={booking.id} booking={booking} />
+                    ))
+                  )}
+                </div>
+              </>
+            )}
           </section>
         )}
       </div>

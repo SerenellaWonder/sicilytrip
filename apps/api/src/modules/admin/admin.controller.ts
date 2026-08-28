@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Headers, Post } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Param, Post } from '@nestjs/common';
 import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 import { AdminService } from './admin.service';
+import { AdminJournalArticleDto } from './dto/admin-journal.dto';
 class LoginDto {
   @IsEmail() email!: string;
   @IsString() @IsNotEmpty() password!: string;
@@ -13,5 +14,21 @@ export class AdminController {
   }
   @Get('bookings') bookings(@Headers('authorization') auth?: string) {
     return this.service.bookings(auth);
+  }
+  @Get('journal') journal(@Headers('authorization') auth?: string) {
+    return this.service.journalArticles(auth);
+  }
+  @Post('journal') createJournal(
+    @Headers('authorization') auth: string | undefined,
+    @Body() dto: AdminJournalArticleDto,
+  ) {
+    return this.service.createJournalArticle(auth, dto);
+  }
+  @Post('journal/:id') updateJournal(
+    @Headers('authorization') auth: string | undefined,
+    @Param('id') id: string,
+    @Body() dto: AdminJournalArticleDto,
+  ) {
+    return this.service.updateJournalArticle(auth, id, dto);
   }
 }

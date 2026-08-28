@@ -1,0 +1,3 @@
+CREATE TABLE "JournalArticle" ("id" TEXT NOT NULL,"slug" TEXT NOT NULL,"title" TEXT NOT NULL,"subtitle" TEXT,"excerpt" TEXT NOT NULL,"category" TEXT NOT NULL,"image" TEXT,"imageAlt" TEXT,"content" JSONB NOT NULL,"readingTime" TEXT,"isPublished" BOOLEAN NOT NULL DEFAULT false,"publishedAt" TIMESTAMP(3),"createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,"updatedAt" TIMESTAMP(3) NOT NULL,CONSTRAINT "JournalArticle_pkey" PRIMARY KEY ("id"));
+CREATE UNIQUE INDEX "JournalArticle_slug_key" ON "JournalArticle"("slug");
+CREATE INDEX "JournalArticle_isPublished_publishedAt_idx" ON "JournalArticle"("isPublished", "publishedAt");
