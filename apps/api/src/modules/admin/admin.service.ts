@@ -61,23 +61,45 @@ export class AdminService {
   }
   async summary(auth?: string) {
     this.verify(auth);
-    const [bookings, articles, publishedArticles, faq, publishedFaq, payments] =
-      await Promise.all([
-        this.prisma.providerBookingAttempt.groupBy({
-          by: ['status'],
-          orderBy: { status: 'asc' },
-          _count: { id: true },
-        }),
-        this.prisma.journalArticle.count(),
-        this.prisma.journalArticle.count({ where: { isPublished: true } }),
-        this.prisma.faqItem.count(),
-        this.prisma.faqItem.count({ where: { isPublished: true } }),
-        this.prisma.hotelPayment.groupBy({
-          by: ['status'],
-          orderBy: { status: 'asc' },
-          _count: { id: true },
-        }),
-      ]);
+    const [
+      bookings,
+      articles,
+      publishedArticles,
+      faq,
+      publishedFaq,
+      payments,
+      destinations,
+      activeDestinations,
+      hotels,
+      activeHotels,
+      experiences,
+      activeExperiences,
+      packages,
+      activePackages,
+    ] = await Promise.all([
+      this.prisma.providerBookingAttempt.groupBy({
+        by: ['status'],
+        orderBy: { status: 'asc' },
+        _count: { id: true },
+      }),
+      this.prisma.journalArticle.count(),
+      this.prisma.journalArticle.count({ where: { isPublished: true } }),
+      this.prisma.faqItem.count(),
+      this.prisma.faqItem.count({ where: { isPublished: true } }),
+      this.prisma.hotelPayment.groupBy({
+        by: ['status'],
+        orderBy: { status: 'asc' },
+        _count: { id: true },
+      }),
+      this.prisma.destination.count(),
+      this.prisma.destination.count({ where: { isActive: true } }),
+      this.prisma.hotel.count(),
+      this.prisma.hotel.count({ where: { isActive: true } }),
+      this.prisma.experience.count(),
+      this.prisma.experience.count({ where: { isActive: true } }),
+      this.prisma.package.count(),
+      this.prisma.package.count({ where: { isActive: true } }),
+    ]);
     return {
       bookings: Object.fromEntries(
         bookings.map((x) => [x.status, x._count.id]),
@@ -87,6 +109,12 @@ export class AdminService {
       payments: Object.fromEntries(
         payments.map((x) => [x.status, x._count.id]),
       ),
+      catalog: {
+        destinations: { total: destinations, active: activeDestinations },
+        hotels: { total: hotels, active: activeHotels },
+        experiences: { total: experiences, active: activeExperiences },
+        packages: { total: packages, active: activePackages },
+      },
     };
   }
   async customers(auth?: string) {

@@ -1,12 +1,25 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
-import { BookOpen, CircleHelp, CreditCard, Hotel } from "lucide-react";
+import {
+  BookOpen,
+  Boxes,
+  Building2,
+  CircleHelp,
+  Compass,
+  CreditCard,
+  Hotel,
+  MapPinned,
+} from "lucide-react";
 import { apiFetch } from "@/lib/api";
 type Summary = {
   bookings: Record<string, number>;
   articles: { total: number; published: number };
   faq: { total: number; published: number };
   payments: Record<string, number>;
+  catalog: Record<
+    "destinations" | "hotels" | "experiences" | "packages",
+    { total: number; active: number }
+  >;
 };
 export default function AdminOverview({ token }: { token: string }) {
   const [data, setData] = useState<Summary>();
@@ -54,6 +67,30 @@ export default function AdminOverview({ token }: { token: string }) {
         label="Pagamenti"
         value={Object.values(data.payments).reduce((a, b) => a + b, 0)}
         detail="Non ancora attivi"
+      />
+      <Card
+        icon={<MapPinned />}
+        label="Destinazioni"
+        value={data.catalog.destinations.total}
+        detail={`${data.catalog.destinations.active} attive`}
+      />
+      <Card
+        icon={<Building2 />}
+        label="Hotel"
+        value={data.catalog.hotels.total}
+        detail={`${data.catalog.hotels.active} attivi`}
+      />
+      <Card
+        icon={<Compass />}
+        label="Esperienze"
+        value={data.catalog.experiences.total}
+        detail={`${data.catalog.experiences.active} attive`}
+      />
+      <Card
+        icon={<Boxes />}
+        label="Pacchetti"
+        value={data.catalog.packages.total}
+        detail={`${data.catalog.packages.active} attivi`}
       />
     </div>
   );
