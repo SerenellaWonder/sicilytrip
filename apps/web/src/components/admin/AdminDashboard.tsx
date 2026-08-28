@@ -15,6 +15,7 @@ import AdminFaq from "./AdminFaq";
 import AdminOverview from "./AdminOverview";
 import AdminCustomers from "./AdminCustomers";
 import AdminPayments from "./AdminPayments";
+import AdminWishlists from "./AdminWishlists";
 
 type Booking = {
   id: string;
@@ -38,7 +39,13 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [section, setSection] = useState<
-    "overview" | "bookings" | "journal" | "faq" | "customers" | "payments"
+    | "overview"
+    | "bookings"
+    | "journal"
+    | "faq"
+    | "customers"
+    | "payments"
+    | "wishlists"
   >("overview");
 
   useEffect(() => {
@@ -219,6 +226,13 @@ export default function AdminDashboard() {
               >
                 Pagamenti
               </button>
+              <button
+                type="button"
+                onClick={() => setSection("wishlists")}
+                className={`rounded-xl px-5 py-2.5 text-xs font-bold transition ${section === "wishlists" ? "bg-[#F58220] text-white shadow-md shadow-orange-200" : "text-[#0D2340]/60 hover:bg-[#F7F5F1]"}`}
+              >
+                Wishlist
+              </button>
             </nav>
             {section === "overview" ? (
               <AdminOverview token={token} />
@@ -230,6 +244,8 @@ export default function AdminDashboard() {
               <AdminCustomers token={token} />
             ) : section === "payments" ? (
               <AdminPayments token={token} />
+            ) : section === "wishlists" ? (
+              <AdminWishlists token={token} />
             ) : (
               <>
                 <div className="mb-5 flex items-center justify-between">

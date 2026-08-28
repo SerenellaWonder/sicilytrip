@@ -143,6 +143,39 @@ export class AdminService {
       };
     });
   }
+  async wishlists(auth?: string) {
+    this.verify(auth);
+    const [groups, customers] = await Promise.all([
+      this.prisma.wishlist.groupBy({
+        by: ['hotelId'],
+        _count: { id: true },
+        _max: { createdAt: true },
+        orderBy: { _count: { id: 'desc' } },
+        take: 100,
+      }),
+      this.prisma.wishlist.groupBy({ by: ['userId'] }),
+    ]);
+    const hotels = await this.prisma.hotel.findMany({
+      where: { id: { in: groups.map((group) => group.hotelId) } },
+      select: { id: true, name: true, mainImageUrl: true, isActive: true },
+    });
+    const hotelById = new Map(hotels.map((hotel) => [hotel.id, hotel]));
+    return {
+      total: groups.reduce((sum, group) => sum + group._count.id, 0),
+      customers: customers.length,
+      hotels: groups.map((group) => {
+        const hotel = hotelById.get(group.hotelId);
+        return {
+          hotelId: group.hotelId,
+          hotelName: hotel?.name ?? 'Hotel non più disponibile',
+          image: hotel?.mainImageUrl ?? null,
+          isActive: hotel?.isActive ?? false,
+          saves: group._count.id,
+          lastSavedAt: group._max.createdAt,
+        };
+      }),
+    };
+  }
   journalArticles(auth?: string) {
     this.verify(auth);
     return this.prisma.journalArticle.findMany({

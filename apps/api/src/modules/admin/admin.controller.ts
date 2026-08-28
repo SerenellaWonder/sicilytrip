@@ -25,6 +25,9 @@ export class AdminController {
   @Get('payments') payments(@Headers('authorization') auth?: string) {
     return this.service.payments(auth);
   }
+  @Get('wishlists') wishlists(@Headers('authorization') auth?: string) {
+    return this.service.wishlists(auth);
+  }
   @Get('journal') journal(@Headers('authorization') auth?: string) {
     return this.service.journalArticles(auth);
   }
