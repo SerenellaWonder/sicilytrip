@@ -4,6 +4,7 @@ import { AdminService } from './admin.service';
 import { AdminJournalArticleDto } from './dto/admin-journal.dto';
 import { AdminFaqDto } from './dto/admin-faq.dto';
 import { AdminExperienceDto } from './dto/admin-experience.dto';
+import { AdminPackageDto } from './dto/admin-package.dto';
 class LoginDto {
   @IsEmail() email!: string;
   @IsString() @IsNotEmpty() password!: string;
@@ -44,6 +45,22 @@ export class AdminController {
     @Body() dto: AdminExperienceDto,
   ) {
     return this.service.updateExperience(auth, id, dto);
+  }
+  @Get('packages') packages(@Headers('authorization') auth?: string) {
+    return this.service.packages(auth);
+  }
+  @Post('packages') createPackage(
+    @Headers('authorization') auth: string | undefined,
+    @Body() dto: AdminPackageDto,
+  ) {
+    return this.service.createPackage(auth, dto);
+  }
+  @Post('packages/:id') updatePackage(
+    @Headers('authorization') auth: string | undefined,
+    @Param('id') id: string,
+    @Body() dto: AdminPackageDto,
+  ) {
+    return this.service.updatePackage(auth, id, dto);
   }
   @Get('journal') journal(@Headers('authorization') auth?: string) {
     return this.service.journalArticles(auth);

@@ -9,6 +9,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AdminJournalArticleDto } from './dto/admin-journal.dto';
 import { AdminFaqDto } from './dto/admin-faq.dto';
 import { AdminExperienceDto } from './dto/admin-experience.dto';
+import { AdminPackageDto } from './dto/admin-package.dto';
 @Injectable()
 export class AdminService {
   private readonly email?: string;
@@ -210,6 +211,23 @@ export class AdminService {
         priceFrom: dto.priceFrom ?? null,
         currency: (dto.currency || 'EUR').toUpperCase(),
       },
+    });
+  }
+  packages(auth?: string) {
+    this.verify(auth);
+    return this.prisma.package.findMany({ orderBy: { updatedAt: 'desc' } });
+  }
+  createPackage(auth: string | undefined, dto: AdminPackageDto) {
+    this.verify(auth);
+    return this.prisma.package.create({
+      data: { ...dto, description: dto.description || null },
+    });
+  }
+  updatePackage(auth: string | undefined, id: string, dto: AdminPackageDto) {
+    this.verify(auth);
+    return this.prisma.package.update({
+      where: { id },
+      data: { ...dto, description: dto.description || null },
     });
   }
   journalArticles(auth?: string) {
