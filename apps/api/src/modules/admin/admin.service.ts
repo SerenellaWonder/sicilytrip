@@ -85,6 +85,32 @@ export class AdminService {
       ),
     };
   }
+  async customers(auth?: string) {
+    this.verify(auth);
+    const attempts = await this.prisma.providerBookingAttempt.findMany({
+      where: { customerEmailHash: { not: null } },
+      select: { customerEmailHash: true, status: true, createdAt: true },
+      orderBy: { createdAt: 'desc' },
+    });
+    const customers = new Map<
+      string,
+      { id: string; bookings: number; confirmed: number; lastActivity: Date }
+    >();
+    attempts.forEach((attempt) => {
+      const hash = attempt.customerEmailHash;
+      if (!hash) return;
+      const current = customers.get(hash) ?? {
+        id: `Cliente ${hash.slice(0, 8).toUpperCase()}`,
+        bookings: 0,
+        confirmed: 0,
+        lastActivity: attempt.createdAt,
+      };
+      current.bookings += 1;
+      if (attempt.status === 'CONFIRMED') current.confirmed += 1;
+      customers.set(hash, current);
+    });
+    return [...customers.values()];
+  }
   journalArticles(auth?: string) {
     this.verify(auth);
     return this.prisma.journalArticle.findMany({

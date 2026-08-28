@@ -19,6 +19,9 @@ export class AdminController {
   @Get('summary') summary(@Headers('authorization') auth?: string) {
     return this.service.summary(auth);
   }
+  @Get('customers') customers(@Headers('authorization') auth?: string) {
+    return this.service.customers(auth);
+  }
   @Get('journal') journal(@Headers('authorization') auth?: string) {
     return this.service.journalArticles(auth);
   }

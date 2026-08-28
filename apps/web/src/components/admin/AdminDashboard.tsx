@@ -13,6 +13,7 @@ import { apiFetch } from "@/lib/api";
 import AdminJournal from "./AdminJournal";
 import AdminFaq from "./AdminFaq";
 import AdminOverview from "./AdminOverview";
+import AdminCustomers from "./AdminCustomers";
 
 type Booking = {
   id: string;
@@ -36,7 +37,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [section, setSection] = useState<
-    "overview" | "bookings" | "journal" | "faq"
+    "overview" | "bookings" | "journal" | "faq" | "customers"
   >("overview");
 
   useEffect(() => {
@@ -203,6 +204,13 @@ export default function AdminDashboard() {
               >
                 FAQ
               </button>
+              <button
+                type="button"
+                onClick={() => setSection("customers")}
+                className={`rounded-xl px-5 py-2.5 text-xs font-bold transition ${section === "customers" ? "bg-[#F58220] text-white shadow-md shadow-orange-200" : "text-[#0D2340]/60 hover:bg-[#F7F5F1]"}`}
+              >
+                Clienti
+              </button>
             </nav>
             {section === "overview" ? (
               <AdminOverview token={token} />
@@ -210,6 +218,8 @@ export default function AdminDashboard() {
               <AdminJournal token={token} />
             ) : section === "faq" ? (
               <AdminFaq token={token} />
+            ) : section === "customers" ? (
+              <AdminCustomers token={token} />
             ) : (
               <>
                 <div className="mb-5 flex items-center justify-between">
