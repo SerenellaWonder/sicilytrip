@@ -212,6 +212,32 @@ export class AdminService {
     });
     return [...customers.values()];
   }
+  async users(auth?: string) {
+    this.verify(auth);
+    const users = await this.prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        language: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: { select: { bookings: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 500,
+    });
+    return users.map((user) => ({
+      id: `Utente ${user.id.slice(-8).toUpperCase()}`,
+      email: this.maskEmail(user.email),
+      language: user.language || 'it',
+      profileComplete: Boolean(user.firstName && user.lastName),
+      bookings: user._count.bookings,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    }));
+  }
   async payments(auth?: string) {
     this.verify(auth);
     const payments = await this.prisma.hotelPayment.findMany({
@@ -563,6 +589,11 @@ export class AdminService {
     } catch {
       // Il log non deve rendere inutilizzabile un'operazione già completata.
     }
+  }
+  private maskEmail(email: string) {
+    const [local, domain] = email.split('@');
+    if (!domain) return 'indirizzo protetto';
+    return `${local.slice(0, 1)}***@${domain}`;
   }
   private verify(auth?: string) {
     this.configured();
