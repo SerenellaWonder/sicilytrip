@@ -221,80 +221,74 @@ export default function AdminDashboard() {
               >
                 Dashboard
               </button>
-              <button
-                onClick={() => setSection("bookings")}
-                className={`rounded-xl px-5 py-2.5 text-xs font-bold transition ${section === "bookings" ? "bg-[#F58220] text-white shadow-md shadow-orange-200" : "text-[#0D2340]/60 hover:bg-[#F7F5F1]"}`}
-              >
-                Prenotazioni
-              </button>
-              <button
-                onClick={() => setSection("journal")}
-                className={`rounded-xl px-5 py-2.5 text-xs font-bold transition ${section === "journal" ? "bg-[#F58220] text-white shadow-md shadow-orange-200" : "text-[#0D2340]/60 hover:bg-[#F7F5F1]"}`}
-              >
-                Journal
-              </button>
-              <button
-                type="button"
-                onClick={() => setSection("faq")}
-                className={`rounded-xl px-5 py-2.5 text-xs font-bold transition ${section === "faq" ? "bg-[#F58220] text-white shadow-md shadow-orange-200" : "text-[#0D2340]/60 hover:bg-[#F7F5F1]"}`}
-              >
-                FAQ
-              </button>
-              <button
-                type="button"
-                onClick={() => setSection("customers")}
-                className={`rounded-xl px-5 py-2.5 text-xs font-bold transition ${section === "customers" ? "bg-[#F58220] text-white shadow-md shadow-orange-200" : "text-[#0D2340]/60 hover:bg-[#F7F5F1]"}`}
-              >
-                Clienti
-              </button>
-              <button
-                type="button"
-                onClick={() => setSection("payments")}
-                className={`rounded-xl px-5 py-2.5 text-xs font-bold transition ${section === "payments" ? "bg-[#F58220] text-white shadow-md shadow-orange-200" : "text-[#0D2340]/60 hover:bg-[#F7F5F1]"}`}
-              >
-                Pagamenti
-              </button>
-              <button
-                type="button"
-                onClick={() => setSection("wishlists")}
-                className={`rounded-xl px-5 py-2.5 text-xs font-bold transition ${section === "wishlists" ? "bg-[#F58220] text-white shadow-md shadow-orange-200" : "text-[#0D2340]/60 hover:bg-[#F7F5F1]"}`}
-              >
-                Wishlist
-              </button>
-              <button
-                type="button"
-                onClick={() => setSection("experiences")}
-                className={`rounded-xl px-5 py-2.5 text-xs font-bold transition ${section === "experiences" ? "bg-[#F58220] text-white shadow-md shadow-orange-200" : "text-[#0D2340]/60 hover:bg-[#F7F5F1]"}`}
-              >
-                Esperienze
-              </button>
-              <button
-                type="button"
-                onClick={() => setSection("packages")}
-                className={`rounded-xl px-5 py-2.5 text-xs font-bold transition ${section === "packages" ? "bg-[#F58220] text-white shadow-md shadow-orange-200" : "text-[#0D2340]/60 hover:bg-[#F7F5F1]"}`}
-              >
-                Pacchetti
-              </button>
-              <button
-                type="button"
-                onClick={() => setSection("destinations")}
-                className={`rounded-xl px-5 py-2.5 text-xs font-bold transition ${section === "destinations" ? "bg-[#F58220] text-white shadow-md shadow-orange-200" : "text-[#0D2340]/60 hover:bg-[#F7F5F1]"}`}
-              >
-                Destinazioni
-              </button>
+              {role !== "CONTENT_EDITOR" && (
+                <>
+                  <NavButton
+                    label="Prenotazioni"
+                    active={section === "bookings"}
+                    onClick={() => setSection("bookings")}
+                  />
+                  <NavButton
+                    label="Clienti"
+                    active={section === "customers"}
+                    onClick={() => setSection("customers")}
+                  />
+                  <NavButton
+                    label="Pagamenti"
+                    active={section === "payments"}
+                    onClick={() => setSection("payments")}
+                  />
+                </>
+              )}
+              {role !== "CUSTOMER_SUPPORT" && (
+                <>
+                  <NavButton
+                    label="Journal"
+                    active={section === "journal"}
+                    onClick={() => setSection("journal")}
+                  />
+                  <NavButton
+                    label="FAQ"
+                    active={section === "faq"}
+                    onClick={() => setSection("faq")}
+                  />
+                </>
+              )}
+              {role !== "CUSTOMER_SUPPORT" && (
+                <>
+                  <NavButton
+                    label="Wishlist"
+                    active={section === "wishlists"}
+                    onClick={() => setSection("wishlists")}
+                  />
+                  <NavButton
+                    label="Esperienze"
+                    active={section === "experiences"}
+                    onClick={() => setSection("experiences")}
+                  />
+                  <NavButton
+                    label="Pacchetti"
+                    active={section === "packages"}
+                    onClick={() => setSection("packages")}
+                  />
+                  <NavButton
+                    label="Destinazioni"
+                    active={section === "destinations"}
+                    onClick={() => setSection("destinations")}
+                  />
+                  <NavButton
+                    label="Hotel"
+                    active={section === "hotels"}
+                    onClick={() => setSection("hotels")}
+                  />
+                </>
+              )}
               <button
                 type="button"
                 onClick={() => setSection("assistant")}
                 className={`rounded-xl px-5 py-2.5 text-xs font-bold transition ${section === "assistant" ? "bg-[#F58220] text-white shadow-md shadow-orange-200" : "text-[#0D2340]/60 hover:bg-[#F7F5F1]"}`}
               >
                 Assistente
-              </button>
-              <button
-                type="button"
-                onClick={() => setSection("hotels")}
-                className={`rounded-xl px-5 py-2.5 text-xs font-bold transition ${section === "hotels" ? "bg-[#F58220] text-white shadow-md shadow-orange-200" : "text-[#0D2340]/60 hover:bg-[#F7F5F1]"}`}
-              >
-                Hotel
               </button>
               <button
                 type="button"
@@ -312,13 +306,13 @@ export default function AdminDashboard() {
                   Attività
                 </button>
               )}
-              <button
-                type="button"
-                onClick={() => setSection("users")}
-                className={`rounded-xl px-5 py-2.5 text-xs font-bold transition ${section === "users" ? "bg-[#F58220] text-white shadow-md shadow-orange-200" : "text-[#0D2340]/60 hover:bg-[#F7F5F1]"}`}
-              >
-                Utenti
-              </button>
+              {role !== "CONTENT_EDITOR" && (
+                <NavButton
+                  label="Utenti"
+                  active={section === "users"}
+                  onClick={() => setSection("users")}
+                />
+              )}
               {role === "SUPER_ADMIN" && (
                 <button
                   type="button"
@@ -420,6 +414,26 @@ function Field({
         className="mt-2 h-12 w-full rounded-xl border border-[#0D2340]/10 px-4 outline-none focus:border-[#0D2340]/30"
       />
     </label>
+  );
+}
+
+function NavButton({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-xl px-5 py-2.5 text-xs font-bold transition ${active ? "bg-[#F58220] text-white shadow-md shadow-orange-200" : "text-[#0D2340]/60 hover:bg-[#F7F5F1]"}`}
+    >
+      {label}
+    </button>
   );
 }
 
