@@ -11,6 +11,7 @@ import {
   CreateAdminOperatorDto,
   UpdateAdminOperatorDto,
 } from './dto/admin-operator.dto';
+import { UpdateAdminContactDto } from './dto/admin-contact.dto';
 class LoginDto {
   @IsEmail() email!: string;
   @IsString() @IsNotEmpty() password!: string;
@@ -39,6 +40,16 @@ export class AdminController {
     @Body() dto: UpdateAdminOperatorDto,
   ) {
     return this.service.updateOperator(auth, id, dto);
+  }
+  @Get('contacts') contacts(@Headers('authorization') auth?: string) {
+    return this.service.contacts(auth);
+  }
+  @Post('contacts/:id') updateContact(
+    @Headers('authorization') auth: string | undefined,
+    @Param('id') id: string,
+    @Body() dto: UpdateAdminContactDto,
+  ) {
+    return this.service.updateContact(auth, id, dto);
   }
   @Get('bookings') bookings(@Headers('authorization') auth?: string) {
     return this.service.bookings(auth);

@@ -43,6 +43,29 @@ enum AdminRole {
   CUSTOMER_SUPPORT
 }
 
+enum ContactRequestStatus {
+  NEW
+  IN_PROGRESS
+  RESOLVED
+  ARCHIVED
+}
+
+model ContactRequest {
+  id        String               @id @default(cuid())
+  name      String
+  email     String
+  subject   String
+  message   String
+  status    ContactRequestStatus @default(NEW)
+  consentAt DateTime
+  expiresAt DateTime
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+
+  @@index([status, createdAt])
+  @@index([expiresAt])
+}
+
 model AdminOperator {
   id           String    @id @default(cuid())
   email        String    @unique

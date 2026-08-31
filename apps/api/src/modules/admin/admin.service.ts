@@ -23,6 +23,7 @@ import {
   CreateAdminOperatorDto,
   UpdateAdminOperatorDto,
 } from './dto/admin-operator.dto';
+import { UpdateAdminContactDto } from './dto/admin-contact.dto';
 @Injectable()
 export class AdminService {
   private readonly email?: string;
@@ -119,6 +120,29 @@ export class AdminService {
             ? { passwordHash: this.hashOperatorPassword(dto.password) }
             : {}),
         },
+      }),
+    );
+  }
+  async contacts(auth?: string) {
+    this.verify(auth, 'support');
+    await this.prisma.contactRequest.deleteMany({
+      where: { expiresAt: { lt: new Date() } },
+    });
+    return this.prisma.contactRequest.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 500,
+    });
+  }
+  updateContact(
+    auth: string | undefined,
+    id: string,
+    dto: UpdateAdminContactDto,
+  ) {
+    this.verify(auth, 'support');
+    return this.tracked('contact.updated', () =>
+      this.prisma.contactRequest.update({
+        where: { id },
+        data: { status: dto.status },
       }),
     );
   }
@@ -682,7 +706,7 @@ export class AdminService {
   }
   private verify(
     auth?: string,
-    permission: 'all' | 'content' | 'super' = 'all',
+    permission: 'all' | 'content' | 'support' | 'super' = 'all',
   ) {
     this.configured();
     const [p, s] = (auth?.startsWith('Bearer ') ? auth.slice(7) : '').split(
@@ -709,6 +733,12 @@ export class AdminService {
       permission === 'content' &&
       role !== AdminRole.SUPER_ADMIN &&
       role !== AdminRole.CONTENT_EDITOR
+    )
+      throw new UnauthorizedException('Operazione non autorizzata');
+    if (
+      permission === 'support' &&
+      role !== AdminRole.SUPER_ADMIN &&
+      role !== AdminRole.CUSTOMER_SUPPORT
     )
       throw new UnauthorizedException('Operazione non autorizzata');
     return { role, sub: session.sub };

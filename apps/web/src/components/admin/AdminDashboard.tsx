@@ -25,6 +25,7 @@ import AdminAnalytics from "./AdminAnalytics";
 import AdminActivity from "./AdminActivity";
 import AdminUsers from "./AdminUsers";
 import AdminOperators from "./AdminOperators";
+import AdminContacts from "./AdminContacts";
 
 type AdminRole = "SUPER_ADMIN" | "CONTENT_EDITOR" | "CUSTOMER_SUPPORT";
 
@@ -67,6 +68,7 @@ export default function AdminDashboard() {
     | "activity"
     | "users"
     | "operators"
+    | "contacts"
   >("overview");
 
   useEffect(() => {
@@ -238,6 +240,11 @@ export default function AdminDashboard() {
                     active={section === "payments"}
                     onClick={() => setSection("payments")}
                   />
+                  <NavButton
+                    label="Richieste"
+                    active={section === "contacts"}
+                    onClick={() => setSection("contacts")}
+                  />
                 </>
               )}
               {role !== "CUSTOMER_SUPPORT" && (
@@ -353,6 +360,8 @@ export default function AdminDashboard() {
               <AdminUsers token={token} />
             ) : section === "operators" && role === "SUPER_ADMIN" ? (
               <AdminOperators token={token} />
+            ) : section === "contacts" && role !== "CONTENT_EDITOR" ? (
+              <AdminContacts token={token} />
             ) : (
               <>
                 <div className="mb-5 flex items-center justify-between">

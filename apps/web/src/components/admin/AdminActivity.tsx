@@ -33,6 +33,9 @@ const labels: Record<string, string> = {
   "faq.created": "FAQ creata",
   "faq.updated": "FAQ modificata",
   "geography.bootstrapped": "Territorio siciliano caricato",
+  "contact.updated": "Richiesta di contatto aggiornata",
+  "operator.created": "Operatore creato",
+  "operator.updated": "Operatore modificato",
 };
 
 export default function AdminActivity({ token }: { token: string }) {
