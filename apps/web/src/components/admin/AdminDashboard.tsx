@@ -24,6 +24,9 @@ import AdminHotels from "./AdminHotels";
 import AdminAnalytics from "./AdminAnalytics";
 import AdminActivity from "./AdminActivity";
 import AdminUsers from "./AdminUsers";
+import AdminOperators from "./AdminOperators";
+
+type AdminRole = "SUPER_ADMIN" | "CONTENT_EDITOR" | "CUSTOMER_SUPPORT";
 
 type Booking = {
   id: string;
@@ -43,6 +46,7 @@ export default function AdminDashboard() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [token, setToken] = useState("");
+  const [role, setRole] = useState<AdminRole>("SUPER_ADMIN");
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -62,6 +66,7 @@ export default function AdminDashboard() {
     | "analytics"
     | "activity"
     | "users"
+    | "operators"
   >("overview");
 
   useEffect(() => {
@@ -82,6 +87,7 @@ export default function AdminDashboard() {
         headers: { Authorization: `Bearer ${sessionToken}` },
       });
       setToken(sessionToken);
+      setRole(readRole(sessionToken));
       setBookings(data);
     } catch {
       sessionStorage.removeItem(SESSION_KEY);
@@ -115,6 +121,7 @@ export default function AdminDashboard() {
   function logout() {
     sessionStorage.removeItem(SESSION_KEY);
     setToken("");
+    setRole("SUPER_ADMIN");
     setBookings([]);
   }
 
@@ -148,12 +155,17 @@ export default function AdminDashboard() {
               </p>
             </div>
             {token && (
-              <button
-                onClick={logout}
-                className="flex shrink-0 items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-4 py-2.5 text-xs font-semibold text-white/70 transition hover:bg-white/10 hover:text-white"
-              >
-                <LogOut size={17} /> Esci
-              </button>
+              <div className="flex flex-col items-end gap-2">
+                <span className="rounded-full bg-white/10 px-3 py-1 text-[8px] font-bold uppercase tracking-[0.12em] text-white/55">
+                  {roleLabel(role)}
+                </span>
+                <button
+                  onClick={logout}
+                  className="flex shrink-0 items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-4 py-2.5 text-xs font-semibold text-white/70 transition hover:bg-white/10 hover:text-white"
+                >
+                  <LogOut size={17} /> Esci
+                </button>
+              </div>
             )}
           </div>
         </header>
@@ -291,13 +303,15 @@ export default function AdminDashboard() {
               >
                 Analisi
               </button>
-              <button
-                type="button"
-                onClick={() => setSection("activity")}
-                className={`rounded-xl px-5 py-2.5 text-xs font-bold transition ${section === "activity" ? "bg-[#F58220] text-white shadow-md shadow-orange-200" : "text-[#0D2340]/60 hover:bg-[#F7F5F1]"}`}
-              >
-                Attività
-              </button>
+              {role === "SUPER_ADMIN" && (
+                <button
+                  type="button"
+                  onClick={() => setSection("activity")}
+                  className={`rounded-xl px-5 py-2.5 text-xs font-bold transition ${section === "activity" ? "bg-[#F58220] text-white shadow-md shadow-orange-200" : "text-[#0D2340]/60 hover:bg-[#F7F5F1]"}`}
+                >
+                  Attività
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => setSection("users")}
@@ -305,6 +319,15 @@ export default function AdminDashboard() {
               >
                 Utenti
               </button>
+              {role === "SUPER_ADMIN" && (
+                <button
+                  type="button"
+                  onClick={() => setSection("operators")}
+                  className={`rounded-xl px-5 py-2.5 text-xs font-bold transition ${section === "operators" ? "bg-[#F58220] text-white shadow-md shadow-orange-200" : "text-[#0D2340]/60 hover:bg-[#F7F5F1]"}`}
+                >
+                  Operatori
+                </button>
+              )}
             </nav>
             {section === "overview" ? (
               <AdminOverview token={token} />
@@ -334,6 +357,8 @@ export default function AdminDashboard() {
               <AdminActivity token={token} />
             ) : section === "users" ? (
               <AdminUsers token={token} />
+            ) : section === "operators" && role === "SUPER_ADMIN" ? (
+              <AdminOperators token={token} />
             ) : (
               <>
                 <div className="mb-5 flex items-center justify-between">
@@ -455,4 +480,29 @@ function dateTime(value: string) {
     dateStyle: "short",
     timeStyle: "short",
   }).format(new Date(value));
+}
+
+function readRole(token: string): AdminRole {
+  try {
+    const encoded = token
+      .split(".")[0]
+      .replaceAll("-", "+")
+      .replaceAll("_", "/");
+    const payload = JSON.parse(
+      atob(encoded.padEnd(Math.ceil(encoded.length / 4) * 4, "=")),
+    ) as {
+      role?: AdminRole;
+    };
+    return payload.role ?? "SUPER_ADMIN";
+  } catch {
+    return "SUPER_ADMIN";
+  }
+}
+
+function roleLabel(role: AdminRole) {
+  return role === "SUPER_ADMIN"
+    ? "Amministratore"
+    : role === "CONTENT_EDITOR"
+      ? "Gestore contenuti"
+      : "Assistenza clienti";
 }

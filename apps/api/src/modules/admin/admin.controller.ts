@@ -7,6 +7,10 @@ import { AdminExperienceDto } from './dto/admin-experience.dto';
 import { AdminPackageDto } from './dto/admin-package.dto';
 import { AdminDestinationDto } from './dto/admin-destination.dto';
 import { AdminHotelDto } from './dto/admin-hotel.dto';
+import {
+  CreateAdminOperatorDto,
+  UpdateAdminOperatorDto,
+} from './dto/admin-operator.dto';
 class LoginDto {
   @IsEmail() email!: string;
   @IsString() @IsNotEmpty() password!: string;
@@ -16,6 +20,25 @@ export class AdminController {
   constructor(private readonly service: AdminService) {}
   @Post('login') login(@Body() dto: LoginDto) {
     return this.service.login(dto.email, dto.password);
+  }
+  @Get('session') session(@Headers('authorization') auth?: string) {
+    return this.service.session(auth);
+  }
+  @Get('operators') operators(@Headers('authorization') auth?: string) {
+    return this.service.operators(auth);
+  }
+  @Post('operators') createOperator(
+    @Headers('authorization') auth: string | undefined,
+    @Body() dto: CreateAdminOperatorDto,
+  ) {
+    return this.service.createOperator(auth, dto);
+  }
+  @Post('operators/:id') updateOperator(
+    @Headers('authorization') auth: string | undefined,
+    @Param('id') id: string,
+    @Body() dto: UpdateAdminOperatorDto,
+  ) {
+    return this.service.updateOperator(auth, id, dto);
   }
   @Get('bookings') bookings(@Headers('authorization') auth?: string) {
     return this.service.bookings(auth);

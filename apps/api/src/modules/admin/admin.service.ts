@@ -4,7 +4,14 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
+import {
+  createHash,
+  createHmac,
+  randomBytes,
+  scryptSync,
+  timingSafeEqual,
+} from 'node:crypto';
+import { AdminRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AdminJournalArticleDto } from './dto/admin-journal.dto';
 import { AdminFaqDto } from './dto/admin-faq.dto';
@@ -12,6 +19,10 @@ import { AdminExperienceDto } from './dto/admin-experience.dto';
 import { AdminPackageDto } from './dto/admin-package.dto';
 import { AdminDestinationDto } from './dto/admin-destination.dto';
 import { AdminHotelDto } from './dto/admin-hotel.dto';
+import {
+  CreateAdminOperatorDto,
+  UpdateAdminOperatorDto,
+} from './dto/admin-operator.dto';
 @Injectable()
 export class AdminService {
   private readonly email?: string;
@@ -25,17 +36,91 @@ export class AdminService {
     this.password = config.get<string>('ADMIN_PASSWORD');
     this.secret = config.get<string>('ADMIN_AUTH_SECRET');
   }
-  login(email: string, password: string) {
+  async login(email: string, password: string) {
     this.configured();
+    const normalizedEmail = email.trim().toLowerCase();
+    let role: AdminRole = AdminRole.SUPER_ADMIN;
+    let subject = 'environment-admin';
     if (
-      !this.equal(email.trim().toLowerCase(), this.email!) ||
+      !this.equal(normalizedEmail, this.email!) ||
       !this.equal(password, this.password!)
-    )
-      throw new UnauthorizedException('Credenziali non valide');
+    ) {
+      const operator = await this.prisma.adminOperator.findUnique({
+        where: { email: normalizedEmail },
+      });
+      if (
+        !operator?.isActive ||
+        !this.verifyOperatorPassword(password, operator.passwordHash)
+      )
+        throw new UnauthorizedException('Credenziali non valide');
+      role = operator.role;
+      subject = operator.id;
+      await this.prisma.adminOperator.update({
+        where: { id: operator.id },
+        data: { lastLoginAt: new Date() },
+      });
+    }
     const payload = Buffer.from(
-      JSON.stringify({ exp: Date.now() + 8 * 60 * 60 * 1000 }),
+      JSON.stringify({
+        exp: Date.now() + 8 * 60 * 60 * 1000,
+        role,
+        sub: subject,
+      }),
     ).toString('base64url');
-    return { token: `${payload}.${this.sign(payload)}`, expiresIn: 28800 };
+    return {
+      token: `${payload}.${this.sign(payload)}`,
+      expiresIn: 28800,
+      role,
+    };
+  }
+  session(auth?: string) {
+    const session = this.verify(auth);
+    return { role: session.role };
+  }
+  operators(auth?: string) {
+    this.verify(auth, 'super');
+    return this.prisma.adminOperator.findMany({
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        isActive: true,
+        lastLoginAt: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+  createOperator(auth: string | undefined, dto: CreateAdminOperatorDto) {
+    this.verify(auth, 'super');
+    return this.tracked('operator.created', () =>
+      this.prisma.adminOperator.create({
+        data: {
+          email: dto.email.trim().toLowerCase(),
+          passwordHash: this.hashOperatorPassword(dto.password),
+          role: dto.role,
+        },
+      }),
+    );
+  }
+  updateOperator(
+    auth: string | undefined,
+    id: string,
+    dto: UpdateAdminOperatorDto,
+  ) {
+    this.verify(auth, 'super');
+    return this.tracked('operator.updated', () =>
+      this.prisma.adminOperator.update({
+        where: { id },
+        data: {
+          role: dto.role,
+          isActive: dto.isActive,
+          ...(dto.password
+            ? { passwordHash: this.hashOperatorPassword(dto.password) }
+            : {}),
+        },
+      }),
+    );
   }
   async bookings(auth?: string) {
     this.verify(auth);
@@ -171,7 +256,7 @@ export class AdminService {
     };
   }
   activity(auth?: string) {
-    this.verify(auth);
+    this.verify(auth, 'super');
     return this.prisma.apiLog.findMany({
       where: { provider: 'ADMIN' },
       select: {
@@ -310,7 +395,7 @@ export class AdminService {
     });
   }
   createExperience(auth: string | undefined, dto: AdminExperienceDto) {
-    this.verify(auth);
+    this.verify(auth, 'content');
     return this.tracked('experience.created', () =>
       this.prisma.experience.create({
         data: {
@@ -328,7 +413,7 @@ export class AdminService {
     id: string,
     dto: AdminExperienceDto,
   ) {
-    this.verify(auth);
+    this.verify(auth, 'content');
     return this.tracked('experience.updated', () =>
       this.prisma.experience.update({
         where: { id },
@@ -347,7 +432,7 @@ export class AdminService {
     return this.prisma.package.findMany({ orderBy: { updatedAt: 'desc' } });
   }
   createPackage(auth: string | undefined, dto: AdminPackageDto) {
-    this.verify(auth);
+    this.verify(auth, 'content');
     return this.tracked('package.created', () =>
       this.prisma.package.create({
         data: { ...dto, description: dto.description || null },
@@ -355,7 +440,7 @@ export class AdminService {
     );
   }
   updatePackage(auth: string | undefined, id: string, dto: AdminPackageDto) {
-    this.verify(auth);
+    this.verify(auth, 'content');
     return this.tracked('package.updated', () =>
       this.prisma.package.update({
         where: { id },
@@ -378,7 +463,7 @@ export class AdminService {
     });
   }
   async bootstrapGeography(auth?: string) {
-    this.verify(auth);
+    this.verify(auth, 'content');
     const provinces = [
       ['Agrigento', 'AG', 'agrigento'],
       ['Caltanissetta', 'CL', 'caltanissetta'],
@@ -448,7 +533,7 @@ export class AdminService {
     return { ok: true, ...result };
   }
   createDestination(auth: string | undefined, dto: AdminDestinationDto) {
-    this.verify(auth);
+    this.verify(auth, 'content');
     return this.tracked('destination.created', () =>
       this.prisma.destination.create({ data: this.destinationData(dto) }),
     );
@@ -458,7 +543,7 @@ export class AdminService {
     id: string,
     dto: AdminDestinationDto,
   ) {
-    this.verify(auth);
+    this.verify(auth, 'content');
     return this.tracked('destination.updated', () =>
       this.prisma.destination.update({
         where: { id },
@@ -487,13 +572,13 @@ export class AdminService {
     });
   }
   createHotel(auth: string | undefined, dto: AdminHotelDto) {
-    this.verify(auth);
+    this.verify(auth, 'content');
     return this.tracked('hotel.created', () =>
       this.prisma.hotel.create({ data: this.hotelData(dto) }),
     );
   }
   updateHotel(auth: string | undefined, id: string, dto: AdminHotelDto) {
-    this.verify(auth);
+    this.verify(auth, 'content');
     return this.tracked('hotel.updated', () =>
       this.prisma.hotel.update({
         where: { id },
@@ -521,7 +606,7 @@ export class AdminService {
     });
   }
   createJournalArticle(auth: string | undefined, dto: AdminJournalArticleDto) {
-    this.verify(auth);
+    this.verify(auth, 'content');
     return this.tracked('journal.created', () =>
       this.prisma.journalArticle.create({
         data: {
@@ -537,7 +622,7 @@ export class AdminService {
     id: string,
     dto: AdminJournalArticleDto,
   ) {
-    this.verify(auth);
+    this.verify(auth, 'content');
     return this.tracked('journal.updated', () =>
       this.prisma.journalArticle.update({
         where: { id },
@@ -556,13 +641,13 @@ export class AdminService {
     });
   }
   createFaqItem(auth: string | undefined, dto: AdminFaqDto) {
-    this.verify(auth);
+    this.verify(auth, 'content');
     return this.tracked('faq.created', () =>
       this.prisma.faqItem.create({ data: dto }),
     );
   }
   updateFaqItem(auth: string | undefined, id: string, dto: AdminFaqDto) {
-    this.verify(auth);
+    this.verify(auth, 'content');
     return this.tracked('faq.updated', () =>
       this.prisma.faqItem.update({ where: { id }, data: dto }),
     );
@@ -595,21 +680,38 @@ export class AdminService {
     if (!domain) return 'indirizzo protetto';
     return `${local.slice(0, 1)}***@${domain}`;
   }
-  private verify(auth?: string) {
+  private verify(
+    auth?: string,
+    permission: 'all' | 'content' | 'super' = 'all',
+  ) {
     this.configured();
     const [p, s] = (auth?.startsWith('Bearer ') ? auth.slice(7) : '').split(
       '.',
     );
     if (!p || !s || !this.equal(s, this.sign(p)))
       throw new UnauthorizedException('Sessione non valida');
+    let session: { exp: number; role?: AdminRole; sub?: string };
     try {
-      const v = JSON.parse(Buffer.from(p, 'base64url').toString()) as {
+      session = JSON.parse(Buffer.from(p, 'base64url').toString()) as {
         exp: number;
+        role?: AdminRole;
+        sub?: string;
       };
-      if (v.exp <= Date.now()) throw new Error();
     } catch {
       throw new UnauthorizedException('Sessione scaduta');
     }
+    if (session.exp <= Date.now())
+      throw new UnauthorizedException('Sessione scaduta');
+    const role = session.role ?? AdminRole.SUPER_ADMIN;
+    if (permission === 'super' && role !== AdminRole.SUPER_ADMIN)
+      throw new UnauthorizedException('Operazione non autorizzata');
+    if (
+      permission === 'content' &&
+      role !== AdminRole.SUPER_ADMIN &&
+      role !== AdminRole.CONTENT_EDITOR
+    )
+      throw new UnauthorizedException('Operazione non autorizzata');
+    return { role, sub: session.sub };
   }
   private configured() {
     if (!this.email || !this.password || !this.secret)
@@ -624,6 +726,20 @@ export class AdminService {
     return timingSafeEqual(
       createHash('sha256').update(a).digest(),
       createHash('sha256').update(b).digest(),
+    );
+  }
+  private hashOperatorPassword(password: string) {
+    const salt = randomBytes(16).toString('hex');
+    return `${salt}:${scryptSync(password, salt, 64).toString('hex')}`;
+  }
+  private verifyOperatorPassword(password: string, stored: string) {
+    const [salt, expected] = stored.split(':');
+    if (!salt || !expected) return false;
+    const actual = scryptSync(password, salt, 64);
+    const expectedBuffer = Buffer.from(expected, 'hex');
+    return (
+      actual.length === expectedBuffer.length &&
+      timingSafeEqual(actual, expectedBuffer)
     );
   }
 }
