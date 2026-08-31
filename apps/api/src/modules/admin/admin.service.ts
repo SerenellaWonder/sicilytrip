@@ -117,6 +117,59 @@ export class AdminService {
       },
     };
   }
+  async analytics(auth?: string) {
+    this.verify(auth);
+    const since = new Date();
+    since.setDate(since.getDate() - 30);
+    const [searchStatus, providers, recentSearches, searches, bookings] =
+      await Promise.all([
+        this.prisma.hotelSearch.groupBy({
+          by: ['status'],
+          _count: { id: true },
+          orderBy: { status: 'asc' },
+        }),
+        this.prisma.hotelSearch.groupBy({
+          by: ['provider'],
+          _count: { id: true },
+          orderBy: { _count: { id: 'desc' } },
+        }),
+        this.prisma.hotelSearch.count({ where: { createdAt: { gte: since } } }),
+        this.prisma.hotelSearch.findMany({
+          select: { destination: { select: { name: true } } },
+          orderBy: { createdAt: 'desc' },
+          take: 2000,
+        }),
+        this.prisma.providerBookingAttempt.count(),
+      ]);
+    const destinations = new Map<string, number>();
+    searches.forEach((search) => {
+      const name = search.destination?.name;
+      if (name) destinations.set(name, (destinations.get(name) ?? 0) + 1);
+    });
+    const totalSearches = searchStatus.reduce(
+      (sum, item) => sum + item._count.id,
+      0,
+    );
+    return {
+      totalSearches,
+      recentSearches,
+      bookings,
+      conversionRate: totalSearches
+        ? Math.round((bookings / totalSearches) * 1000) / 10
+        : 0,
+      searchStatus: Object.fromEntries(
+        searchStatus.map((item) => [item.status, item._count.id]),
+      ),
+      providers: providers.map((item) => ({
+        name: item.provider,
+        searches: item._count.id,
+      })),
+      destinations: [...destinations.entries()]
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10),
+    };
+  }
   async customers(auth?: string) {
     this.verify(auth);
     const attempts = await this.prisma.providerBookingAttempt.findMany({
