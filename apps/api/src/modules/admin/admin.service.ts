@@ -170,6 +170,22 @@ export class AdminService {
         .slice(0, 10),
     };
   }
+  activity(auth?: string) {
+    this.verify(auth);
+    return this.prisma.apiLog.findMany({
+      where: { provider: 'ADMIN' },
+      select: {
+        id: true,
+        endpoint: true,
+        method: true,
+        statusCode: true,
+        requestBody: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+    });
+  }
   async customers(auth?: string) {
     this.verify(auth);
     const attempts = await this.prisma.providerBookingAttempt.findMany({
@@ -269,15 +285,17 @@ export class AdminService {
   }
   createExperience(auth: string | undefined, dto: AdminExperienceDto) {
     this.verify(auth);
-    return this.prisma.experience.create({
-      data: {
-        ...dto,
-        description: dto.description || null,
-        city: dto.city || null,
-        priceFrom: dto.priceFrom ?? null,
-        currency: (dto.currency || 'EUR').toUpperCase(),
-      },
-    });
+    return this.tracked('experience.created', () =>
+      this.prisma.experience.create({
+        data: {
+          ...dto,
+          description: dto.description || null,
+          city: dto.city || null,
+          priceFrom: dto.priceFrom ?? null,
+          currency: (dto.currency || 'EUR').toUpperCase(),
+        },
+      }),
+    );
   }
   updateExperience(
     auth: string | undefined,
@@ -285,16 +303,18 @@ export class AdminService {
     dto: AdminExperienceDto,
   ) {
     this.verify(auth);
-    return this.prisma.experience.update({
-      where: { id },
-      data: {
-        ...dto,
-        description: dto.description || null,
-        city: dto.city || null,
-        priceFrom: dto.priceFrom ?? null,
-        currency: (dto.currency || 'EUR').toUpperCase(),
-      },
-    });
+    return this.tracked('experience.updated', () =>
+      this.prisma.experience.update({
+        where: { id },
+        data: {
+          ...dto,
+          description: dto.description || null,
+          city: dto.city || null,
+          priceFrom: dto.priceFrom ?? null,
+          currency: (dto.currency || 'EUR').toUpperCase(),
+        },
+      }),
+    );
   }
   packages(auth?: string) {
     this.verify(auth);
@@ -302,16 +322,20 @@ export class AdminService {
   }
   createPackage(auth: string | undefined, dto: AdminPackageDto) {
     this.verify(auth);
-    return this.prisma.package.create({
-      data: { ...dto, description: dto.description || null },
-    });
+    return this.tracked('package.created', () =>
+      this.prisma.package.create({
+        data: { ...dto, description: dto.description || null },
+      }),
+    );
   }
   updatePackage(auth: string | undefined, id: string, dto: AdminPackageDto) {
     this.verify(auth);
-    return this.prisma.package.update({
-      where: { id },
-      data: { ...dto, description: dto.description || null },
-    });
+    return this.tracked('package.updated', () =>
+      this.prisma.package.update({
+        where: { id },
+        data: { ...dto, description: dto.description || null },
+      }),
+    );
   }
   destinations(auth?: string) {
     this.verify(auth);
@@ -394,11 +418,14 @@ export class AdminService {
         municipalities: municipalities.length,
       };
     });
+    await this.audit('geography.bootstrapped');
     return { ok: true, ...result };
   }
   createDestination(auth: string | undefined, dto: AdminDestinationDto) {
     this.verify(auth);
-    return this.prisma.destination.create({ data: this.destinationData(dto) });
+    return this.tracked('destination.created', () =>
+      this.prisma.destination.create({ data: this.destinationData(dto) }),
+    );
   }
   updateDestination(
     auth: string | undefined,
@@ -406,10 +433,12 @@ export class AdminService {
     dto: AdminDestinationDto,
   ) {
     this.verify(auth);
-    return this.prisma.destination.update({
-      where: { id },
-      data: this.destinationData(dto),
-    });
+    return this.tracked('destination.updated', () =>
+      this.prisma.destination.update({
+        where: { id },
+        data: this.destinationData(dto),
+      }),
+    );
   }
   private destinationData(dto: AdminDestinationDto) {
     return {
@@ -433,14 +462,18 @@ export class AdminService {
   }
   createHotel(auth: string | undefined, dto: AdminHotelDto) {
     this.verify(auth);
-    return this.prisma.hotel.create({ data: this.hotelData(dto) });
+    return this.tracked('hotel.created', () =>
+      this.prisma.hotel.create({ data: this.hotelData(dto) }),
+    );
   }
   updateHotel(auth: string | undefined, id: string, dto: AdminHotelDto) {
     this.verify(auth);
-    return this.prisma.hotel.update({
-      where: { id },
-      data: this.hotelData(dto),
-    });
+    return this.tracked('hotel.updated', () =>
+      this.prisma.hotel.update({
+        where: { id },
+        data: this.hotelData(dto),
+      }),
+    );
   }
   private hotelData(dto: AdminHotelDto) {
     return {
@@ -463,13 +496,15 @@ export class AdminService {
   }
   createJournalArticle(auth: string | undefined, dto: AdminJournalArticleDto) {
     this.verify(auth);
-    return this.prisma.journalArticle.create({
-      data: {
-        ...dto,
-        content: dto.content,
-        publishedAt: dto.isPublished ? new Date() : null,
-      },
-    });
+    return this.tracked('journal.created', () =>
+      this.prisma.journalArticle.create({
+        data: {
+          ...dto,
+          content: dto.content,
+          publishedAt: dto.isPublished ? new Date() : null,
+        },
+      }),
+    );
   }
   updateJournalArticle(
     auth: string | undefined,
@@ -477,14 +512,16 @@ export class AdminService {
     dto: AdminJournalArticleDto,
   ) {
     this.verify(auth);
-    return this.prisma.journalArticle.update({
-      where: { id },
-      data: {
-        ...dto,
-        content: dto.content,
-        publishedAt: dto.isPublished ? new Date() : null,
-      },
-    });
+    return this.tracked('journal.updated', () =>
+      this.prisma.journalArticle.update({
+        where: { id },
+        data: {
+          ...dto,
+          content: dto.content,
+          publishedAt: dto.isPublished ? new Date() : null,
+        },
+      }),
+    );
   }
   faqItems(auth?: string) {
     this.verify(auth);
@@ -494,11 +531,38 @@ export class AdminService {
   }
   createFaqItem(auth: string | undefined, dto: AdminFaqDto) {
     this.verify(auth);
-    return this.prisma.faqItem.create({ data: dto });
+    return this.tracked('faq.created', () =>
+      this.prisma.faqItem.create({ data: dto }),
+    );
   }
   updateFaqItem(auth: string | undefined, id: string, dto: AdminFaqDto) {
     this.verify(auth);
-    return this.prisma.faqItem.update({ where: { id }, data: dto });
+    return this.tracked('faq.updated', () =>
+      this.prisma.faqItem.update({ where: { id }, data: dto }),
+    );
+  }
+  private async tracked<T extends { id: string }>(
+    action: string,
+    operation: () => Promise<T>,
+  ) {
+    const result = await operation();
+    await this.audit(action, result.id);
+    return result;
+  }
+  private async audit(action: string, resourceId?: string) {
+    try {
+      await this.prisma.apiLog.create({
+        data: {
+          provider: 'ADMIN',
+          endpoint: action,
+          method: 'POST',
+          statusCode: 200,
+          requestBody: resourceId ? { resourceId } : undefined,
+        },
+      });
+    } catch {
+      // Il log non deve rendere inutilizzabile un'operazione già completata.
+    }
   }
   private verify(auth?: string) {
     this.configured();

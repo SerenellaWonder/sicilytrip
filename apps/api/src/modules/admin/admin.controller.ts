@@ -26,6 +26,9 @@ export class AdminController {
   @Get('analytics') analytics(@Headers('authorization') auth?: string) {
     return this.service.analytics(auth);
   }
+  @Get('activity') activity(@Headers('authorization') auth?: string) {
+    return this.service.activity(auth);
+  }
   @Get('customers') customers(@Headers('authorization') auth?: string) {
     return this.service.customers(auth);
   }
