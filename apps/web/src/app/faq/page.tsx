@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { HelpCircle } from "lucide-react";
 
 import FaqExplorer from "@/components/faq/FaqExplorer";
+import FaqIntro from "@/components/faq/FaqIntro";
 import FooterSection from "@/components/layout/FooterSection";
 import Header from "@/components/layout/header";
 import { faqSections } from "@/content/faq";
@@ -23,23 +23,7 @@ export default function FaqPage() {
           <div className="absolute -right-40 top-5 size-[420px] rounded-full bg-[#F58220]/[0.07] blur-3xl" />
 
           <div className="relative mx-auto max-w-[1180px]">
-            <div className="max-w-3xl">
-              <div className="flex items-center gap-3 text-[#F58220]">
-                <HelpCircle size={20} />
-                <span className="text-[10px] font-bold uppercase tracking-[0.24em]">
-                  Centro assistenza
-                </span>
-              </div>
-
-              <h1 className="mt-6 text-[44px] font-bold leading-[1.05] tracking-[-0.05em] text-[#0D2340] sm:text-[60px] lg:text-[72px]">
-                Domande frequenti
-              </h1>
-
-              <p className="mt-6 max-w-2xl text-base leading-8 text-slate-500">
-                Tutto ciò che serve sapere per cercare un soggiorno, controllare
-                una tariffa e procedere con tranquillità.
-              </p>
-            </div>
+            <FaqIntro />
 
             <FaqExplorer sections={faqSections} />
           </div>

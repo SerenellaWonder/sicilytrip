@@ -4,8 +4,11 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, Loader2, Mail, Send } from "lucide-react";
 import { apiFetch } from "@/lib/api";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 export default function ContactForm() {
+  const { language } = useLanguage();
+  const isEnglish = language === "en";
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -24,7 +27,11 @@ export default function ContactForm() {
     const privacyAccepted = form.get("privacyAccepted") === "on";
 
     if (!name || !email || !subject || !message || !privacyAccepted) {
-      setError("Completa tutti i campi prima di inviare la richiesta.");
+      setError(
+        isEnglish
+          ? "Complete all fields before sending your request."
+          : "Completa tutti i campi prima di inviare la richiesta.",
+      );
       return;
     }
 
@@ -48,7 +55,9 @@ export default function ContactForm() {
     } catch {
       window.location.href = `mailto:info@sicilytrip.it?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       setError(
-        "Il servizio online non è disponibile: abbiamo aperto il tuo programma email per completare l’invio.",
+        isEnglish
+          ? "The online service is unavailable: we opened your email app so you can complete the request."
+          : "Il servizio online non è disponibile: abbiamo aperto il tuo programma email per completare l’invio.",
       );
     } finally {
       setLoading(false);
@@ -63,12 +72,16 @@ export default function ContactForm() {
       <div className="flex items-center gap-3 text-[#F58220]">
         <Mail size={20} />
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
-          Scrivici
+          {isEnglish ? "Write to us" : "Scrivici"}
         </span>
       </div>
 
       <div className="mt-6 grid gap-5 sm:grid-cols-2">
-        <ContactField label="Nome e cognome" name="name" autoComplete="name" />
+        <ContactField
+          label={isEnglish ? "Full name" : "Nome e cognome"}
+          name="name"
+          autoComplete="name"
+        />
         <ContactField
           label="Email"
           name="email"
@@ -78,11 +91,11 @@ export default function ContactForm() {
       </div>
 
       <div className="mt-5">
-        <ContactField label="Oggetto" name="subject" />
+        <ContactField label={isEnglish ? "Subject" : "Oggetto"} name="subject" />
       </div>
 
       <label className="mt-5 block text-xs font-semibold text-[#0D2340]">
-        Messaggio
+        {isEnglish ? "Message" : "Messaggio"}
         <textarea
           required
           name="message"
@@ -106,15 +119,18 @@ export default function ContactForm() {
           className="mt-0.5 size-4 shrink-0 accent-[#F58220]"
         />
         <span>
-          Acconsento al trattamento dei dati per ricevere risposta alla
-          richiesta, secondo la{" "}
+          {isEnglish
+            ? "I consent to the processing of my data in order to receive a reply, in accordance with the "
+            : "Acconsento al trattamento dei dati per ricevere risposta alla richiesta, secondo la "}
           <Link
             href="/privacy"
             className="font-semibold text-[#0D2340] underline"
           >
             Privacy Policy
           </Link>
-          . I dati saranno conservati per un massimo di 12 mesi.
+          {isEnglish
+            ? ". Data will be retained for a maximum of 12 months."
+            : ". I dati saranno conservati per un massimo di 12 mesi."}
         </span>
       </label>
 
@@ -129,7 +145,9 @@ export default function ContactForm() {
           className="mt-4 flex items-center gap-2 text-sm text-emerald-700"
         >
           <CheckCircle2 size={17} />
-          Richiesta inviata. Ti risponderemo appena possibile.
+          {isEnglish
+            ? "Request sent. We will reply as soon as possible."
+            : "Richiesta inviata. Ti risponderemo appena possibile."}
         </p>
       )}
 
@@ -143,12 +161,19 @@ export default function ContactForm() {
         ) : (
           <Send size={16} />
         )}
-        {loading ? "Invio…" : "Invia richiesta"}
+        {loading
+          ? isEnglish
+            ? "Sending…"
+            : "Invio…"
+          : isEnglish
+            ? "Send request"
+            : "Invia richiesta"}
       </button>
 
       <p className="mt-4 text-[11px] leading-5 text-slate-400">
-        Se il servizio online non è disponibile, si aprirà il programma email
-        configurato sul dispositivo.
+        {isEnglish
+          ? "If the online service is unavailable, the email app configured on your device will open."
+          : "Se il servizio online non è disponibile, si aprirà il programma email configurato sul dispositivo."}
       </p>
     </form>
   );
