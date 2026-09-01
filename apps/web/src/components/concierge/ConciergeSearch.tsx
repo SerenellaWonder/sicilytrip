@@ -12,6 +12,7 @@ import {
 } from "@tabler/icons-react";
 
 import { useConcierge } from "./ConciergeProvider";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 /* ============================================================
    RANDOM SUGGESTIONS
@@ -20,62 +21,77 @@ import { useConcierge } from "./ConciergeProvider";
 const randomSuggestions = [
   {
     label: "4 notti a Taormina",
+    labelEn: "4 nights in Taormina",
     icon: IconMapPin,
   },
   {
     label: "Weekend sull'Etna",
+    labelEn: "Weekend on Mount Etna",
     icon: IconCalendarEvent,
   },
   {
     label: "Hotel sul mare",
+    labelEn: "Seaside hotel",
     icon: IconHotelService,
   },
   {
     label: "Weekend romantico",
+    labelEn: "Romantic weekend",
     icon: IconSparkles,
   },
   {
     label: "Sicilia con bambini",
+    labelEn: "Sicily with children",
     icon: IconMapPin,
   },
   {
     label: "Tour della Sicilia orientale",
+    labelEn: "Eastern Sicily tour",
     icon: IconMapPin,
   },
   {
     label: "3 giorni a Palermo",
+    labelEn: "3 days in Palermo",
     icon: IconCalendarEvent,
   },
   {
     label: "Resort con piscina",
+    labelEn: "Resort with pool",
     icon: IconHotelService,
   },
   {
     label: "Vacanza mare e relax",
+    labelEn: "Sea and relaxation holiday",
     icon: IconHotelService,
   },
   {
     label: "Borghi della Val di Noto",
+    labelEn: "Villages of the Val di Noto",
     icon: IconMapPin,
   },
   {
     label: "Sicilia enogastronomica",
+    labelEn: "Food and wine in Sicily",
     icon: IconSparkles,
   },
   {
     label: "Una settimana in Sicilia",
+    labelEn: "One week in Sicily",
     icon: IconCalendarEvent,
   },
   {
     label: "Esperienze sull'Etna",
+    labelEn: "Experiences on Mount Etna",
     icon: IconSparkles,
   },
   {
     label: "Hotel vicino alla spiaggia",
+    labelEn: "Hotel near the beach",
     icon: IconHotelService,
   },
   {
     label: "Sicilia occidentale",
+    labelEn: "Western Sicily",
     icon: IconMapPin,
   },
 ];
@@ -86,6 +102,7 @@ const randomSuggestions = [
 
 const fixedSuggestion = {
   label: "Crea un viaggio per me",
+  labelEn: "Create a journey for me",
   icon: IconSparkles,
 };
 
@@ -108,6 +125,8 @@ const initialSuggestions = [
 ============================================================ */
 
 export default function ConciergeSearch() {
+  const { language } = useLanguage();
+  const isEnglish = language === "en";
   const [query, setQuery] = useState("");
 
   const suggestions = initialSuggestions;
@@ -244,7 +263,7 @@ export default function ConciergeSearch() {
           <button
             type="button"
             onClick={() => openConcierge()}
-            aria-label="Apri SicilyTrip Concierge"
+            aria-label={isEnglish ? "Open SicilyTrip Concierge" : "Apri SicilyTrip Concierge"}
             className="
               ml-1
               flex
@@ -284,8 +303,8 @@ export default function ConciergeSearch() {
             onChange={(e) =>
               setQuery(e.target.value)
             }
-            placeholder="Dove vuoi andare?"
-            aria-label="Chiedi al SicilyTrip Concierge"
+            placeholder={isEnglish ? "Where would you like to go?" : "Dove vuoi andare?"}
+            aria-label={isEnglish ? "Ask SicilyTrip Concierge" : "Chiedi al SicilyTrip Concierge"}
             className="
               min-w-0
               flex-1
@@ -317,8 +336,8 @@ export default function ConciergeSearch() {
             <button
               type="button"
               onClick={clearSearch}
-              aria-label="Cancella ricerca"
-              title="Cancella"
+              aria-label={isEnglish ? "Clear search" : "Cancella ricerca"}
+              title={isEnglish ? "Clear" : "Cancella"}
               className="
                 flex
                 h-8
@@ -352,7 +371,7 @@ export default function ConciergeSearch() {
 
           <button
             type="submit"
-            aria-label="Chiedi al Concierge"
+            aria-label={isEnglish ? "Ask the Concierge" : "Chiedi al Concierge"}
             className="
               group
               flex
@@ -417,7 +436,7 @@ export default function ConciergeSearch() {
                 key={item.label}
                 type="button"
                 onClick={() =>
-                  selectSuggestion(item.label)
+                  selectSuggestion(isEnglish ? item.labelEn : item.label)
                 }
                 className="
                   group
@@ -457,7 +476,7 @@ export default function ConciergeSearch() {
                   "
                 />
 
-                {item.label}
+                {isEnglish ? item.labelEn : item.label}
               </button>
             );
           })}

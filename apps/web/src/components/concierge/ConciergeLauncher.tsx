@@ -2,9 +2,11 @@
 
 import { IconSparkles } from "@tabler/icons-react";
 import { useConcierge } from "./ConciergeProvider";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 export default function ConciergeLauncher() {
   const { isOpen, toggleConcierge } = useConcierge();
+  const { language } = useLanguage();
 
   if (isOpen) return null;
 
@@ -12,7 +14,11 @@ export default function ConciergeLauncher() {
     <button
       type="button"
       onClick={toggleConcierge}
-      aria-label="Apri SicilyTrip Concierge"
+      aria-label={
+        language === "en"
+          ? "Open SicilyTrip Concierge"
+          : "Apri SicilyTrip Concierge"
+      }
       className="
         group
         fixed

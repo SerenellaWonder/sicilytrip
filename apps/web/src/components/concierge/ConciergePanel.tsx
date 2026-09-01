@@ -20,6 +20,7 @@ import {
 } from "@tabler/icons-react";
 
 import { useConcierge } from "./ConciergeProvider";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 /* ============================================================
    TYPES
@@ -33,13 +34,16 @@ type Message = {
 
 type QuickAction = {
   label: string;
+  labelEn: string;
   description: string;
+  descriptionEn: string;
   icon: React.ComponentType<{
     size?: number;
     stroke?: number;
     className?: string;
   }>;
   prompt: string;
+  promptEn: string;
 };
 
 /* ============================================================
@@ -49,27 +53,39 @@ type QuickAction = {
 const actions: QuickAction[] = [
   {
     label: "Trova un hotel",
+    labelEn: "Find a hotel",
     description: "Scopri strutture selezionate",
+    descriptionEn: "Discover selected properties",
     icon: IconBuilding,
     prompt: "Aiutami a trovare un hotel",
+    promptEn: "Help me find a hotel",
   },
   {
     label: "Crea il mio viaggio",
+    labelEn: "Create my journey",
     description: "Costruiamo il soggiorno insieme",
+    descriptionEn: "Let’s plan your stay together",
     icon: IconSparkles,
     prompt: "Vorrei creare il mio viaggio in Sicilia",
+    promptEn: "I would like to create my journey in Sicily",
   },
   {
     label: "Esperienze",
+    labelEn: "Experiences",
     description: "Mare, vino, cucina e territorio",
+    descriptionEn: "Sea, wine, food and local culture",
     icon: IconToolsKitchen2,
     prompt: "Mostrami le esperienze disponibili",
+    promptEn: "Show me the available experiences",
   },
   {
     label: "Offerte e pacchetti",
+    labelEn: "Offers and packages",
     description: "Scopri le proposte SicilyTrip",
+    descriptionEn: "Discover SicilyTrip proposals",
     icon: IconGift,
     prompt: "Quali offerte e pacchetti sono disponibili?",
+    promptEn: "Which offers and packages are available?",
   },
 ];
 
@@ -78,6 +94,8 @@ const actions: QuickAction[] = [
 ============================================================ */
 
 export default function ConciergePanel() {
+  const { language } = useLanguage();
+  const isEnglish = language === "en";
   const {
     isOpen,
     initialQuery,
@@ -167,7 +185,7 @@ export default function ConciergePanel() {
       const assistantMessage: Message = {
         id: Date.now() + 1,
         role: "assistant",
-        text: createDemoResponse(cleanText),
+        text: createDemoResponse(cleanText, isEnglish),
       };
 
       setMessages((current) => [
@@ -222,7 +240,7 @@ export default function ConciergePanel() {
 
       <button
         type="button"
-        aria-label="Chiudi Concierge"
+        aria-label={isEnglish ? "Close Concierge" : "Chiudi Concierge"}
         onClick={closeConcierge}
         className="
           fixed
@@ -380,7 +398,7 @@ export default function ConciergePanel() {
                     text-white/45
                   "
                 >
-                  Il tuo assistente di viaggio
+                  {isEnglish ? "Your travel assistant" : "Il tuo assistente di viaggio"}
                 </div>
 
               </div>
@@ -395,8 +413,8 @@ export default function ConciergePanel() {
                 <button
                   type="button"
                   onClick={resetConversation}
-                  aria-label="Nuova conversazione"
-                  title="Nuova conversazione"
+                  aria-label={isEnglish ? "New conversation" : "Nuova conversazione"}
+                  title={isEnglish ? "New conversation" : "Nuova conversazione"}
                   className="
                     flex
                     h-10
@@ -424,7 +442,7 @@ export default function ConciergePanel() {
               <button
                 type="button"
                 onClick={closeConcierge}
-                aria-label="Chiudi Concierge"
+                aria-label={isEnglish ? "Close Concierge" : "Chiudi Concierge"}
                 className="
                   flex
                   h-10
@@ -465,9 +483,9 @@ export default function ConciergePanel() {
                   tracking-[-0.025em]
                 "
               >
-                Come posso aiutarti
+                {isEnglish ? "How can I help you" : "Come posso aiutarti"}
                 <br />
-                a vivere la Sicilia?
+                {isEnglish ? "experience Sicily?" : "a vivere la Sicilia?"}
               </h2>
 
               <p
@@ -479,9 +497,9 @@ export default function ConciergePanel() {
                   text-white/55
                 "
               >
-                Raccontami il viaggio che immagini.
-                Posso aiutarti con hotel, esperienze,
-                offerte, pacchetti e itinerari.
+                {isEnglish
+                  ? "Tell me about the journey you imagine. I can help with hotels, experiences, offers, packages and itineraries."
+                  : "Raccontami il viaggio che immagini. Posso aiutarti con hotel, esperienze, offerte, pacchetti e itinerari."}
               </p>
 
             </div>
@@ -522,7 +540,7 @@ export default function ConciergePanel() {
                   text-[#0D2340]/40
                 "
               >
-                Da dove vuoi iniziare?
+                {isEnglish ? "Where would you like to start?" : "Da dove vuoi iniziare?"}
               </div>
 
               <div className="grid gap-2.5">
@@ -535,7 +553,7 @@ export default function ConciergePanel() {
                       key={action.label}
                       type="button"
                       onClick={() =>
-                        selectAction(action.prompt)
+                        selectAction(isEnglish ? action.promptEn : action.prompt)
                       }
                       className="
                         group
@@ -586,7 +604,7 @@ export default function ConciergePanel() {
                             text-[#0D2340]
                           "
                         >
-                          {action.label}
+                          {isEnglish ? action.labelEn : action.label}
                         </span>
 
                         <span
@@ -598,7 +616,7 @@ export default function ConciergePanel() {
                             text-slate-500
                           "
                         >
-                          {action.description}
+                          {isEnglish ? action.descriptionEn : action.description}
                         </span>
 
                       </span>
@@ -628,7 +646,9 @@ export default function ConciergePanel() {
                 type="button"
                 onClick={() =>
                   selectAction(
-                    "4 notti a Taormina a settembre per 2 persone, hotel sul mare e una wine experience"
+                    isEnglish
+                      ? "4 nights in Taormina in September for 2 people, a seaside hotel and a wine experience"
+                      : "4 notti a Taormina a settembre per 2 persone, hotel sul mare e una wine experience"
                   )
                 }
                 className="
@@ -665,7 +685,7 @@ export default function ConciergePanel() {
                         text-[#0D2340]
                       "
                     >
-                      Prova a chiedermi
+                      {isEnglish ? "Try asking me" : "Prova a chiedermi"}
                     </div>
 
                     <p
@@ -678,9 +698,9 @@ export default function ConciergePanel() {
                         group-hover:text-slate-600
                       "
                     >
-                      “4 notti a Taormina a settembre
-                      per 2 persone, hotel sul mare e
-                      una wine experience.”
+                      {isEnglish
+                        ? "“4 nights in Taormina in September for 2 people, a seaside hotel and a wine experience.”"
+                        : "“4 notti a Taormina a settembre per 2 persone, hotel sul mare e una wine experience.”"}
                     </p>
 
                   </div>
@@ -758,7 +778,7 @@ export default function ConciergePanel() {
                   text-[#0D2340]/30
                 "
               >
-                Continua con
+                {isEnglish ? "Continue with" : "Continua con"}
               </div>
 
               <div className="flex flex-wrap gap-2">
@@ -766,7 +786,9 @@ export default function ConciergePanel() {
                 <FollowUpButton
                   onClick={() =>
                     sendMessage(
-                      "Mostrami gli hotel disponibili"
+                      isEnglish
+                        ? "Show me the available hotels"
+                        : "Mostrami gli hotel disponibili"
                     )
                   }
                 >
@@ -776,21 +798,25 @@ export default function ConciergePanel() {
                 <FollowUpButton
                   onClick={() =>
                     sendMessage(
-                      "Aggiungi delle esperienze"
+                      isEnglish
+                        ? "Add some experiences"
+                        : "Aggiungi delle esperienze"
                     )
                   }
                 >
-                  Esperienze
+                  {isEnglish ? "Experiences" : "Esperienze"}
                 </FollowUpButton>
 
                 <FollowUpButton
                   onClick={() =>
                     sendMessage(
-                      "Creami un pacchetto completo"
+                      isEnglish
+                        ? "Create a complete package for me"
+                        : "Creami un pacchetto completo"
                     )
                   }
                 >
-                  Pacchetto completo
+                  {isEnglish ? "Complete package" : "Pacchetto completo"}
                 </FollowUpButton>
 
               </div>
@@ -854,11 +880,19 @@ export default function ConciergePanel() {
               rows={1}
               placeholder={
                 isTyping
-                  ? "Il Concierge sta rispondendo..."
-                  : "Scrivi al Concierge..."
+                  ? isEnglish
+                    ? "The Concierge is replying..."
+                    : "Il Concierge sta rispondendo..."
+                  : isEnglish
+                    ? "Write to the Concierge..."
+                    : "Scrivi al Concierge..."
               }
               disabled={isTyping}
-              aria-label="Messaggio per SicilyTrip Concierge"
+              aria-label={
+                isEnglish
+                  ? "Message for SicilyTrip Concierge"
+                  : "Messaggio per SicilyTrip Concierge"
+              }
               className="
                 max-h-28
                 min-h-[44px]
@@ -883,7 +917,7 @@ export default function ConciergePanel() {
                 !message.trim() ||
                 isTyping
               }
-              aria-label="Invia messaggio"
+              aria-label={isEnglish ? "Send message" : "Invia messaggio"}
               className="
                 flex
                 h-11
@@ -1101,7 +1135,8 @@ function FollowUpButton({
 ============================================================ */
 
 function createDemoResponse(
-  query: string
+  query: string,
+  isEnglish: boolean,
 ): string {
   const text = query.toLowerCase();
 
@@ -1112,6 +1147,9 @@ function createDemoResponse(
     text.includes("albergo") ||
     text.includes("struttura")
   ) {
+    if (isEnglish) {
+      return "Certainly. I can search for the properties that best suit your needs. Tell me your destination, dates, number of guests and, if you wish, the kind of stay you prefer: seaside, historic centre, resort, boutique hotel or exclusive residence.";
+    }
     return (
       "Certamente. Posso cercare le strutture più adatte alle tue esigenze. " +
       "Indicami destinazione, date, numero di ospiti e, se vuoi, il tipo di soggiorno che preferisci: mare, centro storico, resort, boutique hotel o dimora esclusiva."
@@ -1121,6 +1159,9 @@ function createDemoResponse(
   /* TAORMINA */
 
   if (text.includes("taormina")) {
+    if (isEnglish) {
+      return "Excellent choice. Taormina is perfect for a stay combining the sea, culture and unique views. I can select hotels for your dates and add experiences such as boat trips, Mount Etna, tastings or a special dinner.";
+    }
     return (
       "Ottima scelta. Taormina è perfetta per un soggiorno tra mare, cultura e panorami unici. " +
       "Posso selezionare hotel adatti alle tue date e aggiungere esperienze come escursioni in barca, Etna, degustazioni o una cena speciale."
@@ -1130,6 +1171,9 @@ function createDemoResponse(
   /* ETNA */
 
   if (text.includes("etna")) {
+    if (isEnglish) {
+      return "I can arrange a stay dedicated to Mount Etna, combining selected properties, private excursions, wineries and tastings. Tell me how many days you have and I can build a complete proposal.";
+    }
     return (
       "Posso organizzare un soggiorno dedicato all’Etna combinando strutture selezionate, escursioni private, cantine e degustazioni. " +
       "Se mi indichi quanti giorni hai a disposizione, posso costruire una proposta completa."
@@ -1139,6 +1183,9 @@ function createDemoResponse(
   /* PALERMO */
 
   if (text.includes("palermo")) {
+    if (isEnglish) {
+      return "Palermo offers an extraordinary combination of art, markets, food and sea. I can help you choose where to stay and create an itinerary with food experiences, private visits and a day on the coast.";
+    }
     return (
       "Palermo offre una combinazione straordinaria di arte, mercati, cucina e mare. " +
       "Posso aiutarti a scegliere dove soggiornare e creare un itinerario con esperienze gastronomiche, visite private e una giornata sulla costa."
@@ -1151,6 +1198,9 @@ function createDemoResponse(
     text.includes("siracusa") ||
     text.includes("ortigia")
   ) {
+    if (isEnglish) {
+      return "Syracuse and Ortigia are ideal for a journey through history, the sea and Sicilian cuisine. I can search for a property in the historic centre or by the sea and pair it with selected experiences.";
+    }
     return (
       "Siracusa e Ortigia sono ideali per un viaggio tra storia, mare e cucina siciliana. " +
       "Posso cercare una struttura nel centro storico oppure sul mare e abbinarla a esperienze selezionate."
@@ -1166,6 +1216,9 @@ function createDemoResponse(
     text.includes("barca") ||
     text.includes("cooking")
   ) {
+    if (isEnglish) {
+      return "Of course. We can enrich your stay with selected experiences: private yachts and boats, wine experiences, cooking classes, Mount Etna excursions and cultural itineraries. Tell me where you will be staying and I will suggest the most suitable options.";
+    }
     return (
       "Certo. Possiamo arricchire il soggiorno con esperienze selezionate: yacht e barca privata, wine experience, cooking class, escursioni sull’Etna e itinerari culturali. " +
       "Dimmi dove soggiornerai e ti proporrò quelle più adatte."
@@ -1179,6 +1232,9 @@ function createDemoResponse(
     text.includes("viaggio") ||
     text.includes("itinerario")
   ) {
+    if (isEnglish) {
+      return "Perfect. I can build the journey with you by combining accommodation, destinations and experiences. To begin, tell me how many days you would like to spend in Sicily, when you plan to travel and how many people will be travelling.";
+    }
     return (
       "Perfetto. Posso costruire il viaggio insieme a te combinando soggiorno, destinazioni ed esperienze. " +
       "Per iniziare dimmi quanti giorni vuoi trascorrere in Sicilia, il periodo e quante persone viaggeranno."
@@ -1191,6 +1247,9 @@ function createDemoResponse(
     text.includes("offert") ||
     text.includes("promoz")
   ) {
+    if (isEnglish) {
+      return "I can show you SicilyTrip offers and packages available for the period you are interested in. Tell me when you would like to travel and how many people will be joining you.";
+    }
     return (
       "Posso mostrarti offerte e pacchetti SicilyTrip disponibili per il periodo che ti interessa. " +
       "Indicami quando vorresti partire e quante persone viaggeranno."
@@ -1198,6 +1257,10 @@ function createDemoResponse(
   }
 
   /* DEFAULT */
+
+  if (isEnglish) {
+    return "Of course, I can help. Tell me a little more about the journey you imagine: destination, travel period, number of guests or the kind of experience you would like. From there, we can build the most suitable solution together.";
+  }
 
   return (
     "Certo, posso aiutarti. Raccontami qualcosa in più sul viaggio che immagini: destinazione, periodo, numero di ospiti oppure il tipo di esperienza che vorresti vivere. " +
