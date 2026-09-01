@@ -9,6 +9,8 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
+import { useLanguage } from "@/components/i18n/LanguageProvider";
+
 type HotelRoomRate = {
   SelectCode: string;
   Rooms?: string[];
@@ -29,6 +31,8 @@ export default function HotelRooms({
   hotelId: string;
 }) {
   const router = useRouter();
+  const { language } = useLanguage();
+  const isEnglish = language === "en";
 
   if (!rooms.length) {
     return (
@@ -49,7 +53,7 @@ export default function HotelRooms({
             text-[#0D2340]
           "
         >
-          Nessuna tariffa disponibile
+          {isEnglish ? "No rates available" : "Nessuna tariffa disponibile"}
         </p>
       </div>
     );
@@ -93,7 +97,8 @@ export default function HotelRooms({
         const price =
           formatPrice(
             rate.Price,
-            rate.Currency
+            rate.Currency,
+            isEnglish ? "en-GB" : "it-IT",
           );
 
         const freeCancellation =
@@ -147,11 +152,11 @@ export default function HotelRooms({
                         size={16}
                       />
                     }
-                    label="Camera"
+                    label={isEnglish ? "Room" : "Camera"}
                     value={
                       rate.Rooms?.join(
                         ", "
-                      ) ?? "Camera"
+                      ) ?? (isEnglish ? "Room" : "Camera")
                     }
                   />
 
@@ -161,12 +166,12 @@ export default function HotelRooms({
                         size={16}
                       />
                     }
-                    label="Trattamento"
+                    label={isEnglish ? "Board" : "Trattamento"}
                     value={
                       rate.Boards?.join(
                         ", "
                       ) ??
-                      "Trattamento"
+                      (isEnglish ? "Board" : "Trattamento")
                     }
                   />
                 </div>
@@ -211,8 +216,12 @@ export default function HotelRooms({
                     )}
 
                     {freeCancellation
-                      ? "Cancellazione gratuita"
-                      : "Non rimborsabile"}
+                      ? isEnglish
+                        ? "Free cancellation"
+                        : "Cancellazione gratuita"
+                      : isEnglish
+                        ? "Non-refundable"
+                        : "Non rimborsabile"}
                   </span>
 
                   {rate.Supplier && (
@@ -262,7 +271,7 @@ export default function HotelRooms({
                       text-slate-400
                     "
                   >
-                    Totale soggiorno
+                    {isEnglish ? "Total stay" : "Totale soggiorno"}
                   </span>
 
                   <strong
@@ -276,7 +285,7 @@ export default function HotelRooms({
                     "
                   >
                     {price ??
-                      "Su richiesta"}
+                      (isEnglish ? "On request" : "Su richiesta")}
                   </strong>
                 </div>
 
@@ -306,7 +315,7 @@ export default function HotelRooms({
                     hover:bg-[#FF9238]
                   "
                 >
-                  Seleziona tariffa
+                  {isEnglish ? "Select rate" : "Seleziona tariffa"}
                 </button>
               </div>
             </div>
@@ -388,14 +397,15 @@ function Info({
 
 function formatPrice(
   price?: number,
-  currency = "EUR"
+  currency = "EUR",
+  locale = "it-IT",
 ) {
   if (price == null) {
     return null;
   }
 
   return new Intl.NumberFormat(
-    "it-IT",
+    locale,
     {
       style: "currency",
       currency,

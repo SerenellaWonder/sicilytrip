@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 import { apiFetch } from "@/lib/api";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 import SearchExpiryNotice from "../SearchExpiryNotice";
 import HotelGallery from "./HotelGallery";
@@ -63,6 +64,8 @@ export default function HotelDetailPage({
   searchId: string;
   hotelId: string;
 }) {
+  const { language } = useLanguage();
+  const isEnglish = language === "en";
   const [detail, setDetail] =
     useState<HotelDetail | null>(
       null
@@ -127,7 +130,9 @@ export default function HotelDetailPage({
           setError(
             err instanceof Error
               ? err.message
-              : "Impossibile caricare l'hotel."
+              : isEnglish
+                ? "Unable to load the hotel."
+                : "Impossibile caricare l'hotel."
           );
         }
       } finally {
@@ -145,6 +150,7 @@ export default function HotelDetailPage({
   }, [
     searchId,
     hotelId,
+    isEnglish,
   ]);
 
   /*
@@ -223,7 +229,7 @@ export default function HotelDetailPage({
               text-slate-500
             "
           >
-            Caricamento hotel...
+            {isEnglish ? "Loading hotel..." : "Caricamento hotel..."}
           </p>
         </div>
       </div>
@@ -267,7 +273,7 @@ export default function HotelDetailPage({
               text-[#0D2340]
             "
           >
-            Hotel non disponibile
+            {isEnglish ? "Hotel unavailable" : "Hotel non disponibile"}
           </h1>
 
           <p
@@ -295,7 +301,7 @@ export default function HotelDetailPage({
               text-white
             "
           >
-            Torna ai risultati
+            {isEnglish ? "Back to results" : "Torna ai risultati"}
           </a>
         </div>
       </div>
@@ -348,7 +354,7 @@ export default function HotelDetailPage({
             size={14}
           />
 
-          Torna ai risultati
+          {isEnglish ? "Back to results" : "Torna ai risultati"}
         </a>
 
         <SearchExpiryNotice searchId={searchId} />
@@ -510,7 +516,7 @@ export default function HotelDetailPage({
               hover:bg-[#FF9238]
             "
           >
-            Vedi camere
+            {isEnglish ? "View rooms" : "Vedi camere"}
           </a>
         </div>
 
@@ -551,7 +557,7 @@ export default function HotelDetailPage({
                 text-[#F58220]
               "
             >
-              La struttura
+              {isEnglish ? "The property" : "La struttura"}
             </span>
 
             <h2
@@ -563,7 +569,7 @@ export default function HotelDetailPage({
                 text-[#0D2340]
               "
             >
-              Scopri il soggiorno
+              {isEnglish ? "Discover your stay" : "Scopri il soggiorno"}
             </h2>
 
             {description ? (
@@ -586,7 +592,9 @@ export default function HotelDetailPage({
                   text-slate-500
                 "
               >
-                Descrizione non disponibile.
+                {isEnglish
+                  ? "Description unavailable."
+                  : "Descrizione non disponibile."}
               </p>
             )}
           </div>
@@ -610,7 +618,7 @@ export default function HotelDetailPage({
                 text-[#F58220]
               "
             >
-              Servizi
+              {isEnglish ? "Facilities" : "Servizi"}
             </span>
 
             <h3
@@ -622,7 +630,7 @@ export default function HotelDetailPage({
                 text-[#0D2340]
               "
             >
-              In struttura
+              {isEnglish ? "At the property" : "In struttura"}
             </h3>
 
             {facilities.length >
@@ -675,7 +683,9 @@ export default function HotelDetailPage({
                   text-slate-500
                 "
               >
-                Servizi non disponibili.
+                {isEnglish
+                  ? "Facilities unavailable."
+                  : "Servizi non disponibili."}
               </p>
             )}
           </div>
@@ -699,7 +709,7 @@ export default function HotelDetailPage({
               text-[#F58220]
             "
           >
-            Disponibilità
+            {isEnglish ? "Availability" : "Disponibilità"}
           </span>
 
           <h2
@@ -713,7 +723,7 @@ export default function HotelDetailPage({
               sm:text-[42px]
             "
           >
-            Camere e tariffe
+            {isEnglish ? "Rooms and rates" : "Camere e tariffe"}
           </h2>
 
           <p
@@ -725,9 +735,9 @@ export default function HotelDetailPage({
               text-slate-500
             "
           >
-            Seleziona la soluzione
-            più adatta al tuo
-            soggiorno.
+            {isEnglish
+              ? "Select the option that best suits your stay."
+              : "Seleziona la soluzione più adatta al tuo soggiorno."}
           </p>
 
           <div className="mt-8">

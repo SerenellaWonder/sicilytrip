@@ -10,6 +10,8 @@ import {
   Images,
 } from "lucide-react";
 
+import { useLanguage } from "@/components/i18n/LanguageProvider";
+
 export default function HotelGallery({
   images,
   hotelName,
@@ -17,6 +19,8 @@ export default function HotelGallery({
   images: string[];
   hotelName: string;
 }) {
+  const { language } = useLanguage();
+  const isEnglish = language === "en";
   const validImages =
     images.filter(Boolean);
 
@@ -56,7 +60,7 @@ export default function HotelGallery({
               text-white/70
             "
           >
-            Immagini non disponibili
+            {isEnglish ? "Images unavailable" : "Immagini non disponibili"}
           </p>
         </div>
       </div>
@@ -95,7 +99,7 @@ export default function HotelGallery({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={validImages[activeIndex]}
-          alt={`${hotelName} - foto ${activeIndex + 1}`}
+          alt={`${hotelName} - ${isEnglish ? "photo" : "foto"} ${activeIndex + 1}`}
           className="
             h-[390px]
             w-full
@@ -122,7 +126,7 @@ export default function HotelGallery({
             <button
               type="button"
               onClick={previous}
-              aria-label="Foto precedente"
+              aria-label={isEnglish ? "Previous photo" : "Foto precedente"}
               className="
                 absolute
                 left-5
@@ -146,7 +150,7 @@ export default function HotelGallery({
             <button
               type="button"
               onClick={next}
-              aria-label="Foto successiva"
+              aria-label={isEnglish ? "Next photo" : "Foto successiva"}
               className="
                 absolute
                 right-5
