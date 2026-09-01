@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 
 import ConciergeProvider from "@/components/concierge/ConciergeProvider";
+import LanguageProvider from "@/components/i18n/LanguageProvider";
 import { SITE_URL } from "@/lib/site";
 
 import "./globals.css";
@@ -71,9 +72,11 @@ export default function RootLayout({
           antialiased
         "
       >
-        <ConciergeProvider>
-          {children}
-        </ConciergeProvider>
+        <LanguageProvider>
+          <ConciergeProvider>
+            {children}
+          </ConciergeProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

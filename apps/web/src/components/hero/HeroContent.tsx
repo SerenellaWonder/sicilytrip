@@ -2,7 +2,12 @@
 
 import { IconArrowRight } from "@tabler/icons-react";
 
+import { useLanguage } from "@/components/i18n/LanguageProvider";
+
 export default function HeroContent() {
+  const { language } = useLanguage();
+  const isItalian = language === "it";
+
   return (
     <div
       className="
@@ -36,7 +41,7 @@ export default function HeroContent() {
             sm:tracking-[0.38em]
           "
         >
-          Scopri una Sicilia diversa
+          {isItalian ? "Scopri una Sicilia diversa" : "Discover a different Sicily"}
         </div>
 
         {/* TITLE */}
@@ -56,11 +61,11 @@ export default function HeroContent() {
             xl:text-[70px]
           "
         >
-          Scopri la Sicilia
+          {isItalian ? "Scopri la Sicilia" : "Discover Sicily"}
           <br />
-          come non l&apos;hai
+          {isItalian ? "come non l'hai" : "as you've never"}
           <br />
-          mai vista
+          {isItalian ? "mai vista" : "seen it before"}
         </h1>
 
         {/* DESCRIPTION */}
@@ -78,9 +83,13 @@ export default function HeroContent() {
             lg:text-[22px]
           "
         >
-          Esperienze autentiche, luoghi unici
+          {isItalian
+            ? "Esperienze autentiche, luoghi unici"
+            : "Authentic experiences, unique places"}
           <br className="hidden sm:block" />
-          e emozioni indimenticabili.
+          {isItalian
+            ? " e emozioni indimenticabili."
+            : " and unforgettable moments."}
         </p>
 
         {/* CTA */}
@@ -110,7 +119,7 @@ export default function HeroContent() {
             sm:py-4
           "
         >
-          Esplora ora
+          {isItalian ? "Esplora ora" : "Explore now"}
 
           <IconArrowRight
             size={18}

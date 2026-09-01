@@ -6,40 +6,41 @@ import Link from "next/link";
 import { IconMenu2, IconSparkles, IconX } from "@tabler/icons-react";
 
 import { useConcierge } from "@/components/concierge/ConciergeProvider";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 const items = [
   {
-    label: "Destinazioni",
+    label: { it: "Destinazioni", en: "Destinations" },
     href: "/destinazioni",
     pathname: "/destinazioni",
   },
   {
-    label: "Esperienze",
+    label: { it: "Esperienze", en: "Experiences" },
     href: "/esperienze",
     pathname: "/esperienze",
   },
   {
-    label: "Chi siamo",
+    label: { it: "Chi siamo", en: "About us" },
     href: "/chi-siamo",
     pathname: "/chi-siamo",
   },
   {
-    label: "Journal",
+    label: { it: "Journal", en: "Journal" },
     href: "/journal",
     pathname: "/journal",
   },
   {
-    label: "FAQ",
+    label: { it: "FAQ", en: "FAQ" },
     href: "/faq",
     pathname: "/faq",
   },
   {
-    label: "Contatti",
+    label: { it: "Contatti", en: "Contact" },
     href: "/contatti",
     pathname: "/contatti",
   },
   {
-    label: "Area clienti",
+    label: { it: "Area clienti", en: "Customer area" },
     href: "/area-clienti",
     pathname: "/area-clienti",
   },
@@ -54,6 +55,7 @@ export default function MobileMenu({ solidHeader, pathname }: MobileMenuProps) {
   const [open, setOpen] = useState(false);
 
   const { openConcierge } = useConcierge();
+  const { language, setLanguage } = useLanguage();
 
   useEffect(() => {
     if (!open) {
@@ -75,7 +77,11 @@ export default function MobileMenu({ solidHeader, pathname }: MobileMenuProps) {
   function handleConcierge() {
     setOpen(false);
 
-    openConcierge("Aiutami a organizzare il mio viaggio in Sicilia");
+    openConcierge(
+      language === "it"
+        ? "Aiutami a organizzare il mio viaggio in Sicilia"
+        : "Help me plan my trip to Sicily",
+    );
   }
 
   return (
@@ -87,7 +93,7 @@ export default function MobileMenu({ solidHeader, pathname }: MobileMenuProps) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label="Apri menu"
+        aria-label={language === "it" ? "Apri menu" : "Open menu"}
         aria-expanded={open}
         className={`
           flex
@@ -196,7 +202,7 @@ export default function MobileMenu({ solidHeader, pathname }: MobileMenuProps) {
           <button
             type="button"
             onClick={closeMenu}
-            aria-label="Chiudi menu"
+            aria-label={language === "it" ? "Chiudi menu" : "Close menu"}
             className="
               flex
               h-11
@@ -233,7 +239,7 @@ export default function MobileMenu({ solidHeader, pathname }: MobileMenuProps) {
 
             return (
               <Link
-                key={item.label}
+                key={item.href}
                 href={item.href}
                 onClick={closeMenu}
                 className="
@@ -261,7 +267,7 @@ export default function MobileMenu({ solidHeader, pathname }: MobileMenuProps) {
                     }
                   `}
                 >
-                  {item.label}
+                  {item.label[language]}
                 </span>
 
                 <span
@@ -285,6 +291,28 @@ export default function MobileMenu({ solidHeader, pathname }: MobileMenuProps) {
         =================================================== */}
 
         <div className="mt-auto">
+          <div className="mb-5 flex items-center justify-center gap-2">
+            {(["it", "en"] as const).map((item) => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => setLanguage(item)}
+                aria-pressed={language === item}
+                className={`
+                  h-10 min-w-12 rounded-full border text-xs font-bold uppercase
+                  tracking-[0.14em] transition-colors
+                  ${
+                    language === item
+                      ? "border-[#F58220] bg-[#F58220] text-white"
+                      : "border-white/15 text-white/60"
+                  }
+                `}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+
           <button
             type="button"
             onClick={handleConcierge}
@@ -305,7 +333,7 @@ export default function MobileMenu({ solidHeader, pathname }: MobileMenuProps) {
             "
           >
             <IconSparkles size={18} stroke={1.8} />
-            Organizza il viaggio
+            {language === "it" ? "Organizza il viaggio" : "Plan your trip"}
           </button>
 
           <p
@@ -319,7 +347,7 @@ export default function MobileMenu({ solidHeader, pathname }: MobileMenuProps) {
               text-white/25
             "
           >
-            Scopri · Vivi · Ricorda
+            {language === "it" ? "Scopri · Vivi · Ricorda" : "Discover · Live · Remember"}
           </p>
         </div>
       </div>

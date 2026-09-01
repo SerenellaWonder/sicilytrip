@@ -9,8 +9,12 @@ import {
 
 import ConciergeSearch from "@/components/concierge/ConciergeSearch";
 import SearchBox from "@/components/hero/SearchBox";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 export default function HeroSearch() {
+  const { language } = useLanguage();
+  const isItalian = language === "it";
+
   const [showHotelSearch, setShowHotelSearch] =
     useState(true);
 
@@ -24,7 +28,7 @@ export default function HeroSearch() {
     >
       <div
         role="tablist"
-        aria-label="Scegli come iniziare"
+        aria-label={isItalian ? "Scegli come iniziare" : "Choose how to start"}
         className="
           relative
           z-40
@@ -72,9 +76,9 @@ export default function HeroSearch() {
         >
           <Sparkles size={17} className="shrink-0 text-[#F58220]" />
           <span>
-            <span className="block">Lasciati ispirare</span>
+            <span className="block">{isItalian ? "Lasciati ispirare" : "Get inspired"}</span>
             <span className="mt-0.5 hidden text-[10px] font-normal opacity-60 sm:block">
-              Usa il Concierge
+              {isItalian ? "Usa il Concierge" : "Use the Concierge"}
             </span>
           </span>
         </button>
@@ -107,9 +111,9 @@ export default function HeroSearch() {
         >
           <Building2 size={18} className="shrink-0" />
           <span>
-            <span className="block">Cerca hotel</span>
+            <span className="block">{isItalian ? "Cerca hotel" : "Search hotels"}</span>
             <span className="mt-0.5 hidden text-[10px] font-normal opacity-70 sm:block">
-              Sai già dove andare?
+              {isItalian ? "Sai già dove andare?" : "Know where to go?"}
             </span>
           </span>
         </button>

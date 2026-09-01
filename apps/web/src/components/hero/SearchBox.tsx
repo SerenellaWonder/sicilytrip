@@ -17,6 +17,7 @@ import {
 
 import { apiFetch } from "@/lib/api";
 import { destinationCatalog } from "@/data/destinations";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 import type { Destination, HotelSearchResponse } from "@/types/hotel";
 
@@ -48,6 +49,8 @@ type SearchBoxProps = {
 
 export default function SearchBox({ initialValues }: SearchBoxProps) {
   const router = useRouter();
+  const { language } = useLanguage();
+  const isItalian = language === "it";
 
   const destinationRef = useRef<HTMLDivElement>(null);
 
@@ -195,25 +198,25 @@ export default function SearchBox({ initialValues }: SearchBoxProps) {
     setError("");
 
     if (!destination) {
-      setError("Seleziona una destinazione dai suggerimenti.");
+      setError(isItalian ? "Seleziona una destinazione dai suggerimenti." : "Select a destination from the suggestions.");
 
       return;
     }
 
     if (!checkIn) {
-      setError("Seleziona la data di check-in.");
+      setError(isItalian ? "Seleziona la data di check-in." : "Select a check-in date.");
 
       return;
     }
 
     if (!checkOut) {
-      setError("Seleziona la data di check-out.");
+      setError(isItalian ? "Seleziona la data di check-out." : "Select a check-out date.");
 
       return;
     }
 
     if (new Date(checkOut) <= new Date(checkIn)) {
-      setError("Il check-out deve essere successivo al check-in.");
+      setError(isItalian ? "Il check-out deve essere successivo al check-in." : "Check-out must be after check-in.");
 
       return;
     }
@@ -304,9 +307,9 @@ export default function SearchBox({ initialValues }: SearchBoxProps) {
 
   const totalAdults = rooms.reduce((total, room) => total + room.adults, 0);
   const totalChildren = rooms.reduce((total, room) => total + room.children, 0);
-  const guestsLabel = `${rooms.length} ${rooms.length === 1 ? "camera" : "camere"}, ${totalAdults} ${totalAdults === 1 ? "adulto" : "adulti"}${
+  const guestsLabel = `${rooms.length} ${rooms.length === 1 ? (isItalian ? "camera" : "room") : (isItalian ? "camere" : "rooms")}, ${totalAdults} ${totalAdults === 1 ? (isItalian ? "adulto" : "adult") : (isItalian ? "adulti" : "adults")}${
     totalChildren > 0
-      ? `, ${totalChildren} ${totalChildren === 1 ? "bambino" : "bambini"}`
+      ? `, ${totalChildren} ${totalChildren === 1 ? (isItalian ? "bambino" : "child") : (isItalian ? "bambini" : "children")}`
       : ""
   }`;
 
@@ -387,7 +390,7 @@ export default function SearchBox({ initialValues }: SearchBoxProps) {
                     text-slate-400
                   "
                 >
-                  Destinazione
+                  {isItalian ? "Destinazione" : "Destination"}
                 </span>
 
                 <input
@@ -407,7 +410,7 @@ export default function SearchBox({ initialValues }: SearchBoxProps) {
                       setShowSuggestions(true);
                     }
                   }}
-                  placeholder="Dove vuoi andare?"
+                  placeholder={isItalian ? "Dove vuoi andare?" : "Where would you like to go?"}
                   autoComplete="off"
                   className="
                     mt-0.5
@@ -540,7 +543,7 @@ export default function SearchBox({ initialValues }: SearchBoxProps) {
                       text-slate-500
                     "
                   >
-                    Nessuna destinazione trovata.
+                    {isItalian ? "Nessuna destinazione trovata." : "No destinations found."}
                   </div>
                 )}
               </div>
@@ -626,7 +629,7 @@ export default function SearchBox({ initialValues }: SearchBoxProps) {
                     text-slate-400
                   "
                 >
-                  Ospiti
+                  {isItalian ? "Ospiti" : "Guests"}
                 </span>
 
                 <span
@@ -680,7 +683,7 @@ export default function SearchBox({ initialValues }: SearchBoxProps) {
                   >
                     <div className="mb-4 flex items-center justify-between">
                       <strong className="text-xs text-[#0D2340]">
-                        Camera {roomIndex + 1}
+                        {isItalian ? "Camera" : "Room"} {roomIndex + 1}
                       </strong>
                       {rooms.length > 1 && (
                         <button
@@ -692,13 +695,13 @@ export default function SearchBox({ initialValues }: SearchBoxProps) {
                           }
                           className="text-[10px] font-semibold uppercase tracking-[0.1em] text-red-500"
                         >
-                          Rimuovi
+                          {isItalian ? "Rimuovi" : "Remove"}
                         </button>
                       )}
                     </div>
                     <GuestRow
-                      label="Adulti"
-                      description="Da 18 anni"
+                      label={isItalian ? "Adulti" : "Adults"}
+                      description={isItalian ? "Da 18 anni" : "Age 18+"}
                       value={room.adults}
                       minimum={1}
                       maximum={6}
@@ -708,8 +711,8 @@ export default function SearchBox({ initialValues }: SearchBoxProps) {
                     />
                     <div className="my-4 h-px bg-slate-100" />
                     <GuestRow
-                      label="Bambini"
-                      description="0 – 17 anni"
+                      label={isItalian ? "Bambini" : "Children"}
+                      description={isItalian ? "0 – 17 anni" : "Ages 0–17"}
                       value={room.children}
                       minimum={0}
                       maximum={3}
@@ -732,7 +735,7 @@ export default function SearchBox({ initialValues }: SearchBoxProps) {
                     className="mt-4 inline-flex w-full items-center justify-center rounded-xl border border-[#0D2340]/10 px-4 py-3 text-xs font-semibold text-[#0D2340] hover:border-[#F58220]/40"
                   >
                     <Plus size={15} className="mr-2 text-[#F58220]" />
-                    Aggiungi camera
+                    {isItalian ? "Aggiungi camera" : "Add room"}
                   </button>
                 )}
               </div>
@@ -786,12 +789,12 @@ export default function SearchBox({ initialValues }: SearchBoxProps) {
                       animate-spin
                     "
                   />
-                  Cerco...
+                  {isItalian ? "Cerco..." : "Searching..."}
                 </>
               ) : (
                 <>
                   <Search size={17} />
-                  Cerca
+                  {isItalian ? "Cerca" : "Search"}
                 </>
               )}
             </button>
@@ -830,8 +833,9 @@ export default function SearchBox({ initialValues }: SearchBoxProps) {
             text-slate-500
           "
         >
-          Stiamo cercando le migliori disponibilità per te. Potrebbero essere
-          necessari alcuni secondi.
+          {isItalian
+            ? "Stiamo cercando le migliori disponibilità per te. Potrebbero essere necessari alcuni secondi."
+            : "We are checking the best availability for you. This may take a few seconds."}
         </p>
       )}
     </div>

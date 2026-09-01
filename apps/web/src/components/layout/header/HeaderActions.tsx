@@ -4,6 +4,7 @@ import Link from "next/link";
 import { IconSparkles, IconUserCircle } from "@tabler/icons-react";
 
 import { useConcierge } from "@/components/concierge/ConciergeProvider";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 type HeaderActionsProps = {
   scrolled: boolean;
@@ -13,6 +14,7 @@ export default function HeaderActions({
   scrolled,
 }: HeaderActionsProps) {
   const { openConcierge } = useConcierge();
+  const { language } = useLanguage();
 
   return (
     <div
@@ -49,14 +51,18 @@ export default function HeaderActions({
         `}
       >
         <IconUserCircle size={18} stroke={1.7} />
-        <span className="hidden xl:inline">Area clienti</span>
+        <span className="hidden xl:inline">
+          {language === "it" ? "Area clienti" : "Customer area"}
+        </span>
       </Link>
 
       <button
         type="button"
         onClick={() =>
           openConcierge(
-            "Aiutami a organizzare il mio viaggio in Sicilia"
+            language === "it"
+              ? "Aiutami a organizzare il mio viaggio in Sicilia"
+              : "Help me plan my trip to Sicily"
           )
         }
         className={`
@@ -100,7 +106,7 @@ export default function HeaderActions({
           "
         />
 
-        <span>Organizza il viaggio</span>
+        <span>{language === "it" ? "Organizza il viaggio" : "Plan your trip"}</span>
       </button>
     </div>
   );

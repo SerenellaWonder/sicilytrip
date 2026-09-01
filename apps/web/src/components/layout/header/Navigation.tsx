@@ -1,33 +1,35 @@
 import Link from "next/link";
 
+import { useLanguage } from "@/components/i18n/LanguageProvider";
+
 const items = [
   {
-    label: "Destinazioni",
+    label: { it: "Destinazioni", en: "Destinations" },
     href: "/destinazioni",
     pathname: "/destinazioni",
   },
   {
-    label: "Esperienze",
+    label: { it: "Esperienze", en: "Experiences" },
     href: "/esperienze",
     pathname: "/esperienze",
   },
   {
-    label: "Chi siamo",
+    label: { it: "Chi siamo", en: "About us" },
     href: "/chi-siamo",
     pathname: "/chi-siamo",
   },
   {
-    label: "Journal",
+    label: { it: "Journal", en: "Journal" },
     href: "/journal",
     pathname: "/journal",
   },
   {
-    label: "FAQ",
+    label: { it: "FAQ", en: "FAQ" },
     href: "/faq",
     pathname: "/faq",
   },
   {
-    label: "Contatti",
+    label: { it: "Contatti", en: "Contact" },
     href: "/contatti",
     pathname: "/contatti",
   },
@@ -42,6 +44,8 @@ export default function Navigation({
   solidHeader,
   pathname,
 }: NavigationProps) {
+  const { language } = useLanguage();
+
   return (
     <nav
       className="
@@ -62,7 +66,7 @@ export default function Navigation({
 
         return (
           <Link
-            key={item.label}
+            key={item.href}
             href={item.href}
             className={`
               group
@@ -93,7 +97,7 @@ export default function Navigation({
               hover:text-[#F58220]
             `}
           >
-            {item.label}
+            {item.label[language]}
 
             <span
               className={`

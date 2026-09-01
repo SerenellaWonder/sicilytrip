@@ -9,6 +9,7 @@ import Logo from "./Logo";
 import Navigation from "./Navigation";
 import HeaderActions from "./HeaderActions";
 import MobileMenu from "./MobileMenu";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 export default function Header() {
   const pathname = usePathname();
@@ -123,7 +124,10 @@ export default function Header() {
 
           {/* DESKTOP ACTION */}
 
-          <HeaderActions scrolled={solidHeader} />
+          <div className="hidden items-center gap-3 lg:flex">
+            <LanguageSwitcher solidHeader={solidHeader} />
+            <HeaderActions scrolled={solidHeader} />
+          </div>
 
           {/* MOBILE */}
 
