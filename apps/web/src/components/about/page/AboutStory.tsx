@@ -1,11 +1,17 @@
+"use client";
+
 import Image from "next/image";
 
 import {
   IconCompass,
   IconMapPin,
 } from "@tabler/icons-react";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 export default function AboutStory() {
+  const { language } = useLanguage();
+  const isEnglish = language === "en";
+
   return (
     <section
       id="storia"
@@ -61,7 +67,7 @@ export default function AboutStory() {
                 stroke={1.7}
               />
 
-              La nostra idea
+              {isEnglish ? "Our idea" : "La nostra idea"}
             </div>
 
             <h2
@@ -78,11 +84,11 @@ export default function AboutStory() {
                 xl:text-[68px]
               "
             >
-              Un altro modo
+              {isEnglish ? "A different way" : "Un altro modo"}
               <br />
 
               <span className="text-[#0D2340]/35">
-                di scoprire la Sicilia.
+                {isEnglish ? "to discover Sicily." : "di scoprire la Sicilia."}
               </span>
             </h2>
           </div>
@@ -96,9 +102,9 @@ export default function AboutStory() {
               sm:text-[17px]
             "
           >
-            Non vogliamo mostrarti soltanto dove dormire
-            o cosa vedere. Vogliamo aiutarti a trovare
-            il modo in cui desideri vivere l&apos;isola.
+            {isEnglish
+              ? "We do not simply want to show you where to stay or what to see. We want to help you find the way you wish to experience the island."
+              : "Non vogliamo mostrarti soltanto dove dormire o cosa vedere. Vogliamo aiutarti a trovare il modo in cui desideri vivere l’isola."}
           </p>
         </div>
 
@@ -129,7 +135,7 @@ export default function AboutStory() {
           >
             <Image
               src="/images/about-story.jpg"
-              alt="Atmosfera autentica siciliana"
+              alt={isEnglish ? "Authentic Sicilian atmosphere" : "Atmosfera autentica siciliana"}
               fill
               sizes="
                 (max-width: 1024px) 100vw,
@@ -169,7 +175,7 @@ export default function AboutStory() {
                   text-[#F58220]
                 "
               >
-                SicilyTrip · Sicilia autentica
+                SicilyTrip · {isEnglish ? "Authentic Sicily" : "Sicilia autentica"}
               </p>
 
               <p
@@ -185,9 +191,9 @@ export default function AboutStory() {
                   sm:leading-8
                 "
               >
-                I luoghi più belli sono quelli
-                che riescono ancora a raccontare
-                una storia.
+                {isEnglish
+                  ? "The most beautiful places are those that can still tell a story."
+                  : "I luoghi più belli sono quelli che riescono ancora a raccontare una storia."}
               </p>
             </div>
           </div>
@@ -204,7 +210,7 @@ export default function AboutStory() {
                 text-[#F58220]
               "
             >
-              01 · Il punto di partenza
+              01 · {isEnglish ? "The starting point" : "Il punto di partenza"}
             </span>
 
             <h3
@@ -220,16 +226,11 @@ export default function AboutStory() {
                 lg:text-[52px]
               "
             >
-              Prima viene
-              <br />
-
-              <span className="text-[#0D2340]/35">
-                il viaggio.
-              </span>
-
-              <br />
-
-              Poi tutto il resto.
+              {isEnglish ? (
+                <>The journey<br /><span className="text-[#0D2340]/35">comes first.</span><br />Everything else follows.</>
+              ) : (
+                <>Prima viene<br /><span className="text-[#0D2340]/35">il viaggio.</span><br />Poi tutto il resto.</>
+              )}
             </h3>
 
             <div
@@ -245,25 +246,21 @@ export default function AboutStory() {
               "
             >
               <p>
-                La Sicilia è fatta di luoghi molto diversi
-                tra loro. Mare e vulcani, città barocche,
-                piccoli borghi, campagne, isole e una cultura
-                che cambia continuamente da una parte
-                all&apos;altra del territorio.
+                {isEnglish
+                  ? "Sicily is made of remarkably different places: sea and volcanoes, Baroque towns, small villages, countryside, islands and a culture that changes from one area to the next."
+                  : "La Sicilia è fatta di luoghi molto diversi tra loro. Mare e vulcani, città barocche, piccoli borghi, campagne, isole e una cultura che cambia continuamente da una parte all’altra del territorio."}
               </p>
 
               <p>
-                Per questo SicilyTrip non parte da una lista
-                di strutture. Parte da ciò che vuoi vivere:
-                il tuo tempo, i tuoi interessi e il modo
-                in cui immagini il viaggio.
+                {isEnglish
+                  ? "That is why SicilyTrip does not begin with a list of properties. It begins with what you want to experience: your time, your interests and the journey you imagine."
+                  : "Per questo SicilyTrip non parte da una lista di strutture. Parte da ciò che vuoi vivere: il tuo tempo, i tuoi interessi e il modo in cui immagini il viaggio."}
               </p>
 
               <p>
-                Da lì selezioniamo soggiorni, destinazioni
-                ed esperienze capaci di stare bene insieme
-                e di raccontare una Sicilia che abbia senso
-                per te.
+                {isEnglish
+                  ? "From there, we select stays, destinations and experiences that belong together and reveal a Sicily that feels right for you."
+                  : "Da lì selezioniamo soggiorni, destinazioni ed esperienze capaci di stare bene insieme e di raccontare una Sicilia che abbia senso per te."}
               </p>
             </div>
 

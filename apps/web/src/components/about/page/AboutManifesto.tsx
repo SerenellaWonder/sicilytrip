@@ -7,13 +7,18 @@ import {
 } from "@tabler/icons-react";
 
 import { useConcierge } from "@/components/concierge/ConciergeProvider";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 export default function AboutManifesto() {
   const { openConcierge } = useConcierge();
+  const { language } = useLanguage();
+  const isEnglish = language === "en";
 
   function handleConcierge() {
     openConcierge(
-      "Vorrei scoprire la Sicilia con SicilyTrip. Aiutami a immaginare un viaggio costruito intorno ai miei interessi."
+      isEnglish
+        ? "I would like to discover Sicily with SicilyTrip. Help me imagine a journey built around my interests."
+        : "Vorrei scoprire la Sicilia con SicilyTrip. Aiutami a immaginare un viaggio costruito intorno ai miei interessi."
     );
   }
 
@@ -128,7 +133,7 @@ export default function AboutManifesto() {
               stroke={1.7}
             />
 
-            Il nostro manifesto
+            {isEnglish ? "Our manifesto" : "Il nostro manifesto"}
           </div>
 
           <span
@@ -169,7 +174,7 @@ export default function AboutManifesto() {
               text-white/35
             "
           >
-            Crediamo che
+            {isEnglish ? "We believe that" : "Crediamo che"}
           </p>
 
           <h2
@@ -187,11 +192,11 @@ export default function AboutManifesto() {
               xl:text-[84px]
             "
           >
-            il lusso non sia
+            {isEnglish ? "luxury is not about" : "il lusso non sia"}
             <br />
 
             <span className="text-white/35">
-              avere più cose.
+              {isEnglish ? "having more things." : "avere più cose."}
             </span>
           </h2>
 
@@ -219,11 +224,11 @@ export default function AboutManifesto() {
               lg:text-[56px]
             "
           >
-            È avere il tempo
+            {isEnglish ? "It is having the time" : "È avere il tempo"}
             <br />
 
             <span className="text-[#F58220]">
-              di vivere quelle giuste.
+              {isEnglish ? "to experience the right ones." : "di vivere quelle giuste."}
             </span>
           </h3>
 
@@ -239,11 +244,9 @@ export default function AboutManifesto() {
               sm:leading-8
             "
           >
-            Un luogo che non conoscevi. Una tavola che
-            ricorderai. Una strada presa senza fretta.
-            Una vista che non avevi programmato.
-            È da questi momenti che nasce il viaggio
-            che vogliamo costruire.
+            {isEnglish
+              ? "A place you did not know. A table you will remember. A road taken without rushing. A view you had not planned. These are the moments that shape the journey we want to create."
+              : "Un luogo che non conoscevi. Una tavola che ricorderai. Una strada presa senza fretta. Una vista che non avevi programmato. È da questi momenti che nasce il viaggio che vogliamo costruire."}
           </p>
         </div>
 
@@ -290,7 +293,7 @@ export default function AboutManifesto() {
                 text-white/65
               "
             >
-              Meno rumore.
+              {isEnglish ? "Less noise." : "Meno rumore."}
             </span>
           </div>
 
@@ -326,7 +329,7 @@ export default function AboutManifesto() {
                 text-white/65
               "
             >
-              Più autenticità.
+              {isEnglish ? "More authenticity." : "Più autenticità."}
             </span>
           </div>
 
@@ -359,7 +362,7 @@ export default function AboutManifesto() {
                 text-white/65
               "
             >
-              Più Sicilia.
+              {isEnglish ? "More Sicily." : "Più Sicilia."}
             </span>
           </div>
         </div>
@@ -398,7 +401,7 @@ export default function AboutManifesto() {
                 className="text-[#F58220]"
               />
 
-              Sicilia, Italia
+              {isEnglish ? "Sicily, Italy" : "Sicilia, Italia"}
             </div>
 
             <p
@@ -414,8 +417,9 @@ export default function AboutManifesto() {
                 lg:text-[34px]
               "
             >
-              Il tuo viaggio può iniziare
-              prima ancora di partire.
+              {isEnglish
+                ? "Your journey can begin before you even leave."
+                : "Il tuo viaggio può iniziare prima ancora di partire."}
             </p>
           </div>
 
@@ -435,7 +439,7 @@ export default function AboutManifesto() {
               text-white
             "
           >
-            Parla con il Concierge
+            {isEnglish ? "Talk to the Concierge" : "Parla con il Concierge"}
 
             <span
               className="

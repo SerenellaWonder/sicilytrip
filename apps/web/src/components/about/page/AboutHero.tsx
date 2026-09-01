@@ -1,11 +1,17 @@
+"use client";
+
 import Image from "next/image";
 
 import {
   IconArrowDown,
   IconMapPin,
 } from "@tabler/icons-react";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 export default function AboutHero() {
+  const { language } = useLanguage();
+  const isEnglish = language === "en";
+
   return (
     <section
       className="
@@ -22,7 +28,7 @@ export default function AboutHero() {
 
       <Image
         src="/images/about-hero.jpg"
-        alt="Paesaggio della Sicilia"
+        alt={isEnglish ? "Sicilian landscape" : "Paesaggio della Sicilia"}
         fill
         priority
         sizes="100vw"
@@ -103,7 +109,7 @@ export default function AboutHero() {
                 stroke={1.7}
               />
 
-              SicilyTrip · La nostra storia
+              SicilyTrip · {isEnglish ? "Our story" : "La nostra storia"}
             </div>
 
             <h1
@@ -120,16 +126,11 @@ export default function AboutHero() {
                 xl:text-[96px]
               "
             >
-              La Sicilia
-              <br />
-
-              <span className="text-white/45">
-                non si visita.
-              </span>
-
-              <br />
-
-              Si vive.
+              {isEnglish ? (
+                <>Sicily<br /><span className="text-white/45">is not just visited.</span><br />It is experienced.</>
+              ) : (
+                <>La Sicilia<br /><span className="text-white/45">non si visita.</span><br />Si vive.</>
+              )}
             </h1>
           </div>
 
@@ -146,10 +147,9 @@ export default function AboutHero() {
                 sm:leading-8
               "
             >
-              SicilyTrip nasce da un&apos;idea semplice:
-              trasformare un viaggio in Sicilia in qualcosa
-              di personale, autentico e difficile da
-              dimenticare.
+              {isEnglish
+                ? "SicilyTrip began with a simple idea: turn a journey through Sicily into something personal, authentic and hard to forget."
+                : "SicilyTrip nasce da un’idea semplice: trasformare un viaggio in Sicilia in qualcosa di personale, autentico e difficile da dimenticare."}
             </p>
 
             <a
@@ -167,7 +167,7 @@ export default function AboutHero() {
                 text-white
               "
             >
-              Scopri chi siamo
+              {isEnglish ? "Discover who we are" : "Scopri chi siamo"}
 
               <span
                 className="
@@ -231,7 +231,7 @@ export default function AboutHero() {
               sm:block
             "
           >
-            Esplora · Scegli · Parti
+            {isEnglish ? "Explore · Choose · Go" : "Esplora · Scegli · Parti"}
           </span>
         </div>
       </div>

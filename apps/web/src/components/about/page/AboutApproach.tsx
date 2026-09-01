@@ -1,9 +1,12 @@
+"use client";
+
 import {
   IconArrowDownRight,
   IconCheck,
   IconRoute,
   IconSparkles,
 } from "@tabler/icons-react";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 const principles = [
   {
@@ -12,6 +15,9 @@ const principles = [
     subtitle: "Solo ciò che vale il viaggio.",
     description:
       "Cerchiamo luoghi, soggiorni ed esperienze capaci di raccontare davvero il territorio. Non una raccolta infinita di alternative, ma una selezione costruita intorno a qualità, identità e autenticità.",
+    titleEn: "We select",
+    subtitleEn: "Only what is worth the journey.",
+    descriptionEn: "We seek places, stays and experiences that truly express their region. Not an endless collection of alternatives, but a selection built around quality, identity and authenticity.",
     icon: IconCheck,
   },
   {
@@ -20,6 +26,9 @@ const principles = [
     subtitle: "Ogni scelta diventa parte di un percorso.",
     description:
       "Una struttura, una destinazione o un'esperienza acquistano valore quando dialogano tra loro. SicilyTrip mette insieme questi elementi per trasformarli in un viaggio coerente, personale e semplice da vivere.",
+    titleEn: "We connect",
+    subtitleEn: "Every choice becomes part of a journey.",
+    descriptionEn: "A property, destination or experience gains meaning when each connects with the others. SicilyTrip brings these elements together into a coherent, personal and effortless journey.",
     icon: IconRoute,
   },
   {
@@ -28,11 +37,17 @@ const principles = [
     subtitle: "Tecnologia quando serve. Presenza quando conta.",
     description:
       "Il Concierge SicilyTrip ti aiuta a orientarti, trovare ispirazione e costruire il viaggio intorno alle tue esigenze. Prima della partenza e durante l'esperienza, senza perdere il valore del rapporto umano.",
+    titleEn: "We guide",
+    subtitleEn: "Technology when useful. Presence when it matters.",
+    descriptionEn: "The SicilyTrip Concierge helps you find direction, inspiration and build a journey around your needs, before departure and throughout the experience without losing the value of human connection.",
     icon: IconSparkles,
   },
 ];
 
 export default function AboutApproach() {
+  const { language } = useLanguage();
+  const isEnglish = language === "en";
+
   return (
     <section
       className="
@@ -113,7 +128,7 @@ export default function AboutApproach() {
                 "
               />
 
-              Il nostro modo
+              {isEnglish ? "Our approach" : "Il nostro modo"}
             </div>
 
             <h2
@@ -130,11 +145,11 @@ export default function AboutApproach() {
                 xl:text-[68px]
               "
             >
-              Meno scelta.
+              {isEnglish ? "Fewer choices." : "Meno scelta."}
               <br />
 
               <span className="text-[#0D2340]/35">
-                Più significato.
+                {isEnglish ? "More meaning." : "Più significato."}
               </span>
             </h2>
           </div>
@@ -156,9 +171,9 @@ export default function AboutApproach() {
                   sm:leading-9
                 "
               >
-                Un viaggio non diventa migliore perché
-                contiene più cose. Diventa migliore quando
-                ogni scelta ha un motivo per esserci.
+                {isEnglish
+                  ? "A journey does not become better by containing more things. It becomes better when every choice has a reason to be there."
+                  : "Un viaggio non diventa migliore perché contiene più cose. Diventa migliore quando ogni scelta ha un motivo per esserci."}
               </p>
 
               <div
@@ -197,7 +212,7 @@ export default function AboutApproach() {
                     text-[#0D2340]/45
                   "
                 >
-                  Il metodo SicilyTrip
+                  {isEnglish ? "The SicilyTrip method" : "Il metodo SicilyTrip"}
                 </span>
               </div>
             </div>
@@ -275,7 +290,7 @@ export default function AboutApproach() {
                       lg:text-[38px]
                     "
                   >
-                    {principle.title}
+                    {isEnglish ? principle.titleEn : principle.title}
                   </h3>
 
                   <p
@@ -288,7 +303,7 @@ export default function AboutApproach() {
                       text-[#0D2340]/40
                     "
                   >
-                    {principle.subtitle}
+                    {isEnglish ? principle.subtitleEn : principle.subtitle}
                   </p>
                 </div>
 
@@ -305,7 +320,7 @@ export default function AboutApproach() {
                     sm:leading-8
                   "
                 >
-                  {principle.description}
+                  {isEnglish ? principle.descriptionEn : principle.description}
                 </p>
 
                 {/* ICON */}
@@ -378,9 +393,11 @@ export default function AboutApproach() {
               lg:text-[42px]
             "
           >
-            Non vogliamo portarti
-            <br className="hidden sm:block" />
-            semplicemente in Sicilia.
+            {isEnglish ? (
+              <>We do not simply want<br className="hidden sm:block" />to take you to Sicily.</>
+            ) : (
+              <>Non vogliamo portarti<br className="hidden sm:block" />semplicemente in Sicilia.</>
+            )}
           </p>
 
           <p
@@ -393,9 +410,9 @@ export default function AboutApproach() {
               sm:leading-8
             "
           >
-            Vogliamo aiutarti a trovare quella parte
-            dell&apos;isola che, per qualche giorno,
-            possa sembrare soltanto tua.
+            {isEnglish
+              ? "We want to help you find the part of the island that, for a few days, can feel like yours alone."
+              : "Vogliamo aiutarti a trovare quella parte dell’isola che, per qualche giorno, possa sembrare soltanto tua."}
           </p>
         </div>
       </div>
