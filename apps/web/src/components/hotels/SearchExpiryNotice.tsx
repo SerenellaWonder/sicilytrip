@@ -3,6 +3,7 @@
 import { Clock3 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 const SEARCH_TTL_MS = 20 * 60 * 1000;
 
@@ -18,6 +19,8 @@ export default function SearchExpiryNotice({
   searchId: string;
   onExpiredChange?: (expired: boolean) => void;
 }) {
+  const { language } = useLanguage();
+  const isEnglish = language === "en";
   const [remainingSeconds, setRemainingSeconds] =
     useState<number | null>(null);
 
@@ -97,12 +100,17 @@ export default function SearchExpiryNotice({
         <div>
           <p className="text-sm font-semibold">
             {expired
-              ? "Questa ricerca è scaduta"
-              : "Disponibilità riservata ancora per"}
+              ? isEnglish
+                ? "This search has expired"
+                : "Questa ricerca è scaduta"
+              : isEnglish
+                ? "Availability reserved for another"
+                : "Disponibilità riservata ancora per"}
           </p>
           {!expired && (
             <p className="mt-0.5 text-xs opacity-70">
-              {minutes}:{seconds.toString().padStart(2, "0")} minuti
+              {minutes}:{seconds.toString().padStart(2, "0")}{" "}
+              {isEnglish ? "minutes" : "minuti"}
             </p>
           )}
         </div>
@@ -113,7 +121,7 @@ export default function SearchExpiryNotice({
           href="/"
           className="text-xs font-bold uppercase tracking-[0.12em] underline"
         >
-          Effettua una nuova ricerca
+          {isEnglish ? "Start a new search" : "Effettua una nuova ricerca"}
         </Link>
       )}
     </div>

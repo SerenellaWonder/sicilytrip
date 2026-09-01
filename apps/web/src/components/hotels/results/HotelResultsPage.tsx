@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { apiFetch } from "@/lib/api";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 import SearchExpiryNotice from "../SearchExpiryNotice";
 import HotelPreviewImage from "./HotelPreviewImage";
@@ -57,6 +58,8 @@ export default function HotelResultsPage({
 }: {
   searchId: string;
 }) {
+  const { language } = useLanguage();
+  const isEnglish = language === "en";
   const [data, setData] =
     useState<HotelSearchResponse | null>(
       null
@@ -98,7 +101,9 @@ export default function HotelResultsPage({
           setError(
             err instanceof Error
               ? err.message
-              : "Impossibile caricare gli hotel."
+              : isEnglish
+                ? "Unable to load hotels."
+                : "Impossibile caricare gli hotel."
           );
         }
       } finally {
@@ -113,7 +118,7 @@ export default function HotelResultsPage({
     return () => {
       active = false;
     };
-  }, [searchId]);
+  }, [isEnglish, searchId]);
 
   /*
    * LOADING
@@ -150,8 +155,9 @@ export default function HotelResultsPage({
               text-slate-500
             "
           >
-            Stiamo cercando i migliori
-            soggiorni per te...
+            {isEnglish
+              ? "We are finding the best stays for you..."
+              : "Stiamo cercando i migliori soggiorni per te..."}
           </p>
         </div>
       </main>
@@ -199,7 +205,7 @@ export default function HotelResultsPage({
               text-[#0D2340]
             "
           >
-            Ricerca non disponibile
+            {isEnglish ? "Search unavailable" : "Ricerca non disponibile"}
           </h1>
 
           <p
@@ -230,7 +236,7 @@ export default function HotelResultsPage({
               hover:bg-[#FF9238]
             "
           >
-            Nuova ricerca
+            {isEnglish ? "New search" : "Nuova ricerca"}
           </Link>
         </div>
       </main>
@@ -247,7 +253,7 @@ export default function HotelResultsPage({
         "taormina"
     )?.zone ??
     hotels[0]?.zone ??
-    "Sicilia";
+    (isEnglish ? "Sicily" : "Sicilia");
 
   return (
     <main
@@ -289,7 +295,7 @@ export default function HotelResultsPage({
             size={14}
           />
 
-          Modifica ricerca
+          {isEnglish ? "Edit search" : "Modifica ricerca"}
         </Link>
 
         <SearchExpiryNotice searchId={searchId} />
@@ -334,7 +340,7 @@ export default function HotelResultsPage({
                 lg:text-[54px]
               "
             >
-              Soggiorni a{" "}
+              {isEnglish ? "Stays in" : "Soggiorni a"}{" "}
               {destination}
             </h1>
 
@@ -347,8 +353,12 @@ export default function HotelResultsPage({
               "
             >
               {hotels.length === 1
-                ? "1 struttura disponibile"
-                : `${hotels.length} strutture disponibili`}
+                ? isEnglish
+                  ? "1 property available"
+                  : "1 struttura disponibile"
+                : isEnglish
+                  ? `${hotels.length} properties available`
+                  : `${hotels.length} strutture disponibili`}
             </p>
           </div>
 
@@ -367,7 +377,7 @@ export default function HotelResultsPage({
               text-[#0D2340]/50
             "
           >
-            Ordinati per prezzo
+            {isEnglish ? "Sorted by price" : "Ordinati per prezzo"}
           </div>
         </div>
 
@@ -400,7 +410,7 @@ export default function HotelResultsPage({
                 text-[#0D2340]
               "
             >
-              Nessuna struttura trovata
+              {isEnglish ? "No properties found" : "Nessuna struttura trovata"}
             </h2>
 
             <p
@@ -410,9 +420,9 @@ export default function HotelResultsPage({
                 text-slate-500
               "
             >
-              Prova a modificare date,
-              destinazione o numero di
-              ospiti.
+              {isEnglish
+                ? "Try changing the dates, destination or number of guests."
+                : "Prova a modificare date, destinazione o numero di ospiti."}
             </p>
           </div>
         ) : (
@@ -431,6 +441,7 @@ export default function HotelResultsPage({
                   }
                   hotel={hotel}
                   searchId={searchId}
+                  isEnglish={isEnglish}
                 />
               )
             )}
@@ -448,14 +459,17 @@ export default function HotelResultsPage({
 function HotelResultCard({
   hotel,
   searchId,
+  isEnglish,
 }: {
   hotel: Hotel;
   searchId: string;
+  isEnglish: boolean;
 }) {
   const price =
     formatPrice(
       hotel.price,
-      hotel.currency
+      hotel.currency,
+      isEnglish ? "en-GB" : "it-IT",
     );
 
   const freeCancellation =
@@ -623,7 +637,7 @@ function HotelResultCard({
                       text-[#0D2340]
                     "
                   >
-                    Camera:
+                    {isEnglish ? "Room:" : "Camera:"}
                   </span>{" "}
                   {hotel.room}
                 </p>
@@ -637,7 +651,7 @@ function HotelResultCard({
                       text-[#0D2340]
                     "
                   >
-                    Trattamento:
+                    {isEnglish ? "Board:" : "Trattamento:"}
                   </span>{" "}
                   {hotel.board}
                 </p>
@@ -669,8 +683,12 @@ function HotelResultCard({
                   `}
                 >
                   {freeCancellation
-                    ? "Cancellazione gratuita"
-                    : "Non rimborsabile"}
+                    ? isEnglish
+                      ? "Free cancellation"
+                      : "Cancellazione gratuita"
+                    : isEnglish
+                      ? "Non-refundable"
+                      : "Non rimborsabile"}
                 </span>
               </div>
             )}
@@ -705,7 +723,7 @@ function HotelResultCard({
                 text-slate-400
               "
             >
-              A partire da
+              {isEnglish ? "From" : "A partire da"}
             </span>
 
             <strong
@@ -719,7 +737,7 @@ function HotelResultCard({
               "
             >
               {price ??
-                "Su richiesta"}
+                (isEnglish ? "On request" : "Su richiesta")}
             </strong>
 
             <span
@@ -730,7 +748,7 @@ function HotelResultCard({
                 text-slate-400
               "
             >
-              totale soggiorno
+              {isEnglish ? "total stay" : "totale soggiorno"}
             </span>
 
             <a
@@ -762,7 +780,7 @@ function HotelResultCard({
                 hover:bg-[#173A63]
               "
             >
-              Vedi disponibilità
+              {isEnglish ? "View availability" : "Vedi disponibilità"}
             </a>
 
             {hotel.supplier && (
@@ -793,14 +811,15 @@ function HotelResultCard({
 
 function formatPrice(
   price?: number,
-  currency = "EUR"
+  currency = "EUR",
+  locale = "it-IT",
 ) {
   if (price == null) {
     return null;
   }
 
   return new Intl.NumberFormat(
-    "it-IT",
+    locale,
     {
       style: "currency",
       currency,
