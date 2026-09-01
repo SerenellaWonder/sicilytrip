@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { apiFetch } from "@/lib/api";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 type Booking = {
   id: string;
@@ -25,6 +26,8 @@ type Booking = {
 const SESSION_KEY = "sicilytrip-customer-session";
 
 export default function CustomerAreaPage() {
+  const { language } = useLanguage();
+  const isEnglish = language === "en";
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [step, setStep] = useState<"EMAIL" | "CODE" | "BOOKINGS">("EMAIL");
@@ -45,6 +48,8 @@ export default function CustomerAreaPage() {
     }, 0);
 
     return () => window.clearTimeout(timer);
+    // Il ripristino deve avvenire una sola volta all’apertura dell’area.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -71,7 +76,7 @@ export default function CustomerAreaPage() {
       sessionStorage.removeItem(SESSION_KEY);
       setToken("");
       setStep("EMAIL");
-      setError("La sessione è scaduta. Richiedi un nuovo codice di accesso.");
+      setError(isEnglish ? "The session has expired. Request a new access code." : "La sessione è scaduta. Richiedi un nuovo codice di accesso.");
     } finally {
       setLoading(false);
     }
@@ -101,7 +106,7 @@ export default function CustomerAreaPage() {
       setError(
         requestError instanceof Error
           ? requestError.message
-          : "Non è stato possibile richiedere il codice.",
+          : isEnglish ? "Unable to request the code." : "Non è stato possibile richiedere il codice.",
       );
     } finally {
       setLoading(false);
@@ -135,7 +140,7 @@ export default function CustomerAreaPage() {
       setError(
         verifyError instanceof Error
           ? verifyError.message
-          : "Il codice non è valido.",
+          : isEnglish ? "The code is invalid." : "Il codice non è valido.",
       );
     } finally {
       setLoading(false);
@@ -159,11 +164,10 @@ export default function CustomerAreaPage() {
         <div className="mt-3 flex items-start justify-between gap-5">
           <div>
             <h1 className="text-4xl font-bold tracking-[-0.04em] text-[#0D2340] sm:text-5xl">
-              Le tue prenotazioni
+              {isEnglish ? "Your bookings" : "Le tue prenotazioni"}
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-500">
-              Accedi con il codice temporaneo inviato alla stessa email usata
-              per la prenotazione.
+              {isEnglish ? "Sign in with the temporary code sent to the same email used for the booking." : "Accedi con il codice temporaneo inviato alla stessa email usata per la prenotazione."}
             </p>
           </div>
           {token && (
@@ -172,7 +176,7 @@ export default function CustomerAreaPage() {
               onClick={logout}
               className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500"
             >
-              <LogOut size={17} /> Esci
+              <LogOut size={17} /> {isEnglish ? "Sign out" : "Esci"}
             </button>
           )}
         </div>
@@ -183,33 +187,33 @@ export default function CustomerAreaPage() {
             {step === "EMAIL" ? (
               <form onSubmit={requestCode} className="mt-6">
                 <Field
-                  label="Email della prenotazione"
+                  label={isEnglish ? "Booking email" : "Email della prenotazione"}
                   type="email"
                   value={email}
                   onChange={setEmail}
                 />
-                <SubmitButton loading={loading}>Invia codice</SubmitButton>
+                <SubmitButton loading={loading}>{isEnglish ? "Send code" : "Invia codice"}</SubmitButton>
               </form>
             ) : (
               <form onSubmit={verifyCode} className="mt-6">
                 <p className="mb-5 text-sm leading-6 text-slate-500">
-                  Inserisci il codice di sei cifre inviato a{" "}
+                  {isEnglish ? "Enter the six-digit code sent to" : "Inserisci il codice di sei cifre inviato a"}{" "}
                   <strong className="text-[#0D2340]">{maskEmail(email)}</strong>
-                  . Scade dopo 10 minuti e può essere utilizzato una sola volta.
+                  {isEnglish ? ". It expires after 10 minutes and can be used only once." : ". Scade dopo 10 minuti e può essere utilizzato una sola volta."}
                 </p>
                 {developmentCode && (
                   <p className="mb-5 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                    Codice locale di prova: <strong>{developmentCode}</strong>
+                    {isEnglish ? "Local test code" : "Codice locale di prova"}: <strong>{developmentCode}</strong>
                   </p>
                 )}
                 <Field
-                  label="Codice temporaneo"
+                  label={isEnglish ? "Temporary code" : "Codice temporaneo"}
                   value={code}
                   onChange={setCode}
                   inputMode="numeric"
                   maxLength={6}
                 />
-                <SubmitButton loading={loading}>Accedi</SubmitButton>
+                <SubmitButton loading={loading}>{isEnglish ? "Sign in" : "Accedi"}</SubmitButton>
                 <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-slate-100 pt-5">
                   <button
                     type="button"
@@ -217,7 +221,7 @@ export default function CustomerAreaPage() {
                     disabled={loading}
                     className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 disabled:opacity-50"
                   >
-                    <ArrowLeft size={14} /> Cambia email
+                    <ArrowLeft size={14} /> {isEnglish ? "Change email" : "Cambia email"}
                   </button>
                   <button
                     type="button"
@@ -227,8 +231,8 @@ export default function CustomerAreaPage() {
                   >
                     <RotateCcw size={14} />
                     {resendCooldown > 0
-                      ? `Nuovo codice tra ${resendCooldown}s`
-                      : "Invia un nuovo codice"}
+                      ? isEnglish ? `New code in ${resendCooldown}s` : `Nuovo codice tra ${resendCooldown}s`
+                      : isEnglish ? "Send a new code" : "Invia un nuovo codice"}
                   </button>
                 </div>
               </form>
@@ -243,11 +247,11 @@ export default function CustomerAreaPage() {
           <section className="mt-10 grid gap-5">
             {bookings.length === 0 ? (
               <div className="rounded-[26px] bg-white p-8 text-sm text-slate-500">
-                Non risultano prenotazioni associate a questa email.
+                {isEnglish ? "No bookings are associated with this email." : "Non risultano prenotazioni associate a questa email."}
               </div>
             ) : (
               bookings.map((booking) => (
-                <BookingCard key={booking.id} booking={booking} />
+                <BookingCard key={booking.id} booking={booking} isEnglish={isEnglish} />
               ))
             )}
           </section>
@@ -257,7 +261,7 @@ export default function CustomerAreaPage() {
   );
 }
 
-function BookingCard({ booking }: { booking: Booking }) {
+function BookingCard({ booking, isEnglish }: { booking: Booking; isEnglish: boolean }) {
   const confirmed = booking.status === "CONFIRMED";
   return (
     <article className="rounded-[26px] bg-white p-7 shadow-[0_12px_40px_rgba(13,35,64,0.05)]">
@@ -267,19 +271,19 @@ function BookingCard({ booking }: { booking: Booking }) {
             {confirmed && (
               <CheckCircle2 size={18} className="text-emerald-600" />
             )}
-            {statusLabel(booking.status)}
+            {statusLabel(booking.status, isEnglish)}
           </div>
           <h2 className="mt-3 text-2xl font-semibold text-[#0D2340]">
             {booking.hotelName}
           </h2>
           <p className="mt-2 text-sm text-slate-500">
-            {formatDate(booking.checkIn)} – {formatDate(booking.checkOut)}
+            {formatDate(booking.checkIn, isEnglish ? "en-GB" : "it-IT")} – {formatDate(booking.checkOut, isEnglish ? "en-GB" : "it-IT")}
           </p>
         </div>
         {booking.referenceCode && (
           <div className="rounded-2xl bg-[#F7F5F1] px-5 py-4 sm:text-right">
             <span className="text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400">
-              Riferimento
+              {isEnglish ? "Reference" : "Riferimento"}
             </span>
             <strong className="mt-1 block text-lg text-[#0D2340]">
               {booking.referenceCode}
@@ -336,8 +340,8 @@ function SubmitButton({
   );
 }
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("it-IT", {
+function formatDate(value: string, locale: "it-IT" | "en-GB") {
+  return new Intl.DateTimeFormat(locale, {
     day: "2-digit",
     month: "long",
     year: "numeric",
@@ -355,9 +359,9 @@ function maskEmail(value: string) {
   return `${visible}${"•".repeat(Math.max(3, localPart.length - visible.length))}@${domain}`;
 }
 
-function statusLabel(status: Booking["status"]) {
-  if (status === "CONFIRMED") return "Prenotazione confermata";
-  if (status === "FAILED") return "Prenotazione non confermata";
-  if (status === "UNCERTAIN") return "Prenotazione da verificare";
-  return "Prenotazione in elaborazione";
+function statusLabel(status: Booking["status"], isEnglish: boolean) {
+  if (status === "CONFIRMED") return isEnglish ? "Booking confirmed" : "Prenotazione confermata";
+  if (status === "FAILED") return isEnglish ? "Booking not confirmed" : "Prenotazione non confermata";
+  if (status === "UNCERTAIN") return isEnglish ? "Booking requires verification" : "Prenotazione da verificare";
+  return isEnglish ? "Booking in progress" : "Prenotazione in elaborazione";
 }
