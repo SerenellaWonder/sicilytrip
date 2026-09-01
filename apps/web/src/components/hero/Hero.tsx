@@ -9,17 +9,19 @@ import HeroSearch from "@/components/hero/HeroSearch";
 export default function Hero() {
   return (
     <>
-      <section
-        id="home"
-        className="
-          relative
-          h-[780px]
-          overflow-visible
-          bg-[#0D2340]
-          sm:h-[720px]
-          lg:h-[740px]
-        "
-      >
+      <div className="relative">
+        <section
+          id="home"
+          className="
+            relative
+            h-[680px]
+            overflow-hidden
+            bg-[#0D2340]
+            sm:h-[720px]
+            lg:h-[740px]
+            lg:overflow-visible
+          "
+        >
         {/* BACKGROUND */}
 
         <div className="absolute inset-0 overflow-hidden">
@@ -115,28 +117,33 @@ export default function Hero() {
           <ScrollIndicator />
         </div>
 
-        {/* CONCIERGE / HOTEL SEARCH */}
+        </section>
+
+        {/* MOBILE: SEARCH BELOW THE HERO. DESKTOP: OVERLAPPING CARD. */}
 
         <div
           className="
-            absolute
-            inset-x-0
-            bottom-0
+            relative
             z-30
-            translate-y-[52%]
-            sm:translate-y-[42%]
+            bg-[#F7F6F2]
+            py-6
+            lg:absolute
+            lg:inset-x-0
+            lg:bottom-0
+            lg:translate-y-[42%]
+            lg:bg-transparent
+            lg:py-0
           "
         >
           <HeroSearch />
         </div>
-      </section>
+      </div>
 
       {/* SPACE FOR OVERLAPPING SEARCH */}
 
       <div
         className="
-          h-[215px]
-          sm:h-[105px]
+          h-0
           lg:h-[110px]
         "
       />
