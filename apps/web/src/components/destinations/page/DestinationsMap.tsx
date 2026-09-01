@@ -16,6 +16,7 @@ import {
   destinationMacroAreas,
   type DestinationMacroArea,
 } from "@/data/destinations";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 type MapDestination = {
   id: string;
@@ -116,6 +117,8 @@ function getLabelClasses(
 }
 
 export default function DestinationsMap() {
+  const { language } = useLanguage();
+  const isEnglish = language === "en";
   const [macroArea, setMacroArea] =
     useState<DestinationMacroArea>("Sicilia Occidentale");
   const [selectedId, setSelectedId] =
@@ -216,7 +219,7 @@ export default function DestinationsMap() {
               "
             >
               <span className="h-px w-9 bg-[#F58220]" />
-              Orientati
+              {isEnglish ? "Find your way" : "Orientati"}
             </div>
 
             <h2
@@ -233,11 +236,11 @@ export default function DestinationsMap() {
                 xl:text-[64px]
               "
             >
-              La Sicilia,
+              {isEnglish ? "Sicily," : "La Sicilia,"}
               <br />
 
               <span className="text-white/55">
-                da un altro punto di vista.
+                {isEnglish ? "from another point of view." : "da un altro punto di vista."}
               </span>
             </h2>
           </div>
@@ -251,13 +254,13 @@ export default function DestinationsMap() {
               sm:text-lg
             "
           >
-            Esplora l&apos;isola attraverso i suoi territori.
-            Seleziona un luogo sulla mappa e scopri da dove
-            iniziare il tuo viaggio.
+            {isEnglish
+              ? "Explore the island through its regions. Select a place on the map and discover where to begin your journey."
+              : "Esplora l’isola attraverso i suoi territori. Seleziona un luogo sulla mappa e scopri da dove iniziare il tuo viaggio."}
           </p>
         </div>
 
-        <div className="mt-9 flex flex-wrap gap-3" aria-label="Filtra la mappa per macroarea">
+        <div className="mt-9 flex flex-wrap gap-3" aria-label={isEnglish ? "Filter map by region" : "Filtra la mappa per macroarea"}>
           {destinationMacroAreas.map(item => (
             <button
               key={item}
@@ -269,7 +272,9 @@ export default function DestinationsMap() {
                   : "border-white/15 bg-white/[0.04] text-white/55 hover:border-white/30 hover:text-white"
               }`}
             >
-              {item}
+              {isEnglish
+                ? item === "Sicilia Occidentale" ? "Western Sicily" : "Eastern Sicily"
+                : item}
             </button>
           ))}
         </div>
@@ -326,7 +331,7 @@ export default function DestinationsMap() {
                 className="text-[#F58220]"
               />
 
-              Mappa delle destinazioni
+              {isEnglish ? "Destination map" : "Mappa delle destinazioni"}
             </div>
 
             {/* =================================================
@@ -378,7 +383,7 @@ export default function DestinationsMap() {
                   w-full
                   overflow-visible
                 "
-                aria-label="Destinazioni in Sicilia"
+                aria-label={isEnglish ? "Destinations in Sicily" : "Destinazioni in Sicilia"}
               >
                 <foreignObject
                   x="0"
@@ -407,7 +412,7 @@ export default function DestinationsMap() {
                         <button
                           key={destination.id}
                           type="button"
-                          aria-label={`Mostra ${destination.name}`}
+                          aria-label={`${isEnglish ? "Show" : "Mostra"} ${destination.name}`}
                           onClick={() =>
                             setSelectedId(destination.id)
                           }
@@ -570,7 +575,7 @@ export default function DestinationsMap() {
                 className="text-[#F58220]"
               />
 
-              Seleziona una destinazione
+              {isEnglish ? "Select a destination" : "Seleziona una destinazione"}
             </div>
           </div>
 
@@ -726,7 +731,7 @@ export default function DestinationsMap() {
                     hover:bg-[#F58220]
                   "
                 >
-                  Scopri {selected.name}
+                  {isEnglish ? "Discover" : "Scopri"} {selected.name}
 
                   <IconArrowUpRight
                     size={17}
@@ -765,8 +770,9 @@ export default function DestinationsMap() {
               text-white/40
             "
           >
-            Ogni destinazione sarà collegata a hotel,
-            esperienze e itinerari selezionati da SicilyTrip.
+            {isEnglish
+              ? "Every destination will be connected to hotels, experiences and itineraries selected by SicilyTrip."
+              : "Ogni destinazione sarà collegata a hotel, esperienze e itinerari selezionati da SicilyTrip."}
           </p>
 
           <span
@@ -780,7 +786,7 @@ export default function DestinationsMap() {
               sm:block
             "
           >
-            Esplora · Scegli · Parti
+            {isEnglish ? "Explore · Choose · Go" : "Esplora · Scegli · Parti"}
           </span>
         </div>
       </div>

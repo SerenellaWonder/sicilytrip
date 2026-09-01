@@ -10,9 +10,12 @@ import {
 } from "@tabler/icons-react";
 
 import { useConcierge } from "@/components/concierge/ConciergeProvider";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 export default function DestinationsHero() {
   const { openConcierge } = useConcierge();
+  const { language } = useLanguage();
+  const isEnglish = language === "en";
 
   return (
     <section
@@ -111,7 +114,7 @@ export default function DestinationsHero() {
           <span className="text-[#F58220]">/</span>
 
           <span className="text-[#0D2340]/65">
-            Destinazioni
+            {isEnglish ? "Destinations" : "Destinazioni"}
           </span>
         </div>
 
@@ -154,7 +157,7 @@ export default function DestinationsHero() {
             >
               <span className="h-px w-9 bg-[#F58220]" />
 
-              Destinazioni
+              {isEnglish ? "Destinations" : "Destinazioni"}
             </div>
 
             <h1
@@ -176,16 +179,11 @@ export default function DestinationsHero() {
                 xl:text-[74px]
               "
             >
-              Una Sicilia.
-              <br />
-
-              <span className="text-[#0D2340]/55">
-                Infinite storie
-              </span>
-
-              <br />
-
-              da vivere.
+              {isEnglish ? (
+                <>One Sicily.<br /><span className="text-[#0D2340]/55">Endless stories</span><br />to experience.</>
+              ) : (
+                <>Una Sicilia.<br /><span className="text-[#0D2340]/55">Infinite storie</span><br />da vivere.</>
+              )}
             </h1>
 
             <p
@@ -205,10 +203,9 @@ export default function DestinationsHero() {
                 lg:leading-9
               "
             >
-              Dalle città d&apos;arte affacciate sul Mediterraneo
-              ai borghi sospesi nel tempo, dalle isole alle pendici
-              dell&apos;Etna. Ogni luogo racconta un modo diverso
-              di vivere la Sicilia.
+              {isEnglish
+                ? "From art cities overlooking the Mediterranean to timeless villages, from the islands to the slopes of Mount Etna. Every place tells a different way of experiencing Sicily."
+                : "Dalle città d’arte affacciate sul Mediterraneo ai borghi sospesi nel tempo, dalle isole alle pendici dell’Etna. Ogni luogo racconta un modo diverso di vivere la Sicilia."}
             </p>
 
             {/* ===============================================
@@ -253,7 +250,7 @@ export default function DestinationsHero() {
                   hover:bg-[#F58220]
                 "
               >
-                Esplora la Sicilia
+                {isEnglish ? "Explore Sicily" : "Esplora la Sicilia"}
 
                 <IconArrowDown
                   size={17}
@@ -270,7 +267,9 @@ export default function DestinationsHero() {
                 type="button"
                 onClick={() =>
                   openConcierge(
-                    "Aiutami a scegliere la destinazione ideale per il mio viaggio in Sicilia"
+                    isEnglish
+                      ? "Help me choose the ideal destination for my trip to Sicily"
+                      : "Aiutami a scegliere la destinazione ideale per il mio viaggio in Sicilia"
                   )
                 }
                 className="
@@ -316,7 +315,7 @@ export default function DestinationsHero() {
                   />
                 </span>
 
-                Chiedi al Concierge
+                {isEnglish ? "Ask the Concierge" : "Chiedi al Concierge"}
               </button>
             </div>
 
@@ -357,7 +356,9 @@ export default function DestinationsHero() {
                   text-[#0D2340]/40
                 "
               >
-                Città · territori · arcipelaghi · infinite possibilità
+                {isEnglish
+                  ? "Cities · regions · archipelagos · endless possibilities"
+                  : "Città · territori · arcipelaghi · infinite possibilità"}
               </p>
             </div>
           </div>
@@ -414,7 +415,7 @@ export default function DestinationsHero() {
             >
               <Image
                 src="/images/taormina.jpg"
-                alt="Scopri le destinazioni della Sicilia"
+                alt={isEnglish ? "Discover Sicily's destinations" : "Scopri le destinazioni della Sicilia"}
                 fill
                 priority
                 sizes="
@@ -483,7 +484,7 @@ export default function DestinationsHero() {
                       stroke={1.8}
                     />
 
-                    Costa Orientale
+                    {isEnglish ? "Eastern Coast" : "Costa Orientale"}
                   </div>
 
                   <p
@@ -525,7 +526,7 @@ export default function DestinationsHero() {
                     sm:block
                   "
                 >
-                  Sicilia da vivere
+                  {isEnglish ? "Experience Sicily" : "Sicilia da vivere"}
                 </div>
               </div>
             </div>
@@ -589,8 +590,9 @@ export default function DestinationsHero() {
                   text-[#0D2340]
                 "
               >
-                Luoghi selezionati per scoprire l&apos;anima più
-                autentica dell&apos;isola.
+                {isEnglish
+                  ? "Selected places for discovering the island's most authentic soul."
+                  : "Luoghi selezionati per scoprire l’anima più autentica dell’isola."}
               </p>
             </div>
           </div>

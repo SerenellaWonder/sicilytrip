@@ -12,6 +12,7 @@ import {
   IconHeart,
   IconSparkles,
 } from "@tabler/icons-react";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 type Mood = {
   id: string;
@@ -19,6 +20,9 @@ type Mood = {
   title: string;
   subtitle: string;
   description: string;
+  titleEn: string;
+  subtitleEn: string;
+  descriptionEn: string;
   destinations: string[];
   icon: React.ElementType;
 };
@@ -31,6 +35,9 @@ const moods: Mood[] = [
     subtitle: "Calette, isole e Mediterraneo",
     description:
       "Acque trasparenti, baie nascoste e giornate che seguono soltanto il ritmo del mare.",
+    titleEn: "Sea",
+    subtitleEn: "Coves, islands and the Mediterranean",
+    descriptionEn: "Clear waters, hidden bays and days that follow nothing but the rhythm of the sea.",
     destinations: [
       "Isole Eolie",
       "Isole Egadi",
@@ -47,6 +54,9 @@ const moods: Mood[] = [
     subtitle: "Millenni di storia",
     description:
       "Templi greci, città barocche, teatri antichi e architetture nate dall'incontro di civiltà diverse.",
+    titleEn: "Culture",
+    subtitleEn: "Thousands of years of history",
+    descriptionEn: "Greek temples, Baroque towns, ancient theatres and architecture shaped by different civilisations.",
     destinations: [
       "Palermo",
       "Agrigento",
@@ -62,6 +72,9 @@ const moods: Mood[] = [
     subtitle: "La Sicilia a tavola",
     description:
       "Cantine, mercati, cucina d'autore e sapori locali per scoprire l'isola attraverso ciò che produce.",
+    titleEn: "Taste",
+    subtitleEn: "Sicily at the table",
+    descriptionEn: "Wineries, markets, fine dining and local flavours reveal the island through what it produces.",
     destinations: [
       "Palermo",
       "Etna",
@@ -77,6 +90,9 @@ const moods: Mood[] = [
     subtitle: "Vulcani e paesaggi",
     description:
       "Camminare sul vulcano, navigare tra le isole e attraversare riserve e paesaggi ancora autentici.",
+    titleEn: "Nature",
+    subtitleEn: "Volcanoes and landscapes",
+    descriptionEn: "Walk on the volcano, sail among the islands and cross reserves and unspoilt landscapes.",
     destinations: [
       "Etna",
       "Isole Eolie",
@@ -92,6 +108,9 @@ const moods: Mood[] = [
     subtitle: "Luoghi da vivere in due",
     description:
       "Boutique hotel, terrazze sul mare, tramonti e piccoli borghi per un viaggio costruito intorno a voi.",
+    titleEn: "Romance",
+    subtitleEn: "Places made for two",
+    descriptionEn: "Boutique hotels, sea-view terraces, sunsets and small villages for a journey designed around you.",
     destinations: [
       "Taormina",
       "Noto",
@@ -103,6 +122,8 @@ const moods: Mood[] = [
 ];
 
 export default function TravelMood() {
+  const { language } = useLanguage();
+  const isEnglish = language === "en";
   const [activeId, setActiveId] =
     useState<string>("mare");
 
@@ -179,7 +200,7 @@ export default function TravelMood() {
             >
               <span className="h-px w-9 bg-[#F58220]" />
 
-              Trova la tua Sicilia
+              {isEnglish ? "Find your Sicily" : "Trova la tua Sicilia"}
             </div>
 
             <h2
@@ -196,11 +217,11 @@ export default function TravelMood() {
                 xl:text-[66px]
               "
             >
-              Che Sicilia
+              {isEnglish ? "Which Sicily" : "Che Sicilia"}
               <br />
 
               <span className="text-[#0D2340]/35">
-                stai cercando?
+                {isEnglish ? "are you looking for?" : "stai cercando?"}
               </span>
             </h2>
 
@@ -214,9 +235,9 @@ export default function TravelMood() {
                 sm:text-[17px]
               "
             >
-              Non esiste un solo modo di vivere l&apos;isola.
-              Parti da quello che ami e lascia che SicilyTrip
-              ti porti nei luoghi giusti.
+              {isEnglish
+                ? "There is no single way to experience the island. Start with what you love and let SicilyTrip take you to the right places."
+                : "Non esiste un solo modo di vivere l’isola. Parti da quello che ami e lascia che SicilyTrip ti porti nei luoghi giusti."}
             </p>
 
             {/* ACTIVE MOOD DESKTOP */}
@@ -283,7 +304,7 @@ export default function TravelMood() {
                     text-[#F58220]
                   "
                 >
-                  {active.subtitle}
+                  {isEnglish ? active.subtitleEn : active.subtitle}
                 </p>
 
                 <h3
@@ -294,7 +315,7 @@ export default function TravelMood() {
                     tracking-[-0.04em]
                   "
                 >
-                  {active.title}
+                  {isEnglish ? active.titleEn : active.title}
                 </h3>
 
                 <p
@@ -306,7 +327,7 @@ export default function TravelMood() {
                     text-white/55
                   "
                 >
-                  {active.description}
+                  {isEnglish ? active.descriptionEn : active.description}
                 </p>
 
                 <div
@@ -486,7 +507,7 @@ export default function TravelMood() {
                           }
                         `}
                       >
-                        {mood.title}
+                        {isEnglish ? mood.titleEn : mood.title}
                       </h3>
                     </div>
 
@@ -501,7 +522,7 @@ export default function TravelMood() {
                         sm:block
                       "
                     >
-                      {mood.subtitle}
+                      {isEnglish ? mood.subtitleEn : mood.subtitle}
                     </span>
 
                     {/* ARROW */}
@@ -592,7 +613,7 @@ export default function TravelMood() {
                       text-[#F58220]
                     "
                   >
-                    {active.subtitle}
+                    {isEnglish ? active.subtitleEn : active.subtitle}
                   </p>
 
                   <h3
@@ -602,7 +623,7 @@ export default function TravelMood() {
                       font-bold
                     "
                   >
-                    {active.title}
+                    {isEnglish ? active.titleEn : active.title}
                   </h3>
                 </div>
               </div>
@@ -615,7 +636,7 @@ export default function TravelMood() {
                   text-white/55
                 "
               >
-                {active.description}
+                {isEnglish ? active.descriptionEn : active.description}
               </p>
 
               <div
@@ -719,7 +740,7 @@ export default function TravelMood() {
                   sm:text-[28px]
                 "
               >
-                Non sai da dove iniziare?
+                {isEnglish ? "Not sure where to start?" : "Non sai da dove iniziare?"}
               </h3>
 
               <p
@@ -731,9 +752,9 @@ export default function TravelMood() {
                   text-[#0D2340]/50
                 "
               >
-                Raccontaci che viaggio immagini. Ti aiuteremo
-                a trovare destinazioni, soggiorni ed esperienze
-                adatte a te.
+                {isEnglish
+                  ? "Tell us about the journey you imagine. We will help you find destinations, stays and experiences that suit you."
+                  : "Raccontaci che viaggio immagini. Ti aiuteremo a trovare destinazioni, soggiorni ed esperienze adatte a te."}
               </p>
             </div>
           </div>
@@ -762,7 +783,7 @@ export default function TravelMood() {
               lg:ml-10
             "
           >
-            Crea il mio viaggio
+            {isEnglish ? "Create my journey" : "Crea il mio viaggio"}
 
             <IconArrowUpRight
               size={17}

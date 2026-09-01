@@ -14,10 +14,13 @@ import {
   destinationMacroAreas,
   type DestinationMacroArea,
 } from "@/data/destinations";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 const destinations = destinationCatalog;
 
 export default function DestinationShowcase() {
+  const { language } = useLanguage();
+  const isEnglish = language === "en";
   const [macroArea, setMacroArea] =
     useState<DestinationMacroArea>("Sicilia Occidentale");
   const [province, setProvince] = useState("Tutte");
@@ -116,7 +119,7 @@ export default function DestinationShowcase() {
             >
               <span className="h-px w-9 bg-[#F58220]" />
 
-              Esplora l&apos;isola
+              {isEnglish ? "Explore the island" : "Esplora l’isola"}
             </div>
 
             <h2
@@ -133,11 +136,11 @@ export default function DestinationShowcase() {
                 xl:text-[68px]
               "
             >
-              Territori da scoprire.
+              {isEnglish ? "Regions to discover." : "Territori da scoprire."}
               <br />
 
               <span className="text-[#0D2340]/35">
-                Una Sicilia, infinite mete.
+                {isEnglish ? "One Sicily, endless destinations." : "Una Sicilia, infinite mete."}
               </span>
             </h2>
           </div>
@@ -151,14 +154,13 @@ export default function DestinationShowcase() {
               sm:text-[17px]
             "
           >
-            Dal carattere urbano di Palermo e Catania
-            alle isole, al vulcano e alle città barocche.
-            Ogni destinazione racconta un volto diverso
-            della Sicilia.
+            {isEnglish
+              ? "From the urban character of Palermo and Catania to the islands, the volcano and Baroque towns. Every destination reveals a different side of Sicily."
+              : "Dal carattere urbano di Palermo e Catania alle isole, al vulcano e alle città barocche. Ogni destinazione racconta un volto diverso della Sicilia."}
           </p>
         </div>
 
-        <div className="mt-10 flex flex-wrap gap-3" aria-label="Filtra per macroarea">
+        <div className="mt-10 flex flex-wrap gap-3" aria-label={isEnglish ? "Filter by region" : "Filtra per macroarea"}>
           {destinationMacroAreas.map(item => (
             <button
               key={item}
@@ -170,12 +172,14 @@ export default function DestinationShowcase() {
                   : "border-[#0D2340]/10 bg-white text-[#0D2340]/55 hover:border-[#F58220] hover:text-[#F58220]"
               }`}
             >
-              {item}
+              {isEnglish
+                ? item === "Sicilia Occidentale" ? "Western Sicily" : "Eastern Sicily"
+                : item}
             </button>
           ))}
         </div>
 
-        <div className="mt-4 flex flex-wrap gap-2" aria-label="Filtra per provincia">
+        <div className="mt-4 flex flex-wrap gap-2" aria-label={isEnglish ? "Filter by province" : "Filtra per provincia"}>
           {["Tutte", ...provinces].map(item => (
             <button
               key={item}
@@ -187,7 +191,7 @@ export default function DestinationShowcase() {
                   : "bg-[#0D2340]/[0.05] text-[#0D2340]/50 hover:text-[#0D2340]"
               }`}
             >
-              {item}
+              {isEnglish && item === "Tutte" ? "All" : item}
             </button>
           ))}
         </div>
@@ -506,7 +510,7 @@ export default function DestinationShowcase() {
                       text-white
                     "
                   >
-                    Scopri {active.name}
+                    {isEnglish ? "Discover" : "Scopri"} {active.name}
 
                     <span
                       className="
