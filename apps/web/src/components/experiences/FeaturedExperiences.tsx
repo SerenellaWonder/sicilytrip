@@ -542,7 +542,7 @@ export default function FeaturedExperiences() {
               "
             />
 
-            Scopri le esperienze
+            {language === "en" ? "Discover the experiences" : "Scopri le esperienze"}
           </div>
         </div>
       </div>

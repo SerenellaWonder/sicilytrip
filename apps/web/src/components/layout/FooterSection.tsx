@@ -487,7 +487,7 @@ export default function FooterSection() {
                 sm:tracking-[0.48em]
               "
             >
-              Scopri · Vivi · Ricorda
+              {isEnglish ? "Discover · Experience · Remember" : "Scopri · Vivi · Ricorda"}
             </p>
           </div>
 
@@ -773,7 +773,9 @@ export default function FooterSection() {
                   md:max-w-[500px]
                 "
               >
-                Un nuovo modo di scoprire, organizzare e vivere la Sicilia.
+                {isEnglish
+                  ? "A new way to discover, plan and experience Sicily."
+                  : "Un nuovo modo di scoprire, organizzare e vivere la Sicilia."}
               </p>
             </div>
 

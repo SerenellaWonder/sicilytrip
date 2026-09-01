@@ -5,8 +5,11 @@ import Image from "next/image";
 import HeroContent from "@/components/hero/HeroContent";
 import ScrollIndicator from "@/components/hero/ScrollIndicator";
 import HeroSearch from "@/components/hero/HeroSearch";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 export default function Hero() {
+  const { language } = useLanguage();
+
   return (
     <>
       <div className="relative">
@@ -27,7 +30,7 @@ export default function Hero() {
         <div className="absolute inset-0 overflow-hidden">
           <Image
             src="/images/hero.jpg"
-            alt="Scopri la Sicilia con SicilyTrip"
+            alt={language === "en" ? "Discover Sicily with SicilyTrip" : "Scopri la Sicilia con SicilyTrip"}
             fill
             priority
             sizes="100vw"
