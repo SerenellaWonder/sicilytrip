@@ -13,7 +13,7 @@ export default function Hero() {
         id="home"
         className="
           relative
-          h-[690px]
+          h-[780px]
           overflow-visible
           bg-[#0D2340]
           sm:h-[720px]
@@ -123,7 +123,7 @@ export default function Hero() {
             inset-x-0
             bottom-0
             z-30
-            translate-y-[38%]
+            translate-y-[52%]
             sm:translate-y-[42%]
           "
         >
@@ -135,7 +135,7 @@ export default function Hero() {
 
       <div
         className="
-          h-[170px]
+          h-[215px]
           sm:h-[105px]
           lg:h-[110px]
         "

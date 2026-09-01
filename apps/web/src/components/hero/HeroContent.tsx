@@ -14,7 +14,7 @@ export default function HeroContent() {
         flex
         h-full
         items-center
-        pb-[170px]
+        pb-[225px]
         pt-[80px]
         sm:pb-[130px]
         lg:pb-[145px]
