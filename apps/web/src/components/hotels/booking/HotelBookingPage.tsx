@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { apiFetch } from "@/lib/api";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 import SearchExpiryNotice from "../SearchExpiryNotice";
 import GuestDetailsForm from "./GuestDetailsForm";
 
@@ -57,6 +58,8 @@ export default function HotelBookingPage({
   hotelId: string;
   rateId: string;
 }) {
+  const { language } = useLanguage();
+  const isEnglish = language === "en";
   const [rate, setRate] = useState<HotelRoomRate | null>(null);
 
   const [loading, setLoading] = useState(true);
@@ -126,7 +129,7 @@ export default function HotelBookingPage({
               text-slate-500
             "
           >
-            Preparazione del riepilogo...
+            {isEnglish ? "Preparing your summary..." : "Preparazione del riepilogo..."}
           </p>
         </div>
       </main>
@@ -154,7 +157,7 @@ export default function HotelBookingPage({
               text-[#0D2340]
             "
           >
-            Tariffa non più disponibile
+            {isEnglish ? "Rate no longer available" : "Tariffa non più disponibile"}
           </h1>
 
           <p
@@ -163,7 +166,7 @@ export default function HotelBookingPage({
               text-slate-500
             "
           >
-            Torna all&apos;hotel e seleziona nuovamente una tariffa.
+            {isEnglish ? "Return to the hotel and select a rate again." : "Torna all’hotel e seleziona nuovamente una tariffa."}
           </p>
 
           <a
@@ -182,21 +185,22 @@ export default function HotelBookingPage({
               text-white
             "
           >
-            Torna alle camere
+            {isEnglish ? "Back to rooms" : "Torna alle camere"}
           </a>
         </div>
       </main>
     );
   }
 
-  const price = formatPrice(rate.Price, rate.Currency);
+  const locale = isEnglish ? "en-GB" : "it-IT";
+  const price = formatPrice(rate.Price, rate.Currency, locale);
 
   const freeCancellation = rate.CancellationPolicyCode === "FREE";
 
   async function handlePreBook() {
     if (searchExpired) {
       setPreBookError(
-        "La ricerca è scaduta. Effettua una nuova ricerca per verificare nuovamente disponibilità e prezzo.",
+        isEnglish ? "The search has expired. Start a new search to check availability and price again." : "La ricerca è scaduta. Effettua una nuova ricerca per verificare nuovamente disponibilità e prezzo.",
       );
       return;
     }
@@ -224,7 +228,7 @@ export default function HotelBookingPage({
       setPreBookError(
         error instanceof Error
           ? error.message
-          : "Impossibile riconfermare la tariffa.",
+          : isEnglish ? "Unable to reconfirm the rate." : "Impossibile riconfermare la tariffa.",
       );
     } finally {
       setPreBooking(false);
@@ -236,6 +240,7 @@ export default function HotelBookingPage({
       ? formatPrice(
           preBook.FinalPrice,
           preBook.OriginalCurrency || rate.Currency,
+          locale,
         )
       : price;
 
@@ -273,7 +278,7 @@ export default function HotelBookingPage({
           "
         >
           <ArrowLeft size={14} />
-          Cambia tariffa
+          {isEnglish ? "Change rate" : "Cambia tariffa"}
         </a>
 
         <SearchExpiryNotice
@@ -304,7 +309,7 @@ export default function HotelBookingPage({
               sm:text-[52px]
             "
           >
-            Il tuo soggiorno
+            {isEnglish ? "Your stay" : "Il tuo soggiorno"}
           </h1>
 
           <p
@@ -316,8 +321,7 @@ export default function HotelBookingPage({
               text-slate-500
             "
           >
-            Controlla i dettagli della tariffa selezionata prima di continuare
-            con la prenotazione.
+            {isEnglish ? "Check the selected rate details before continuing with the booking." : "Controlla i dettagli della tariffa selezionata prima di continuare con la prenotazione."}
           </p>
         </div>
 
@@ -346,7 +350,7 @@ export default function HotelBookingPage({
                 text-[#F58220]
               "
             >
-              Tariffa selezionata
+              {isEnglish ? "Selected rate" : "Tariffa selezionata"}
             </span>
 
             <div
@@ -359,14 +363,14 @@ export default function HotelBookingPage({
             >
               <SummaryItem
                 icon={<BedDouble size={17} />}
-                label="Camera"
-                value={rate.Rooms?.join(", ") ?? "Camera"}
+                label={isEnglish ? "Room" : "Camera"}
+                value={rate.Rooms?.join(", ") ?? (isEnglish ? "Room" : "Camera")}
               />
 
               <SummaryItem
                 icon={<Coffee size={17} />}
-                label="Trattamento"
-                value={rate.Boards?.join(", ") ?? "Trattamento"}
+                label={isEnglish ? "Board" : "Trattamento"}
+                value={rate.Boards?.join(", ") ?? (isEnglish ? "Board" : "Trattamento")}
               />
             </div>
 
@@ -412,8 +416,8 @@ export default function HotelBookingPage({
                     "
                   >
                     {freeCancellation
-                      ? "Cancellazione gratuita"
-                      : "Tariffa non rimborsabile"}
+                      ? isEnglish ? "Free cancellation" : "Cancellazione gratuita"
+                      : isEnglish ? "Non-refundable rate" : "Tariffa non rimborsabile"}
                   </p>
 
                   <p
@@ -424,8 +428,7 @@ export default function HotelBookingPage({
                       text-slate-500
                     "
                   >
-                    Le condizioni definitive saranno riconfermate durante il
-                    prebook.
+                    {isEnglish ? "The final conditions will be reconfirmed during pre-booking." : "Le condizioni definitive saranno riconfermate durante il prebook."}
                   </p>
                 </div>
               </div>
@@ -450,7 +453,7 @@ export default function HotelBookingPage({
                 text-white/45
               "
             >
-              Totale soggiorno
+              {isEnglish ? "Total stay" : "Totale soggiorno"}
             </span>
 
             <strong
@@ -462,7 +465,7 @@ export default function HotelBookingPage({
                 tracking-[-0.04em]
               "
             >
-              {confirmedPrice ?? "Su richiesta"}
+              {confirmedPrice ?? (isEnglish ? "On request" : "Su richiesta")}
             </strong>
 
             <p
@@ -473,7 +476,7 @@ export default function HotelBookingPage({
                 text-white/55
               "
             >
-              Il prezzo sarà riconfermato prima della prenotazione definitiva.
+              {isEnglish ? "The price will be reconfirmed before the final booking." : "Il prezzo sarà riconfermato prima della prenotazione definitiva."}
             </p>
 
             <button
@@ -510,14 +513,14 @@ export default function HotelBookingPage({
                       animate-spin
                     "
                   />
-                  Riconferma...
+                  {isEnglish ? "Reconfirming..." : "Riconferma..."}
                 </>
               ) : preBook ? (
-                "Tariffa confermata"
+                isEnglish ? "Rate confirmed" : "Tariffa confermata"
               ) : searchExpired ? (
-                "Ricerca scaduta"
+                isEnglish ? "Search expired" : "Ricerca scaduta"
               ) : (
-                "Riconferma tariffa"
+                isEnglish ? "Reconfirm rate" : "Riconferma tariffa"
               )}
             </button>
 
@@ -547,7 +550,7 @@ export default function HotelBookingPage({
                     underline
                   "
                 >
-                  Effettua una nuova ricerca
+                  {isEnglish ? "Start a new search" : "Effettua una nuova ricerca"}
                 </Link>
               </div>
             ) : (
@@ -560,7 +563,7 @@ export default function HotelBookingPage({
                   text-white/40
                 "
               >
-                La disponibilità della ricerca resta valida per 20 minuti.
+                {isEnglish ? "Search availability remains valid for 20 minutes." : "La disponibilità della ricerca resta valida per 20 minuti."}
               </p>
             )}
           </aside>
@@ -601,7 +604,7 @@ export default function HotelBookingPage({
                     text-[#0D2340]
                   "
                   >
-                    Tariffa riconfermata
+                    {isEnglish ? "Rate reconfirmed" : "Tariffa riconfermata"}
                   </h2>
 
                   {preBook.DeadlineDate && (
@@ -612,7 +615,7 @@ export default function HotelBookingPage({
                       text-slate-500
                     "
                     >
-                      Termine cancellazione: {preBook.DeadlineDate}
+                      {isEnglish ? "Cancellation deadline" : "Termine cancellazione"}: {preBook.DeadlineDate}
                     </p>
                   )}
                 </div>
@@ -635,7 +638,7 @@ export default function HotelBookingPage({
                       text-[#0D2340]
                     "
                   >
-                    Camera {detail.Room ?? detailIndex + 1}
+                    {isEnglish ? "Room" : "Camera"} {detail.Room ?? detailIndex + 1}
                   </p>
 
                   <div className="mt-3 grid gap-2">
@@ -648,8 +651,8 @@ export default function HotelBookingPage({
                             text-slate-600
                           "
                       >
-                        Dal {formatDeadline(item.DeadLine)}: penale{" "}
-                        {item.Fee ?? "non indicata"}
+                        {isEnglish ? "From" : "Dal"} {formatDeadline(item.DeadLine, locale)}: {isEnglish ? "penalty" : "penale"}{" "}
+                        {item.Fee ?? (isEnglish ? "not specified" : "non indicata")}
                       </p>
                     ))}
                   </div>
@@ -739,21 +742,21 @@ function SummaryItem({
   );
 }
 
-function formatPrice(price?: number, currency = "EUR") {
+function formatPrice(price?: number, currency = "EUR", locale = "it-IT") {
   if (price == null) {
     return null;
   }
 
-  return new Intl.NumberFormat("it-IT", {
+  return new Intl.NumberFormat(locale, {
     style: "currency",
     currency,
     maximumFractionDigits: 2,
   }).format(price);
 }
 
-function formatDeadline(value?: string) {
+function formatDeadline(value?: string, locale = "it-IT") {
   if (!value) {
-    return "data non indicata";
+    return locale === "en-GB" ? "date not specified" : "data non indicata";
   }
 
   const date = new Date(value);
@@ -762,7 +765,7 @@ function formatDeadline(value?: string) {
     return value;
   }
 
-  return new Intl.DateTimeFormat("it-IT", {
+  return new Intl.DateTimeFormat(locale, {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",

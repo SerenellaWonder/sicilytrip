@@ -5,6 +5,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 
 import { apiFetch } from "@/lib/api";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 type Guest = {
   title: string;
@@ -59,6 +60,8 @@ export default function GuestDetailsForm({
     preBookId?: string;
   };
 }) {
+  const { language } = useLanguage();
+  const isEnglish = language === "en";
   const storageKey = `hotel-guests:${searchId}:${hotelId}:${rateId}`;
   const attemptStorageKey = `hotel-book-attempt:${searchId}:${hotelId}:${rateId}`;
   const [details, setDetails] = useState<GuestDetails>(() =>
@@ -123,7 +126,7 @@ export default function GuestDetailsForm({
           setRefCode(parsedAttempt.refCode ?? "");
           if (parsedAttempt.status !== "CONFIRMED") {
             setBookError(
-              "La richiesta è già stata inviata. Non ripeterla: l’esito deve essere verificato con il fornitore.",
+              isEnglish ? "The request has already been sent. Do not repeat it: the outcome must be checked with the supplier." : "La richiesta è già stata inviata. Non ripeterla: l’esito deve essere verificato con il fornitore.",
             );
           }
         }
@@ -133,7 +136,7 @@ export default function GuestDetailsForm({
     }, 0);
 
     return () => window.clearTimeout(timer);
-  }, [attemptStorageKey, searchId, storageKey]);
+  }, [attemptStorageKey, isEnglish, searchId, storageKey]);
 
   function updateField(
     field: keyof Omit<GuestDetails, "rooms">,
@@ -250,7 +253,7 @@ export default function GuestDetailsForm({
       if (response.Error || !response.RefCode) {
         throw new Error(
           response.Error ||
-            "Il fornitore non ha restituito il codice di conferma.",
+            (isEnglish ? "The supplier did not return a confirmation code." : "Il fornitore non ha restituito il codice di conferma."),
         );
       }
 
@@ -265,8 +268,8 @@ export default function GuestDetailsForm({
         `${
           error instanceof Error
             ? error.message
-            : "Non è stato possibile determinare l’esito della prenotazione."
-        } Non ripetere la richiesta: verifica la pratica con il fornitore.`,
+            : isEnglish ? "The booking outcome could not be determined." : "Non è stato possibile determinare l’esito della prenotazione."
+        } ${isEnglish ? "Do not repeat the request: check the booking with the supplier." : "Non ripetere la richiesta: verifica la pratica con il fornitore."}`,
       );
       sessionStorage.setItem(
         attemptStorageKey,
@@ -283,10 +286,10 @@ export default function GuestDetailsForm({
         <Users size={22} className="mt-0.5 shrink-0 text-[#F58220]" />
         <div>
           <h2 className="text-2xl font-semibold text-[#0D2340]">
-            Dati della prenotazione
+            {isEnglish ? "Booking details" : "Dati della prenotazione"}
           </h2>
           <p className="mt-2 text-sm leading-6 text-slate-500">
-            Inserisci i dati dell&apos;intestatario e i nominativi degli ospiti.
+            {isEnglish ? "Enter the lead traveller’s details and the names of all guests." : "Inserisci i dati dell’intestatario e i nominativi degli ospiti."}
           </p>
         </div>
       </div>
@@ -294,24 +297,25 @@ export default function GuestDetailsForm({
       <form onSubmit={handleSubmit} className="mt-7">
         <fieldset disabled={disabled} className="disabled:opacity-60">
           <legend className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#F58220]">
-            Intestatario e contatti
+            {isEnglish ? "Lead traveller and contact details" : "Intestatario e contatti"}
           </legend>
 
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <SelectField
-              label="Titolo"
+              label={isEnglish ? "Title" : "Titolo"}
               value={details.title}
               onChange={(value) => updateField("title", value)}
               options={["Sig.", "Sig.ra"]}
+              translateTitles={isEnglish}
             />
             <InputField
-              label="Nome"
+              label={isEnglish ? "First name" : "Nome"}
               value={details.firstName}
               onChange={(value) => updateField("firstName", value)}
               autoComplete="given-name"
             />
             <InputField
-              label="Cognome"
+              label={isEnglish ? "Last name" : "Cognome"}
               value={details.lastName}
               onChange={(value) => updateField("lastName", value)}
               autoComplete="family-name"
@@ -324,14 +328,14 @@ export default function GuestDetailsForm({
               autoComplete="email"
             />
             <InputField
-              label="Telefono"
+              label={isEnglish ? "Phone" : "Telefono"}
               type="tel"
               value={details.phone}
               onChange={(value) => updateField("phone", value)}
               autoComplete="tel"
             />
             <InputField
-              label="Paese di residenza"
+              label={isEnglish ? "Country of residence" : "Paese di residenza"}
               value={details.country}
               onChange={(value) => updateField("country", value)}
               autoComplete="country-name"
@@ -347,7 +351,7 @@ export default function GuestDetailsForm({
               }
               className="mt-0.5 size-4 accent-[#F58220]"
             />
-            L&apos;intestatario è il primo ospite adulto.
+            {isEnglish ? "The lead traveller is the first adult guest." : "L’intestatario è il primo ospite adulto."}
           </label>
 
           {details.rooms.map((room, roomIndex) => (
@@ -356,24 +360,26 @@ export default function GuestDetailsForm({
               className="mt-8 rounded-2xl border border-[#0D2340]/[0.06] p-5"
             >
               <h3 className="text-base font-semibold text-[#0D2340]">
-                Camera {roomIndex + 1}
+                {isEnglish ? "Room" : "Camera"} {roomIndex + 1}
               </h3>
               <GuestGroup
-                title="Adulti"
+                title={isEnglish ? "Adults" : "Adulti"}
                 guests={room.adults}
                 group="adults"
                 roomIndex={roomIndex}
                 onChange={updateGuest}
                 firstGuestLocked={details.leadIsGuest && roomIndex === 0}
+                isEnglish={isEnglish}
               />
               {room.children.length > 0 && (
                 <GuestGroup
-                  title="Bambini"
+                  title={isEnglish ? "Children" : "Bambini"}
                   guests={room.children}
                   group="children"
                   roomIndex={roomIndex}
                   onChange={updateGuest}
                   firstGuestLocked={false}
+                  isEnglish={isEnglish}
                 />
               )}
             </div>
@@ -391,14 +397,12 @@ export default function GuestDetailsForm({
             }
             className="mt-0.5 size-4 shrink-0 accent-[#F58220]"
           />
-          Autorizzo l&apos;utilizzo dei dati inseriti esclusivamente per gestire
-          questa richiesta di prenotazione.
+          {isEnglish ? "I authorise the use of the entered data solely to manage this booking request." : "Autorizzo l’utilizzo dei dati inseriti esclusivamente per gestire questa richiesta di prenotazione."}
         </label>
 
         <div className="mt-7 flex flex-col gap-4 border-t border-slate-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="max-w-xl text-xs leading-5 text-slate-500">
-            Premendo conferma la richiesta verrà inviata una sola volta. In caso
-            di errore non verrà effettuato alcun tentativo automatico.
+            {isEnglish ? "By confirming, the request will be sent only once. No automatic retry will be made in case of an error." : "Premendo conferma la richiesta verrà inviata una sola volta. In caso di errore non verrà effettuato alcun tentativo automatico."}
           </p>
 
           <button
@@ -409,14 +413,14 @@ export default function GuestDetailsForm({
             {booking ? (
               <>
                 <Loader2 size={15} className="mr-2 animate-spin" />
-                Invio in corso...
+                {isEnglish ? "Sending..." : "Invio in corso..."}
               </>
             ) : refCode ? (
-              "Prenotazione confermata"
+              isEnglish ? "Booking confirmed" : "Prenotazione confermata"
             ) : attempted ? (
-              "Richiesta già inviata"
+              isEnglish ? "Request already sent" : "Richiesta già inviata"
             ) : (
-              "Conferma prenotazione"
+              isEnglish ? "Confirm booking" : "Conferma prenotazione"
             )}
           </button>
         </div>
@@ -427,7 +431,7 @@ export default function GuestDetailsForm({
             role="status"
           >
             <CheckCircle2 size={18} />
-            Dati salvati correttamente in questa sessione.
+            {isEnglish ? "Details saved successfully in this session." : "Dati salvati correttamente in questa sessione."}
           </div>
         )}
 
@@ -438,20 +442,19 @@ export default function GuestDetailsForm({
           >
             <div className="flex items-center gap-2 font-semibold">
               <CheckCircle2 size={20} />
-              Prenotazione confermata
+              {isEnglish ? "Booking confirmed" : "Prenotazione confermata"}
             </div>
             <p className="mt-2 text-sm">
-              Codice di riferimento: <strong>{refCode}</strong>
+              {isEnglish ? "Reference code" : "Codice di riferimento"}: <strong>{refCode}</strong>
             </p>
             <p className="mt-3 text-xs leading-5 text-emerald-700">
-              I dati degli ospiti salvati nel browser sono stati rimossi dopo la
-              conferma.
+              {isEnglish ? "The guest details saved in the browser were removed after confirmation." : "I dati degli ospiti salvati nel browser sono stati rimossi dopo la conferma."}
             </p>
             <Link
               href="/area-clienti"
               className="mt-4 inline-flex rounded-full bg-emerald-700 px-5 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em] text-white"
             >
-              Vai alle tue prenotazioni
+              {isEnglish ? "View your bookings" : "Vai alle tue prenotazioni"}
             </Link>
           </div>
         )}
@@ -477,6 +480,7 @@ function GuestGroup({
   roomIndex,
   onChange,
   firstGuestLocked,
+  isEnglish,
 }: {
   title: string;
   guests: Guest[];
@@ -490,6 +494,7 @@ function GuestGroup({
     value: string,
   ) => void;
   firstGuestLocked: boolean;
+  isEnglish: boolean;
 }) {
   return (
     <div className="mt-8 border-t border-slate-100 pt-7">
@@ -503,19 +508,20 @@ function GuestGroup({
             className="rounded-2xl bg-[#F7F5F1] p-5"
           >
             <p className="mb-4 text-xs font-semibold text-[#0D2340]">
-              {group === "adults" ? "Adulto" : "Bambino"} {index + 1}
+              {group === "adults" ? (isEnglish ? "Adult" : "Adulto") : (isEnglish ? "Child" : "Bambino")} {index + 1}
             </p>
             <div className="grid gap-4 sm:grid-cols-2">
               <SelectField
-                label="Titolo"
+                label={isEnglish ? "Title" : "Titolo"}
                 value={guest.title}
                 onChange={(value) =>
                   onChange(roomIndex, group, index, "title", value)
                 }
                 options={["Sig.", "Sig.ra"]}
+                translateTitles={isEnglish}
               />
               <InputField
-                label="Nome"
+                label={isEnglish ? "First name" : "Nome"}
                 value={guest.firstName}
                 onChange={(value) =>
                   onChange(roomIndex, group, index, "firstName", value)
@@ -523,7 +529,7 @@ function GuestGroup({
                 readOnly={firstGuestLocked && index === 0}
               />
               <InputField
-                label="Cognome"
+                label={isEnglish ? "Last name" : "Cognome"}
                 value={guest.lastName}
                 onChange={(value) =>
                   onChange(roomIndex, group, index, "lastName", value)
@@ -532,7 +538,7 @@ function GuestGroup({
               />
               {group === "children" && (
                 <InputField
-                  label="Età"
+                  label={isEnglish ? "Age" : "Età"}
                   type="number"
                   value={guest.age ?? ""}
                   onChange={(value) =>
@@ -592,11 +598,13 @@ function SelectField({
   value,
   onChange,
   options,
+  translateTitles = false,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   options: string[];
+  translateTitles?: boolean;
 }) {
   return (
     <label className="block text-xs font-semibold text-[#0D2340]">
@@ -609,7 +617,11 @@ function SelectField({
       >
         {options.map((option) => (
           <option key={option} value={option}>
-            {option}
+            {translateTitles
+              ? option === "Sig.ra"
+                ? "Mrs"
+                : "Mr"
+              : option}
           </option>
         ))}
       </select>
