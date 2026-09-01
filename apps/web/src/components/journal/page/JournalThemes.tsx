@@ -1,3 +1,5 @@
+"use client";
+
 import {
   IconArrowUpRight,
   IconBuildingArch,
@@ -7,50 +9,75 @@ import {
   IconWorld,
 } from "@tabler/icons-react";
 
+import { useLanguage } from "@/components/i18n/LanguageProvider";
+
 const themes = [
   {
     number: "01",
     title: "Luoghi",
+    titleEn: "Places",
     subtitle: "Città, borghi e indirizzi da ricordare",
+    subtitleEn: "Cities, villages and places to remember",
     description:
       "Dalle città d'arte ai piccoli centri lontani dagli itinerari più evidenti. Luoghi da conoscere con il tempo necessario per comprenderli.",
+    descriptionEn:
+      "From cities of art to small towns far from the most obvious routes. Places to discover with the time needed to truly understand them.",
     icon: IconWorld,
   },
   {
     number: "02",
     title: "Sapori",
+    titleEn: "Flavours",
     subtitle: "La Sicilia attraverso la sua tavola",
+    subtitleEn: "Sicily through its table",
     description:
       "Mercati, produttori, ricette e territori. Perché in Sicilia il cibo non racconta soltanto cosa si mangia, ma da dove veniamo.",
+    descriptionEn:
+      "Markets, producers, recipes and territories. Because in Sicily food tells not only what we eat, but where we come from.",
     icon: IconToolsKitchen2,
   },
   {
     number: "03",
     title: "Mare",
+    titleEn: "Sea",
     subtitle: "Isole, coste e Mediterraneo",
+    subtitleEn: "Islands, coasts and the Mediterranean",
     description:
       "Baie nascoste, piccoli porti, navigazioni e isole. Storie nate lungo una costa che cambia continuamente carattere.",
+    descriptionEn:
+      "Hidden bays, small harbours, voyages and islands. Stories born along a coastline whose character is constantly changing.",
     icon: IconSailboat,
   },
   {
     number: "04",
     title: "Natura",
+    titleEn: "Nature",
     subtitle: "Vulcani, riserve e paesaggi",
+    subtitleEn: "Volcanoes, reserves and landscapes",
     description:
       "Dall'Etna alle Madonie, dalle saline alle riserve marine. Una Sicilia più selvaggia, da attraversare e non soltanto osservare.",
+    descriptionEn:
+      "From Mount Etna to the Madonie, from salt pans to marine reserves. A wilder Sicily to journey through, not merely observe.",
     icon: IconMountain,
   },
   {
     number: "05",
     title: "Cultura",
+    titleEn: "Culture",
     subtitle: "Arte, architettura e memoria",
+    subtitleEn: "Art, architecture and memory",
     description:
       "Templi, barocco, palazzi, botteghe e tradizioni. Le tracce delle culture che hanno attraversato l'isola e continuano a definirla.",
+    descriptionEn:
+      "Temples, Baroque architecture, palaces, workshops and traditions. Traces of the cultures that crossed the island and continue to define it.",
     icon: IconBuildingArch,
   },
 ];
 
 export default function JournalThemes() {
+  const { language } = useLanguage();
+  const isEnglish = language === "en";
+
   return (
     <section
       className="
@@ -118,7 +145,7 @@ export default function JournalThemes() {
                 sm:text-xs
               "
             >
-              Esplora il Journal
+              {isEnglish ? "Explore the Journal" : "Esplora il Journal"}
             </span>
 
             <h2
@@ -135,11 +162,11 @@ export default function JournalThemes() {
                 xl:text-[68px]
               "
             >
-              Segui ciò
+              {isEnglish ? "Follow what" : "Segui ciò"}
               <br />
 
               <span className="text-[#0D2340]/35">
-                che ti incuriosisce.
+                {isEnglish ? "sparks your curiosity." : "che ti incuriosisce."}
               </span>
             </h2>
           </div>
@@ -160,9 +187,9 @@ export default function JournalThemes() {
                 sm:text-[17px]
               "
             >
-              Non esiste un solo modo di raccontare la Sicilia.
-              Scegli un tema e lasciati portare attraverso
-              paesaggi, persone, sapori e storie dell&apos;isola.
+              {isEnglish
+                ? "There is no single way to tell the story of Sicily. Choose a theme and let it guide you through the island’s landscapes, people, flavours and stories."
+                : "Non esiste un solo modo di raccontare la Sicilia. Scegli un tema e lasciati portare attraverso paesaggi, persone, sapori e storie dell’isola."}
             </p>
           </div>
         </div>
@@ -237,7 +264,7 @@ export default function JournalThemes() {
                       lg:text-[36px]
                     "
                   >
-                    {theme.title}
+                    {isEnglish ? theme.titleEn : theme.title}
                   </h3>
 
                   <p
@@ -250,7 +277,7 @@ export default function JournalThemes() {
                       text-[#0D2340]/40
                     "
                   >
-                    {theme.subtitle}
+                    {isEnglish ? theme.subtitleEn : theme.subtitle}
                   </p>
                 </div>
 
@@ -266,7 +293,7 @@ export default function JournalThemes() {
                     sm:leading-8
                   "
                 >
-                  {theme.description}
+                  {isEnglish ? theme.descriptionEn : theme.description}
                 </p>
 
                 {/* ICON */}
@@ -332,9 +359,11 @@ export default function JournalThemes() {
               lg:text-[42px]
             "
           >
-            Ogni viaggio comincia
+            {isEnglish ? "Every journey begins" : "Ogni viaggio comincia"}
             <br className="hidden sm:block" />
-            da qualcosa che ci incuriosisce.
+            {isEnglish
+              ? "with something that sparks our curiosity."
+              : "da qualcosa che ci incuriosisce."}
           </p>
 
           <div>
@@ -348,9 +377,9 @@ export default function JournalThemes() {
                 sm:leading-8
               "
             >
-              Il Journal è il nostro modo di raccogliere
-              quelle storie prima che diventino parte
-              del tuo prossimo itinerario.
+              {isEnglish
+                ? "The Journal is our way of gathering those stories before they become part of your next itinerary."
+                : "Il Journal è il nostro modo di raccogliere quelle storie prima che diventino parte del tuo prossimo itinerario."}
             </p>
 
             <div

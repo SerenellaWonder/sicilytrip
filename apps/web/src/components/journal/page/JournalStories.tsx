@@ -1,9 +1,16 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 
 import { IconArrowUpRight, IconClock, IconSparkles } from "@tabler/icons-react";
 
+import { useLanguage } from "@/components/i18n/LanguageProvider";
+
 export default function JournalStories() {
+  const { language } = useLanguage();
+  const isEnglish = language === "en";
+
   return (
     <section
       id="stories"
@@ -55,7 +62,7 @@ export default function JournalStories() {
               "
             >
               <IconSparkles size={15} stroke={1.7} />
-              Storie in evidenza
+              {isEnglish ? "Featured stories" : "Storie in evidenza"}
             </div>
 
             <h2
@@ -72,9 +79,11 @@ export default function JournalStories() {
                 xl:text-[68px]
               "
             >
-              La Sicilia,
+              {isEnglish ? "Sicily," : "La Sicilia,"}
               <br />
-              <span className="text-[#0D2340]/35">raccontata lentamente.</span>
+              <span className="text-[#0D2340]/35">
+                {isEnglish ? "told slowly." : "raccontata lentamente."}
+              </span>
             </h2>
           </div>
 
@@ -87,8 +96,9 @@ export default function JournalStories() {
               sm:text-[17px]
             "
           >
-            Non una lista di cose da vedere, ma storie da leggere con il tempo
-            necessario per capire cosa rende speciale un luogo.
+            {isEnglish
+              ? "Not a list of things to see, but stories to read at the pace needed to understand what makes a place special."
+              : "Non una lista di cose da vedere, ma storie da leggere con il tempo necessario per capire cosa rende speciale un luogo."}
           </p>
         </div>
 
@@ -121,7 +131,7 @@ export default function JournalStories() {
           >
             <Image
               src="/images/journal-taormina.jpg"
-              alt="Taormina e il Mediterraneo"
+              alt={isEnglish ? "Taormina and the Mediterranean" : "Taormina e il Mediterraneo"}
               fill
               sizes="
                 (max-width: 1024px) 100vw,
@@ -170,7 +180,7 @@ export default function JournalStories() {
                   text-white
                 "
               >
-                Destinazioni
+                {isEnglish ? "Destinations" : "Destinazioni"}
               </span>
             </div>
           </div>
@@ -225,9 +235,11 @@ export default function JournalStories() {
                 lg:text-[52px]
               "
             >
-              Taormina oltre
+              {isEnglish ? "Taormina beyond" : "Taormina oltre"}
               <br />
-              <span className="text-[#0D2340]/35">la cartolina.</span>
+              <span className="text-[#0D2340]/35">
+                {isEnglish ? "the postcard." : "la cartolina."}
+              </span>
             </h3>
 
             <p
@@ -241,9 +253,9 @@ export default function JournalStories() {
                 sm:leading-8
               "
             >
-              Quando le strade si svuotano e il sole scende dietro l&apos;Etna,
-              Taormina mostra un volto diverso. Cortili nascosti, terrazze sul
-              mare e indirizzi da scoprire lontano dai percorsi più evidenti.
+              {isEnglish
+                ? "When the streets empty and the sun sets behind Mount Etna, Taormina reveals another side. Hidden courtyards, sea-view terraces and places to discover away from the most obvious routes."
+                : "Quando le strade si svuotano e il sole scende dietro l’Etna, Taormina mostra un volto diverso. Cortili nascosti, terrazze sul mare e indirizzi da scoprire lontano dai percorsi più evidenti."}
             </p>
 
             <Link
@@ -261,7 +273,7 @@ export default function JournalStories() {
                 text-[#0D2340]
               "
             >
-              Leggi la storia
+              {isEnglish ? "Read the story" : "Leggi la storia"}
               <span
                 className="
                   flex
@@ -318,7 +330,7 @@ export default function JournalStories() {
               >
                 <Image
                   src="/images/journal-food.jpg"
-                  alt="Sapori della cucina siciliana"
+                  alt={isEnglish ? "Flavours of Sicilian cuisine" : "Sapori della cucina siciliana"}
                   fill
                   sizes="
                   (max-width: 1024px) 100vw,
@@ -351,7 +363,7 @@ export default function JournalStories() {
                     text-[#F58220]
                   "
                   >
-                    Sapori
+                    {isEnglish ? "Flavours" : "Sapori"}
                   </span>
 
                   <span
@@ -379,9 +391,9 @@ export default function JournalStories() {
                   sm:text-[36px]
                 "
                 >
-                  Una tavola,
+                  {isEnglish ? "One table," : "Una tavola,"}
                   <br />
-                  mille Sicilie.
+                  {isEnglish ? "a thousand Sicilies." : "mille Sicilie."}
                 </h3>
 
                 <p
@@ -393,9 +405,9 @@ export default function JournalStories() {
                   text-[#0D2340]/50
                 "
                 >
-                  Dal mercato alla cucina, un viaggio attraverso ingredienti,
-                  tradizioni e gesti che cambiano da una provincia
-                  all&apos;altra.
+                  {isEnglish
+                    ? "From market to kitchen, a journey through ingredients, traditions and gestures that change from one province to the next."
+                    : "Dal mercato alla cucina, un viaggio attraverso ingredienti, tradizioni e gesti che cambiano da una provincia all’altra."}
                 </p>
               </div>
             </article>
@@ -419,7 +431,7 @@ export default function JournalStories() {
               >
                 <Image
                   src="/images/journal-islands.jpg"
-                  alt="Isole Eolie"
+                  alt={isEnglish ? "Aeolian Islands" : "Isole Eolie"}
                   fill
                   sizes="
                   (max-width: 1024px) 100vw,
@@ -452,7 +464,7 @@ export default function JournalStories() {
                     text-[#F58220]
                   "
                   >
-                    Isole
+                    {isEnglish ? "Islands" : "Isole"}
                   </span>
 
                   <span
@@ -480,9 +492,11 @@ export default function JournalStories() {
                   sm:text-[36px]
                 "
                 >
-                  Eolie.
+                  {isEnglish ? "Aeolian Islands." : "Eolie."}
                   <br />
-                  Dove il mare incontra il fuoco.
+                  {isEnglish
+                    ? "Where the sea meets fire."
+                    : "Dove il mare incontra il fuoco."}
                 </h3>
 
                 <p
@@ -494,8 +508,9 @@ export default function JournalStories() {
                   text-[#0D2340]/50
                 "
                 >
-                  Sette isole, sette caratteri diversi. Vulcani, baie, piccoli
-                  porti e giornate scandite soltanto dal mare.
+                  {isEnglish
+                    ? "Seven islands, seven distinct characters. Volcanoes, bays, small harbours and days shaped only by the sea."
+                    : "Sette isole, sette caratteri diversi. Vulcani, baie, piccoli porti e giornate scandite soltanto dal mare."}
                 </p>
               </div>
             </article>

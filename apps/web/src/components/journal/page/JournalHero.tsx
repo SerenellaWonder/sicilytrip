@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 
 import {
@@ -5,7 +7,12 @@ import {
   IconBook2,
 } from "@tabler/icons-react";
 
+import { useLanguage } from "@/components/i18n/LanguageProvider";
+
 export default function JournalHero() {
+  const { language } = useLanguage();
+  const isEnglish = language === "en";
+
   return (
     <section
       className="
@@ -22,7 +29,7 @@ export default function JournalHero() {
 
       <Image
         src="/images/journal-hero.jpg"
-        alt="Sicilia al tramonto"
+        alt={isEnglish ? "Sicily at sunset" : "Sicilia al tramonto"}
         fill
         priority
         sizes="100vw"
@@ -120,11 +127,11 @@ export default function JournalHero() {
                 xl:text-[96px]
               "
             >
-              Storie
+              {isEnglish ? "Stories" : "Storie"}
               <br />
 
               <span className="text-white/45">
-                dalla Sicilia.
+                {isEnglish ? "from Sicily." : "dalla Sicilia."}
               </span>
             </h1>
           </div>
@@ -142,9 +149,9 @@ export default function JournalHero() {
                 sm:leading-8
               "
             >
-              Luoghi, persone, sapori e storie per
-              conoscere la Sicilia prima ancora di
-              partire.
+              {isEnglish
+                ? "Places, people, flavours and stories to discover Sicily before you even set off."
+                : "Luoghi, persone, sapori e storie per conoscere la Sicilia prima ancora di partire."}
             </p>
 
             <a
@@ -162,7 +169,7 @@ export default function JournalHero() {
                 text-white
               "
             >
-              Inizia a leggere
+              {isEnglish ? "Start reading" : "Inizia a leggere"}
 
               <span
                 className="
@@ -212,7 +219,9 @@ export default function JournalHero() {
               text-white/40
             "
           >
-            Viaggi · Cultura · Sapori
+            {isEnglish
+              ? "Travel · Culture · Flavours"
+              : "Viaggi · Cultura · Sapori"}
           </span>
 
           <span
@@ -226,7 +235,7 @@ export default function JournalHero() {
               sm:block
             "
           >
-            Sicilia · Mediterraneo
+            {isEnglish ? "Sicily · Mediterranean" : "Sicilia · Mediterraneo"}
           </span>
         </div>
       </div>
