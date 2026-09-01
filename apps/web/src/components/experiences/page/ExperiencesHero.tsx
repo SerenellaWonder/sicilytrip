@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 
@@ -6,8 +8,12 @@ import {
   IconArrowUpRight,
   IconSparkles,
 } from "@tabler/icons-react";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 export default function ExperiencesHero() {
+  const { language } = useLanguage();
+  const isEnglish = language === "en";
+
   return (
     <section
       className="
@@ -21,7 +27,7 @@ export default function ExperiencesHero() {
 
       <Image
         src="/images/mare.jpg"
-        alt="Esperienze esclusive in Sicilia"
+        alt={isEnglish ? "Exclusive experiences in Sicily" : "Esperienze esclusive in Sicilia"}
         fill
         priority
         sizes="100vw"
@@ -134,14 +140,11 @@ export default function ExperiencesHero() {
                 xl:text-[96px]
               "
             >
-              Non guardare
-              <br />
-              la Sicilia.
-              <br />
-
-              <span className="text-white/50">
-                Vivila.
-              </span>
+              {isEnglish ? (
+                <>Do not just see<br />Sicily.<br /><span className="text-white/50">Experience it.</span></>
+              ) : (
+                <>Non guardare<br />la Sicilia.<br /><span className="text-white/50">Vivila.</span></>
+              )}
             </h1>
           </div>
 
@@ -158,10 +161,9 @@ export default function ExperiencesHero() {
                 sm:leading-8
               "
             >
-              Il mare all&apos;alba. Una cantina sull&apos;Etna.
-              Una cucina privata, un borgo dopo il tramonto.
-              Esperienze selezionate per entrare davvero
-              nell&apos;anima dell&apos;isola.
+              {isEnglish
+                ? "The sea at dawn. A winery on Mount Etna. A private kitchen, a village after sunset. Selected experiences that take you into the island's true soul."
+                : "Il mare all’alba. Una cantina sull’Etna. Una cucina privata, un borgo dopo il tramonto. Esperienze selezionate per entrare davvero nell’anima dell’isola."}
             </p>
 
             <Link
@@ -179,7 +181,7 @@ export default function ExperiencesHero() {
                 text-white
               "
             >
-              Esplora le esperienze
+              {isEnglish ? "Explore experiences" : "Esplora le esperienze"}
 
               <span
                 className="
@@ -229,10 +231,10 @@ export default function ExperiencesHero() {
               sm:text-[9px]
             "
           >
-            <span>Mare</span>
+            <span>{isEnglish ? "Sea" : "Mare"}</span>
             <span>Food &amp; Wine</span>
-            <span>Natura</span>
-            <span className="hidden sm:block">Cultura</span>
+            <span>{isEnglish ? "Nature" : "Natura"}</span>
+            <span className="hidden sm:block">{isEnglish ? "Culture" : "Cultura"}</span>
             <span className="hidden md:block">Wellness</span>
           </div>
 
@@ -249,7 +251,7 @@ export default function ExperiencesHero() {
               md:flex
             "
           >
-            Esperienze autentiche
+            {isEnglish ? "Authentic experiences" : "Esperienze autentiche"}
 
             <IconArrowUpRight
               size={14}

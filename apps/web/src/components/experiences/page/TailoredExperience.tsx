@@ -8,13 +8,18 @@ import {
 } from "@tabler/icons-react";
 
 import { useConcierge } from "@/components/concierge/ConciergeProvider";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 export default function TailoredExperience() {
   const { openConcierge } = useConcierge();
+  const { language } = useLanguage();
+  const isEnglish = language === "en";
 
   function handleCreateExperience() {
     openConcierge(
-      "Vorrei creare un'esperienza personalizzata in Sicilia. Aiutami a costruire un viaggio su misura in base ai miei interessi."
+      isEnglish
+        ? "I would like to create a personalised experience in Sicily. Help me build a tailor-made journey around my interests."
+        : "Vorrei creare un'esperienza personalizzata in Sicilia. Aiutami a costruire un viaggio su misura in base ai miei interessi."
     );
   }
 
@@ -73,7 +78,7 @@ export default function TailoredExperience() {
         >
           <IconSparkles size={15} stroke={1.7} />
 
-          Oltre l&apos;itinerario
+          {isEnglish ? "Beyond the itinerary" : "Oltre l’itinerario"}
         </div>
 
         {/* MAIN CONTENT */}
@@ -107,11 +112,11 @@ export default function TailoredExperience() {
                 xl:text-[72px]
               "
             >
-              La tua Sicilia
+              {isEnglish ? "Your Sicily" : "La tua Sicilia"}
               <br />
 
               <span className="text-white/35">
-                non esiste ancora.
+                {isEnglish ? "does not exist yet." : "non esiste ancora."}
               </span>
             </h2>
 
@@ -125,10 +130,9 @@ export default function TailoredExperience() {
                 sm:text-[17px]
               "
             >
-              Non tutti i viaggi possono essere scelti da un
-              catalogo. Alcuni nascono da un desiderio, da una
-              ricorrenza o semplicemente dalla voglia di vivere
-              qualcosa che appartenga soltanto a te.
+              {isEnglish
+                ? "Not every journey can be chosen from a catalogue. Some begin with a wish, a special occasion or simply the desire to experience something that belongs only to you."
+                : "Non tutti i viaggi possono essere scelti da un catalogo. Alcuni nascono da un desiderio, da una ricorrenza o semplicemente dalla voglia di vivere qualcosa che appartenga soltanto a te."}
             </p>
 
             <p
@@ -140,9 +144,9 @@ export default function TailoredExperience() {
                 text-white/40
               "
             >
-              Raccontaci cosa immagini. SicilyTrip può combinare
-              luoghi, soggiorni ed esperienze per costruire un
-              percorso personale attraverso l&apos;isola.
+              {isEnglish
+                ? "Tell us what you imagine. SicilyTrip can combine places, stays and experiences to create a personal journey across the island."
+                : "Raccontaci cosa immagini. SicilyTrip può combinare luoghi, soggiorni ed esperienze per costruire un percorso personale attraverso l’isola."}
             </p>
 
             {/* CONCIERGE BUTTON */}
@@ -163,7 +167,7 @@ export default function TailoredExperience() {
                 text-white
               "
             >
-              Crea la tua esperienza
+              {isEnglish ? "Create your experience" : "Crea la tua esperienza"}
 
               <span
                 className="
@@ -225,7 +229,7 @@ export default function TailoredExperience() {
                     text-white/55
                   "
                 >
-                  Raccontaci
+                  {isEnglish ? "Tell us" : "Raccontaci"}
                 </span>
               </div>
 
@@ -254,7 +258,7 @@ export default function TailoredExperience() {
                     text-white/55
                   "
                 >
-                  Progettiamo
+                  {isEnglish ? "We design" : "Progettiamo"}
                 </span>
               </div>
 
@@ -283,7 +287,7 @@ export default function TailoredExperience() {
                     text-white/55
                   "
                 >
-                  Vivi
+                  {isEnglish ? "Experience" : "Vivi"}
                 </span>
               </div>
             </div>
@@ -305,7 +309,7 @@ export default function TailoredExperience() {
           >
             <Image
               src="/images/private.jpg"
-              alt="Esperienza privata SicilyTrip"
+              alt={isEnglish ? "Private SicilyTrip experience" : "Esperienza privata SicilyTrip"}
               fill
               sizes="
                 (max-width: 1024px) 100vw,
@@ -368,8 +372,9 @@ export default function TailoredExperience() {
                     sm:leading-7
                   "
                 >
-                  Un viaggio costruito intorno a ciò che
-                  vuoi ricordare.
+                  {isEnglish
+                    ? "A journey built around what you want to remember."
+                    : "Un viaggio costruito intorno a ciò che vuoi ricordare."}
                 </p>
               </div>
 

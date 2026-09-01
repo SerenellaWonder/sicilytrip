@@ -8,6 +8,7 @@ import {
   IconArrowUpRight,
   IconCompass,
 } from "@tabler/icons-react";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 type Experience = {
   id: string;
@@ -15,6 +16,9 @@ type Experience = {
   title: string;
   eyebrow: string;
   description: string;
+  titleEn: string;
+  eyebrowEn: string;
+  descriptionEn: string;
   image: string;
   href: string;
 };
@@ -27,6 +31,9 @@ const experiences: Experience[] = [
     eyebrow: "Mediterraneo",
     description:
       "Naviga lungo la costa siciliana, raggiungi baie nascoste e isole vulcaniche con esperienze private disegnate intorno al tuo viaggio.",
+    titleEn: "Sea & Yacht",
+    eyebrowEn: "Mediterranean",
+    descriptionEn: "Sail along the Sicilian coast to hidden bays and volcanic islands with private experiences designed around your journey.",
     image: "/images/mare.jpg",
     href: "/esperienze/mare-yacht",
   },
@@ -37,6 +44,9 @@ const experiences: Experience[] = [
     eyebrow: "Sapori di Sicilia",
     description:
       "Cantine sull'Etna, tavole private, produttori locali e cucina siciliana raccontata attraverso luoghi, persone e sapori autentici.",
+    titleEn: "Food & Wine",
+    eyebrowEn: "Flavours of Sicily",
+    descriptionEn: "Etna wineries, private tables, local producers and Sicilian cuisine told through authentic places, people and flavours.",
     image: "/images/foodwine.jpg",
     href: "/esperienze/food-wine",
   },
@@ -47,6 +57,9 @@ const experiences: Experience[] = [
     eyebrow: "Terra viva",
     description:
       "Cammina tra crateri, colate laviche, boschi e vigneti per scoprire il lato più potente e sorprendente della Sicilia.",
+    titleEn: "Etna & Nature",
+    eyebrowEn: "Living earth",
+    descriptionEn: "Walk among craters, lava flows, forests and vineyards to discover Sicily's most powerful and surprising side.",
     image: "/images/etna1.jpg",
     href: "/esperienze/etna-natura",
   },
@@ -57,6 +70,9 @@ const experiences: Experience[] = [
     eyebrow: "Storie millenarie",
     description:
       "Palazzi, siti archeologici, città barocche e luoghi normalmente invisibili diventano parte di un itinerario costruito su misura.",
+    titleEn: "Art & Culture",
+    eyebrowEn: "Ancient stories",
+    descriptionEn: "Palaces, archaeological sites, Baroque towns and usually hidden places become part of a tailor-made itinerary.",
     image: "/images/arte.jpg",
     href: "/esperienze/arte-cultura",
   },
@@ -67,6 +83,9 @@ const experiences: Experience[] = [
     eyebrow: "Tempo per sé",
     description:
       "Spa, resort immersi nella natura e rituali di benessere per rallentare e vivere il Mediterraneo con un ritmo completamente diverso.",
+    titleEn: "Wellness",
+    eyebrowEn: "Time for yourself",
+    descriptionEn: "Spas, resorts surrounded by nature and wellness rituals invite you to slow down and experience the Mediterranean differently.",
     image: "/images/spa.jpg",
     href: "/esperienze/wellness",
   },
@@ -77,11 +96,16 @@ const experiences: Experience[] = [
     eyebrow: "Solo per te",
     description:
       "Cene private, accessi esclusivi e momenti creati intorno ai tuoi desideri. La Sicilia diventa un'esperienza personale.",
+    titleEn: "Private Experiences",
+    eyebrowEn: "Just for you",
+    descriptionEn: "Private dinners, exclusive access and moments created around your wishes. Sicily becomes a personal experience.",
     image: "/images/private.jpg",
     href: "/esperienze/private",
   },
 ];
 export default function ExperiencesExplorer() {
+  const { language } = useLanguage();
+  const isEnglish = language === "en";
   const [activeId, setActiveId] = useState("mare");
 
   const active =
@@ -140,7 +164,7 @@ export default function ExperiencesExplorer() {
             >
               <IconCompass size={15} stroke={1.7} />
 
-              Scegli come viverla
+              {isEnglish ? "Choose how to experience it" : "Scegli come viverla"}
             </div>
 
             <h2
@@ -157,11 +181,11 @@ export default function ExperiencesExplorer() {
                 xl:text-[68px]
               "
             >
-              La Sicilia
+              {isEnglish ? "Sicily" : "La Sicilia"}
               <br />
 
               <span className="text-[#0D2340]/35">
-                non ha un solo ritmo.
+                {isEnglish ? "has more than one rhythm." : "non ha un solo ritmo."}
               </span>
             </h2>
           </div>
@@ -175,10 +199,9 @@ export default function ExperiencesExplorer() {
               sm:text-[17px]
             "
           >
-            Scegli ciò che ti ispira. Dal Mediterraneo
-            ai vigneti dell&apos;Etna, dall&apos;arte al benessere:
-            ogni esperienza può diventare parte del tuo
-            viaggio in Sicilia.
+            {isEnglish
+              ? "Choose what inspires you. From the Mediterranean to Etna's vineyards, from art to wellness, every experience can become part of your Sicilian journey."
+              : "Scegli ciò che ti ispira. Dal Mediterraneo ai vigneti dell’Etna, dall’arte al benessere: ogni esperienza può diventare parte del tuo viaggio in Sicilia."}
           </p>
         </div>
 
@@ -212,7 +235,7 @@ export default function ExperiencesExplorer() {
             >
               <Image
                 src={active.image}
-                alt={active.title}
+                alt={isEnglish ? active.titleEn : active.title}
                 fill
                 sizes="60vw"
                 className="
@@ -257,7 +280,7 @@ export default function ExperiencesExplorer() {
                     text-white/70
                   "
                 >
-                  {active.eyebrow}
+                  {isEnglish ? active.eyebrowEn : active.eyebrow}
                 </span>
 
                 <span
@@ -307,7 +330,7 @@ export default function ExperiencesExplorer() {
                     xl:text-[64px]
                   "
                 >
-                  {active.title}
+                  {isEnglish ? active.titleEn : active.title}
                 </h3>
 
                 <div
@@ -327,7 +350,7 @@ export default function ExperiencesExplorer() {
                       text-white/65
                     "
                   >
-                    {active.description}
+                    {isEnglish ? active.descriptionEn : active.description}
                   </p>
 
                   <span
@@ -446,7 +469,7 @@ export default function ExperiencesExplorer() {
                           }
                         `}
                       >
-                        {experience.title}
+                        {isEnglish ? experience.titleEn : experience.title}
                       </span>
 
                       <span
@@ -465,7 +488,7 @@ export default function ExperiencesExplorer() {
                           }
                         `}
                       >
-                        {experience.eyebrow}
+                        {isEnglish ? experience.eyebrowEn : experience.eyebrow}
                       </span>
                     </div>
 
@@ -549,7 +572,7 @@ export default function ExperiencesExplorer() {
                       text-[#0D2340]
                     "
                   >
-                    {experience.title}
+                    {isEnglish ? experience.titleEn : experience.title}
                   </h3>
 
                   <p
@@ -562,7 +585,7 @@ export default function ExperiencesExplorer() {
                       text-[#0D2340]/35
                     "
                   >
-                    {experience.eyebrow}
+                    {isEnglish ? experience.eyebrowEn : experience.eyebrow}
                   </p>
                 </div>
 
@@ -598,7 +621,7 @@ export default function ExperiencesExplorer() {
               >
                 <Image
                   src={experience.image}
-                  alt={experience.title}
+                  alt={isEnglish ? experience.titleEn : experience.title}
                   fill
                   sizes="100vw"
                   className="
@@ -630,7 +653,7 @@ export default function ExperiencesExplorer() {
                   text-[#0D2340]/50
                 "
               >
-                {experience.description}
+                {isEnglish ? experience.descriptionEn : experience.description}
               </p>
             </Link>
           ))}
