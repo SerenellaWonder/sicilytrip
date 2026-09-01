@@ -9,6 +9,7 @@ import {
 } from "@tabler/icons-react";
 
 import { useConcierge } from "@/components/concierge/ConciergeProvider";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 /* ============================================================
    DESTINATIONS
@@ -18,6 +19,7 @@ const destinations = [
   {
     title: "Taormina",
     subtitle: "Costa Orientale",
+    subtitleEn: "Eastern Coast",
     image: "/images/taormina.jpg",
     hotels: 42,
 
@@ -31,6 +33,7 @@ const destinations = [
   {
     title: "Palermo",
     subtitle: "Capoluogo di Sicilia",
+    subtitleEn: "Sicily's Capital",
     image: "/images/palermo.jpg",
     hotels: 38,
 
@@ -44,6 +47,7 @@ const destinations = [
   {
     title: "Etna",
     subtitle: "Patrimonio Naturale",
+    subtitleEn: "Natural Heritage",
     image: "/images/etna.jpg",
     hotels: 25,
     className:
@@ -52,6 +56,7 @@ const destinations = [
   {
     title: "Siracusa",
     subtitle: "Storia e Mare",
+    subtitleEn: "History and Sea",
     image: "/images/siracusa.jpg",
     hotels: 31,
     className:
@@ -65,6 +70,8 @@ const destinations = [
 
 export default function FeaturedDestinations() {
   const { openConcierge } = useConcierge();
+  const { language } = useLanguage();
+  const isEnglish = language === "en";
 
   return (
     <section
@@ -172,7 +179,7 @@ export default function FeaturedDestinations() {
                 "
               />
 
-              Destinazioni
+              {isEnglish ? "Destinations" : "Destinazioni"}
             </div>
 
             <h2
@@ -194,9 +201,9 @@ export default function FeaturedDestinations() {
                 xl:text-[64px]
               "
             >
-              Ogni angolo di Sicilia
+              {isEnglish ? "Every corner of Sicily" : "Ogni angolo di Sicilia"}
               <br className="hidden sm:block" />
-              {" "}racconta una storia.
+              {isEnglish ? " tells a story." : " racconta una storia."}
             </h2>
           </div>
 
@@ -218,10 +225,9 @@ export default function FeaturedDestinations() {
                 sm:leading-8
               "
             >
-              Dal fascino senza tempo di Taormina alle atmosfere
-              mediterranee di Palermo, fino alla forza dell&apos;Etna
-              e alla luce di Siracusa. Scegli da dove iniziare il tuo
-              viaggio.
+              {isEnglish
+                ? "From the timeless charm of Taormina and Palermo's Mediterranean atmosphere to the power of Mount Etna and the light of Syracuse. Choose where your journey begins."
+                : "Dal fascino senza tempo di Taormina alle atmosfere mediterranee di Palermo, fino alla forza dell’Etna e alla luce di Siracusa. Scegli da dove iniziare il tuo viaggio."}
             </p>
 
             <button
@@ -242,7 +248,7 @@ export default function FeaturedDestinations() {
                 sm:mt-5
               "
             >
-              Esplora tutte le destinazioni
+              {isEnglish ? "Explore all destinations" : "Esplora tutte le destinazioni"}
 
               <IconArrowRight
                 size={17}
@@ -340,12 +346,16 @@ export default function FeaturedDestinations() {
                 sm:text-base
               "
             >
-              Non sai quale zona scegliere? Racconta al{" "}
+              {isEnglish
+                ? "Not sure which area to choose? Tell the "
+                : "Non sai quale zona scegliere? Racconta al "}
               <button
                 type="button"
                 onClick={() =>
                   openConcierge(
-                    "Aiutami a scegliere la destinazione migliore per il mio viaggio in Sicilia"
+                    isEnglish
+                      ? "Help me choose the best destination for my trip to Sicily"
+                      : "Aiutami a scegliere la destinazione migliore per il mio viaggio in Sicilia"
                   )
                 }
                 className="
@@ -361,7 +371,9 @@ export default function FeaturedDestinations() {
               >
                 SicilyTrip Concierge
               </button>{" "}
-              come immagini il tuo viaggio.
+              {isEnglish
+                ? " how you imagine your journey."
+                : "come immagini il tuo viaggio."}
             </p>
           </div>
 
@@ -388,7 +400,7 @@ export default function FeaturedDestinations() {
               "
             />
 
-            Sicilia da scoprire
+            {isEnglish ? "Discover Sicily" : "Sicilia da scoprire"}
           </div>
         </div>
       </div>
@@ -405,6 +417,9 @@ function DestinationCard({
 }: {
   destination: (typeof destinations)[number];
 }) {
+  const { language } = useLanguage();
+  const isEnglish = language === "en";
+
   return (
     <article
       className={`
@@ -524,7 +539,7 @@ function DestinationCard({
           className="text-[#F58220]"
         />
 
-        {destination.subtitle}
+        {isEnglish ? destination.subtitleEn : destination.subtitle}
       </div>
 
       {/* =====================================================
@@ -591,7 +606,7 @@ function DestinationCard({
                 sm:tracking-[0.2em]
               "
             >
-              Strutture selezionate
+              {isEnglish ? "Selected stays" : "Strutture selezionate"}
             </span>
 
             <div
@@ -633,7 +648,7 @@ function DestinationCard({
 
           <button
             type="button"
-            aria-label={`Scopri ${destination.title}`}
+            aria-label={`${isEnglish ? "Discover" : "Scopri"} ${destination.title}`}
             className="
               group/button
               flex

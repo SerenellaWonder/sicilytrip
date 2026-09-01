@@ -13,6 +13,7 @@ import {
 } from "@tabler/icons-react";
 
 import { useConcierge } from "@/components/concierge/ConciergeProvider";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 const experiences = [
   {
@@ -21,6 +22,9 @@ const experiences = [
     category: "Mare",
     description:
       "Baie nascoste, acque cristalline e tramonti da vivere dal mare.",
+    titleEn: "Yacht Excursions",
+    categoryEn: "Sea",
+    descriptionEn: "Hidden bays, crystal-clear waters and sunsets best enjoyed from the sea.",
     image: "/images/yacht.jpg",
     icon: IconSailboat,
   },
@@ -30,6 +34,9 @@ const experiences = [
     category: "Sapori",
     description:
       "Cantine, vigneti e degustazioni tra i territori più autentici dell'isola.",
+    titleEn: "Wine Experience",
+    categoryEn: "Flavours",
+    descriptionEn: "Wineries, vineyards and tastings across the island's most authentic regions.",
     image: "/images/wine.jpg",
     icon: IconGlass,
   },
@@ -39,6 +46,9 @@ const experiences = [
     category: "Tradizione",
     description:
       "Entra nella cucina siciliana e scopri ricette, ingredienti e persone.",
+    titleEn: "Cooking Class",
+    categoryEn: "Tradition",
+    descriptionEn: "Step into a Sicilian kitchen and discover its recipes, ingredients and people.",
     image: "/images/cooking.jpg",
     icon: IconToolsKitchen2,
   },
@@ -48,6 +58,9 @@ const experiences = [
     category: "Natura",
     description:
       "Sentieri, crateri e panorami straordinari sul vulcano più iconico della Sicilia.",
+    titleEn: "Etna Experience",
+    categoryEn: "Nature",
+    descriptionEn: "Trails, craters and extraordinary views across Sicily's most iconic volcano.",
     image: "/images/etna.jpg",
     icon: IconMountain,
   },
@@ -57,6 +70,9 @@ const experiences = [
     category: "Costa",
     description:
       "Calette, riserve naturali e alcuni dei tratti di costa più suggestivi dell'isola.",
+    titleEn: "Sicily from the Sea",
+    categoryEn: "Coast",
+    descriptionEn: "Coves, nature reserves and some of the island's most captivating coastline.",
     image: "/images/yacht.jpg",
     icon: IconBeach,
   },
@@ -66,6 +82,9 @@ const experiences = [
     category: "Food",
     description:
       "Mercati, prodotti locali e tradizioni gastronomiche raccontate da chi le vive.",
+    titleEn: "Flavours of Sicily",
+    categoryEn: "Food",
+    descriptionEn: "Markets, local produce and food traditions shared by those who live them.",
     image: "/images/cooking.jpg",
     icon: IconToolsKitchen2,
   },
@@ -73,6 +92,8 @@ const experiences = [
 
 export default function FeaturedExperiences() {
   const { openConcierge } = useConcierge();
+  const { language } = useLanguage();
+  const isEnglish = language === "en";
 
   return (
     <section
@@ -177,7 +198,7 @@ export default function FeaturedExperiences() {
                 "
               />
 
-              Esperienze
+              {isEnglish ? "Experiences" : "Esperienze"}
             </div>
 
             <h2
@@ -203,12 +224,12 @@ export default function FeaturedExperiences() {
               "
             >
               <span className="lg:whitespace-nowrap">
-                Non limitarti a visitarla.
+                {isEnglish ? "Do not just visit it." : "Non limitarti a visitarla."}
               </span>
 
               <br />
 
-              Vivila.
+              {isEnglish ? "Experience it." : "Vivila."}
             </h2>
 
             <p
@@ -227,9 +248,9 @@ export default function FeaturedExperiences() {
                 lg:max-w-[800px]
               "
             >
-              Il mare, i sapori e le tradizioni dell&apos;isola
-              attraverso esperienze selezionate per rendere ogni
-              viaggio davvero personale.
+              {isEnglish
+                ? "Discover the island's sea, flavours and traditions through selected experiences that make every journey truly personal."
+                : "Il mare, i sapori e le tradizioni dell’isola attraverso esperienze selezionate per rendere ogni viaggio davvero personale."}
             </p>
           </div>
 
@@ -273,7 +294,7 @@ export default function FeaturedExperiences() {
               lg:mb-1
             "
           >
-            Tutte le esperienze
+            {isEnglish ? "All experiences" : "Tutte le esperienze"}
 
             <IconArrowRight
               size={17}
@@ -366,6 +387,7 @@ export default function FeaturedExperiences() {
               <ExperienceCard
                 key={`a-${experience.id}`}
                 experience={experience}
+                isEnglish={isEnglish}
               />
             ))}
           </div>
@@ -392,6 +414,7 @@ export default function FeaturedExperiences() {
               <ExperienceCard
                 key={`b-${experience.id}`}
                 experience={experience}
+                isEnglish={isEnglish}
               />
             ))}
           </div>
@@ -468,12 +491,16 @@ export default function FeaturedExperiences() {
                 sm:text-base
               "
             >
-              Cerchi qualcosa di particolare? Raccontalo al{" "}
+              {isEnglish
+                ? "Looking for something special? Tell the "
+                : "Cerchi qualcosa di particolare? Raccontalo al "}
               <button
                 type="button"
                 onClick={() =>
                   openConcierge(
-                    "Aiutami a scegliere un'esperienza speciale in Sicilia"
+                    isEnglish
+                      ? "Help me choose a special experience in Sicily"
+                      : "Aiutami a scegliere un'esperienza speciale in Sicilia"
                   )
                 }
                 className="
@@ -565,8 +592,10 @@ export default function FeaturedExperiences() {
 
 function ExperienceCard({
   experience,
+  isEnglish,
 }: {
   experience: (typeof experiences)[number];
+  isEnglish: boolean;
 }) {
   const Icon = experience.icon;
 
@@ -606,7 +635,7 @@ function ExperienceCard({
 
       <Image
         src={experience.image}
-        alt={experience.title}
+        alt={isEnglish ? experience.titleEn : experience.title}
         fill
         sizes="
           (max-width: 640px) 280px,
@@ -691,7 +720,7 @@ function ExperienceCard({
           className="text-[#F58220]"
         />
 
-        {experience.category}
+        {isEnglish ? experience.categoryEn : experience.category}
       </div>
 
       {/* CONTENT */}
@@ -720,7 +749,7 @@ function ExperienceCard({
             lg:text-[34px]
           "
         >
-          {experience.title}
+          {isEnglish ? experience.titleEn : experience.title}
         </h3>
 
         <p
@@ -737,7 +766,7 @@ function ExperienceCard({
             sm:leading-6
           "
         >
-          {experience.description}
+          {isEnglish ? experience.descriptionEn : experience.description}
         </p>
 
         <button
@@ -761,7 +790,7 @@ function ExperienceCard({
             sm:text-sm
           "
         >
-          Scopri
+          {isEnglish ? "Discover" : "Scopri"}
 
           <span
             className="

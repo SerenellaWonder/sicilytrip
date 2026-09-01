@@ -13,44 +13,55 @@ import {
 } from "@tabler/icons-react";
 
 import { useConcierge } from "@/components/concierge/ConciergeProvider";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 const menu = [
   {
     label: "Destinazioni",
+    labelEn: "Destinations",
     href: "/destinazioni",
   },
   {
     label: "Hotel",
+    labelEn: "Hotels",
     href: "/#destinations",
   },
   {
     label: "Esperienze",
+    labelEn: "Experiences",
     href: "/esperienze",
   },
   {
     label: "Chi siamo",
+    labelEn: "About us",
     href: "/chi-siamo",
   },
   {
     label: "Journal",
+    labelEn: "Journal",
     href: "/journal",
   },
   {
     label: "FAQ",
+    labelEn: "FAQ",
     href: "/faq",
   },
   {
     label: "Contatti",
+    labelEn: "Contact",
     href: "/contatti",
   },
   {
     label: "Area clienti",
+    labelEn: "Customer area",
     href: "/area-clienti",
   },
 ];
 
 export default function FooterSection() {
   const { openConcierge } = useConcierge();
+  const { language } = useLanguage();
+  const isEnglish = language === "en";
 
   return (
     <>
@@ -77,7 +88,7 @@ export default function FooterSection() {
         >
           <Image
             src="/images/cta.jpg"
-            alt="La Sicilia che immagini"
+            alt={isEnglish ? "The Sicily you imagine" : "La Sicilia che immagini"}
             fill
             priority={false}
             sizes="100vw"
@@ -200,7 +211,7 @@ export default function FooterSection() {
                     sm:w-9
                   "
                 />
-                Il tuo viaggio inizia qui
+                {isEnglish ? "Your journey starts here" : "Il tuo viaggio inizia qui"}
               </div>
 
               <h2
@@ -220,11 +231,11 @@ export default function FooterSection() {
                   xl:text-[72px]
                 "
               >
-                La Sicilia
-                <br />
-                che immagini.
-                <br />
-                <span className="text-white/70">E qualcosa in più.</span>
+                {isEnglish ? (
+                  <>The Sicily<br />you imagine.<br /><span className="text-white/70">And something more.</span></>
+                ) : (
+                  <>La Sicilia<br />che immagini.<br /><span className="text-white/70">E qualcosa in più.</span></>
+                )}
               </h2>
 
               <p
@@ -244,8 +255,9 @@ export default function FooterSection() {
                   lg:leading-9
                 "
               >
-                Hotel selezionati, esperienze autentiche e itinerari costruiti
-                intorno al tuo modo di viaggiare.
+                {isEnglish
+                  ? "Selected hotels, authentic experiences and itineraries shaped around the way you travel."
+                  : "Hotel selezionati, esperienze autentiche e itinerari costruiti intorno al tuo modo di viaggiare."}
               </p>
 
               <div
@@ -264,7 +276,11 @@ export default function FooterSection() {
                 <button
                   type="button"
                   onClick={() =>
-                    openConcierge("Aiutami a creare il mio viaggio in Sicilia")
+                    openConcierge(
+                      isEnglish
+                        ? "Help me create my trip to Sicily"
+                        : "Aiutami a creare il mio viaggio in Sicilia",
+                    )
                   }
                   className="
                     group
@@ -296,7 +312,7 @@ export default function FooterSection() {
                     sm:text-sm
                   "
                 >
-                  Inizia il tuo viaggio
+                  {isEnglish ? "Start your journey" : "Inizia il tuo viaggio"}
                   <IconArrowRight
                     size={18}
                     stroke={1.8}
@@ -356,7 +372,7 @@ export default function FooterSection() {
                   >
                     <IconSparkles size={16} stroke={1.7} />
                   </span>
-                  Chiedi al Concierge
+                  {isEnglish ? "Ask the Concierge" : "Chiedi al Concierge"}
                 </button>
               </div>
             </div>
@@ -523,7 +539,7 @@ export default function FooterSection() {
                     sm:tracking-[0.15em]
                   "
                 >
-                  {item.label}
+                  {isEnglish ? item.labelEn : item.label}
                 </Link>
               ))}
             </nav>
@@ -579,7 +595,7 @@ export default function FooterSection() {
                 lg:text-[46px]
               "
             >
-              Lasciati ispirare dalla Sicilia
+              {isEnglish ? "Let Sicily inspire you" : "Lasciati ispirare dalla Sicilia"}
             </h3>
 
             <p
@@ -598,8 +614,9 @@ export default function FooterSection() {
                 sm:leading-8
               "
             >
-              Luoghi da scoprire, esperienze esclusive e nuove idee per il tuo
-              prossimo viaggio.
+              {isEnglish
+                ? "Places to discover, exclusive experiences and fresh ideas for your next journey."
+                : "Luoghi da scoprire, esperienze esclusive e nuove idee per il tuo prossimo viaggio."}
             </p>
 
             <form
@@ -645,8 +662,8 @@ export default function FooterSection() {
 
               <input
                 type="email"
-                placeholder="La tua email"
-                aria-label="Indirizzo email"
+                placeholder={isEnglish ? "Your email" : "La tua email"}
+                aria-label={isEnglish ? "Email address" : "Indirizzo email"}
                 className="
                   min-w-0
                   flex-1
@@ -669,7 +686,7 @@ export default function FooterSection() {
 
               <button
                 type="submit"
-                aria-label="Iscriviti alla newsletter"
+                aria-label={isEnglish ? "Subscribe to the newsletter" : "Iscriviti alla newsletter"}
                 className="
                   flex
 

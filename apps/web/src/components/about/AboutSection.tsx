@@ -10,6 +10,7 @@ import {
 } from "@tabler/icons-react";
 
 import { useConcierge } from "@/components/concierge/ConciergeProvider";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 const values = [
   {
@@ -17,23 +18,31 @@ const values = [
     number: "01",
     title: "Esperienze autentiche",
     text: "Luoghi, sapori e incontri che raccontano la vera Sicilia.",
+    titleEn: "Authentic experiences",
+    textEn: "Places, flavours and encounters that reveal the real Sicily.",
   },
   {
     icon: IconDiamond,
     number: "02",
     title: "Strutture selezionate",
     text: "Hotel, resort e dimore scelti secondo elevati standard qualitativi.",
+    titleEn: "Selected stays",
+    textEn: "Hotels, resorts and residences chosen to exacting quality standards.",
   },
   {
     icon: IconSparkles,
     number: "03",
     title: "Concierge intelligente",
     text: "Un assistente personale che ti accompagna dalla ricerca alla prenotazione.",
+    titleEn: "Smart concierge",
+    textEn: "A personal assistant supporting you from search to booking.",
   },
 ];
 
 export default function AboutSection() {
   const { openConcierge } = useConcierge();
+  const { language } = useLanguage();
+  const isEnglish = language === "en";
 
   return (
     <section
@@ -142,7 +151,7 @@ export default function AboutSection() {
               >
                 <Image
                   src="/images/about.jpg"
-                  alt="Vivi la Sicilia con SicilyTrip"
+                  alt={isEnglish ? "Experience Sicily with SicilyTrip" : "Vivi la Sicilia con SicilyTrip"}
                   fill
                   sizes="
                     (max-width: 1024px) 100vw,
@@ -241,9 +250,9 @@ export default function AboutSection() {
                   sm:leading-6
                 "
               >
-                La Sicilia non si visita.
+                {isEnglish ? "Sicily is not just visited." : "La Sicilia non si visita."}
                 <br />
-                Si vive.
+                {isEnglish ? "It is experienced." : "Si vive."}
               </p>
             </div>
           </div>
@@ -279,7 +288,7 @@ export default function AboutSection() {
                 "
               />
 
-              Chi siamo
+              {isEnglish ? "About us" : "Chi siamo"}
             </div>
 
             <h2
@@ -301,11 +310,11 @@ export default function AboutSection() {
                 xl:text-[62px]
               "
             >
-              La Sicilia,
-              <br />
-              raccontata da chi
-              <br />
-              la vive davvero.
+              {isEnglish ? (
+                <>Sicily,<br />told by those<br />who truly live it.</>
+              ) : (
+                <>La Sicilia,<br />raccontata da chi<br />la vive davvero.</>
+              )}
             </h2>
 
             <p
@@ -325,11 +334,9 @@ export default function AboutSection() {
                 lg:leading-9
               "
             >
-              SicilyTrip nasce per farti scoprire un&apos;isola
-              diversa: autentica, elegante e sorprendente.
-              Selezioniamo luoghi speciali, strutture di qualità
-              ed esperienze capaci di trasformare un soggiorno
-              in un ricordo.
+              {isEnglish
+                ? "SicilyTrip was created to introduce you to a different island: authentic, elegant and surprising. We select special places, quality stays and experiences that turn a holiday into a lasting memory."
+                : "SicilyTrip nasce per farti scoprire un’isola diversa: autentica, elegante e sorprendente. Selezioniamo luoghi speciali, strutture di qualità ed esperienze capaci di trasformare un soggiorno in un ricordo."}
             </p>
 
             <p
@@ -345,9 +352,9 @@ export default function AboutSection() {
                 sm:leading-8
               "
             >
-              Non un semplice portale di prenotazione, ma un modo
-              nuovo di costruire il viaggio: dalla prima ispirazione
-              fino alla scelta di hotel, esperienze e itinerari.
+              {isEnglish
+                ? "More than a booking portal, it is a new way to shape your journey: from the first spark of inspiration to choosing hotels, experiences and itineraries."
+                : "Non un semplice portale di prenotazione, ma un modo nuovo di costruire il viaggio: dalla prima ispirazione fino alla scelta di hotel, esperienze e itinerari."}
             </p>
 
             {/* ===============================================
@@ -396,7 +403,7 @@ export default function AboutSection() {
                   sm:py-4
                 "
               >
-                Scopri SicilyTrip
+                {isEnglish ? "Discover SicilyTrip" : "Scopri SicilyTrip"}
 
                 <IconArrowRight
                   size={18}
@@ -413,7 +420,9 @@ export default function AboutSection() {
                 type="button"
                 onClick={() =>
                   openConcierge(
-                    "Aiutami a scoprire come SicilyTrip può organizzare il mio viaggio in Sicilia"
+                    isEnglish
+                      ? "Help me discover how SicilyTrip can plan my trip to Sicily"
+                      : "Aiutami a scoprire come SicilyTrip può organizzare il mio viaggio in Sicilia"
                   )
                 }
                 className="
@@ -461,7 +470,7 @@ export default function AboutSection() {
                   />
                 </span>
 
-                Chiedi al Concierge
+                {isEnglish ? "Ask the Concierge" : "Chiedi al Concierge"}
               </button>
             </div>
           </div>
@@ -596,7 +605,7 @@ export default function AboutSection() {
                         lg:text-xl
                       "
                     >
-                      {item.title}
+                      {isEnglish ? item.titleEn : item.title}
                     </h3>
                   </div>
 
@@ -613,7 +622,7 @@ export default function AboutSection() {
                       sm:text-sm
                     "
                   >
-                    {item.text}
+                    {isEnglish ? item.textEn : item.text}
                   </p>
                 </article>
               );
