@@ -64,11 +64,26 @@ const OFFSET_X =
 const OFFSET_Y =
   (SVG_HEIGHT - DRAW_HEIGHT) / 2;
 
+/*
+ * La sagoma SVG deriva da una proiezione cartografica che comprime
+ * leggermente le longitudini nella parte orientale rispetto alla
+ * proiezione lineare usata per i marker. La compensazione parte dal
+ * centro dell'isola e cresce verso est, mantenendo invariata l'area
+ * occidentale.
+ */
+const EAST_CORRECTION_START_LON = 14;
+const EAST_CORRECTION_PER_DEGREE = 20;
+
 function project(longitude: number, latitude: number) {
+  const eastCorrection =
+    Math.max(0, longitude - EAST_CORRECTION_START_LON) *
+    EAST_CORRECTION_PER_DEGREE;
+
   return {
     x:
       OFFSET_X +
-      (longitude - MIN_LON) * MAP_SCALE,
+      (longitude - MIN_LON) * MAP_SCALE -
+      eastCorrection,
 
     y:
       OFFSET_Y +
