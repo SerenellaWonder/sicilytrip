@@ -1,13 +1,15 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import {
   CheckCircle2,
+  Download,
   Loader2,
   LockKeyhole,
   LogOut,
   RefreshCw,
+  Search,
 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import AdminJournal from "./AdminJournal";
@@ -27,6 +29,7 @@ import AdminUsers from "./AdminUsers";
 import AdminOperators from "./AdminOperators";
 import AdminContacts from "./AdminContacts";
 import AdminEvents from "./AdminEvents";
+import { exportCsv, inDateRange } from "./exportCsv";
 
 type AdminRole = "SUPER_ADMIN" | "CONTENT_EDITOR" | "CUSTOMER_SUPPORT";
 
@@ -52,6 +55,22 @@ export default function AdminDashboard() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [bookingQuery, setBookingQuery] = useState("");
+  const [bookingStatus, setBookingStatus] = useState("ALL");
+  const [bookingFrom, setBookingFrom] = useState("");
+  const [bookingTo, setBookingTo] = useState("");
+  const filteredBookings = useMemo(() => {
+    const needle = bookingQuery.trim().toLowerCase();
+    return bookings.filter(
+      (booking) =>
+        (bookingStatus === "ALL" || booking.status === bookingStatus) &&
+        inDateRange(booking.createdAt, bookingFrom, bookingTo) &&
+        (!needle ||
+          [booking.hotelName, booking.provider, booking.referenceCode ?? "", booking.id].some((value) =>
+            value.toLowerCase().includes(needle),
+          )),
+    );
+  }, [bookingFrom, bookingQuery, bookings, bookingStatus, bookingTo]);
   const [section, setSection] = useState<
     | "overview"
     | "bookings"
@@ -373,9 +392,9 @@ export default function AdminDashboard() {
               <AdminContacts token={token} />
             ) : (
               <>
-                <div className="mb-5 flex items-center justify-between">
+                <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
                   <p className="text-sm text-slate-500">
-                    {bookings.length} richieste recenti
+                    {filteredBookings.length} di {bookings.length} richieste recenti
                   </p>
                   <button
                     onClick={() => void loadBookings(token)}
@@ -389,15 +408,35 @@ export default function AdminDashboard() {
                     Aggiorna
                   </button>
                 </div>
+                <div className="mb-5 grid gap-3 rounded-[22px] bg-white p-4 sm:grid-cols-2 xl:grid-cols-[1fr_190px_160px_160px_auto]">
+                  <label className="relative">
+                    <span className="sr-only">Cerca prenotazioni</span>
+                    <Search className="absolute left-3 top-3.5 text-slate-400" size={16} />
+                    <input value={bookingQuery} onChange={(event) => setBookingQuery(event.target.value)} placeholder="Hotel, riferimento o fornitore" className="h-11 w-full rounded-xl border border-[#0D2340]/10 pl-10 pr-3 text-sm outline-none focus:border-[#0D2340]/30" />
+                  </label>
+                  <select aria-label="Filtra prenotazioni per stato" value={bookingStatus} onChange={(event) => setBookingStatus(event.target.value)} className="h-11 rounded-xl border border-[#0D2340]/10 px-3 text-sm text-[#0D2340] outline-none">
+                    <option value="ALL">Tutti gli stati</option>
+                    <option value="CONFIRMED">Confermate</option>
+                    <option value="PENDING">In elaborazione</option>
+                    <option value="UNCERTAIN">Da verificare</option>
+                    <option value="FAILED">Non confermate</option>
+                  </select>
+                  <input aria-label="Prenotazioni dal" type="date" value={bookingFrom} onChange={(event) => setBookingFrom(event.target.value)} className="h-11 rounded-xl border border-[#0D2340]/10 px-3 text-sm outline-none" />
+                  <input aria-label="Prenotazioni fino al" type="date" value={bookingTo} onChange={(event) => setBookingTo(event.target.value)} className="h-11 rounded-xl border border-[#0D2340]/10 px-3 text-sm outline-none" />
+                  <button type="button" disabled={!filteredBookings.length} onClick={() => exportCsv("prenotazioni-sicilytrip", ["Stato", "Riferimento", "Hotel", "Fornitore", "Check-in", "Check-out", "Creato il", "Errore fornitore", "ID"], filteredBookings.map((item) => [statusLabel(item.status), item.referenceCode, item.hotelName, item.provider, item.checkIn, item.checkOut, item.createdAt, item.providerError, item.id]))} className="flex h-11 items-center justify-center gap-2 rounded-xl bg-[#0D2340] px-4 text-xs font-bold text-white disabled:opacity-40"><Download size={15} /> Esporta CSV</button>
+                </div>
                 <div className="grid gap-4">
                   {bookings.length === 0 ? (
                     <div className="rounded-2xl bg-white p-7 text-sm text-slate-500">
                       Nessuna richiesta presente.
                     </div>
                   ) : (
-                    bookings.map((booking) => (
+                    filteredBookings.map((booking) => (
                       <BookingCard key={booking.id} booking={booking} />
                     ))
+                  )}
+                  {bookings.length > 0 && filteredBookings.length === 0 && (
+                    <div className="rounded-2xl bg-white p-7 text-sm text-slate-500">Nessuna prenotazione corrisponde ai filtri selezionati.</div>
                   )}
                 </div>
               </>
