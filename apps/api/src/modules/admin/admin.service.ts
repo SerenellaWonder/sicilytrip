@@ -701,14 +701,22 @@ export class AdminService {
   createFaqItem(auth: string | undefined, dto: AdminFaqDto) {
     this.verify(auth, 'content');
     return this.tracked('faq.created', () =>
-      this.prisma.faqItem.create({ data: dto }),
+      this.prisma.faqItem.create({ data: this.faqData(dto) }),
     );
   }
   updateFaqItem(auth: string | undefined, id: string, dto: AdminFaqDto) {
     this.verify(auth, 'content');
     return this.tracked('faq.updated', () =>
-      this.prisma.faqItem.update({ where: { id }, data: dto }),
+      this.prisma.faqItem.update({ where: { id }, data: this.faqData(dto) }),
     );
+  }
+  private faqData(dto: AdminFaqDto) {
+    return {
+      ...dto,
+      categoryEn: dto.categoryEn || null,
+      questionEn: dto.questionEn || null,
+      answerEn: dto.answerEn || null,
+    };
   }
   private async tracked<T extends { id: string }>(
     action: string,

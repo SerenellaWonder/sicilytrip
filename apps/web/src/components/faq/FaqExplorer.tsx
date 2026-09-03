@@ -1,21 +1,43 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, Search, X } from "lucide-react";
 
 import type { FaqSection } from "@/content/faq";
 import { useLanguage } from "@/components/i18n/LanguageProvider";
+import { apiFetch } from "@/lib/api";
+
+type ManagedFaq = {
+  id: string;
+  category: string;
+  categoryEn?: string | null;
+  question: string;
+  questionEn?: string | null;
+  answer: string;
+  answerEn?: string | null;
+};
 
 export default function FaqExplorer({ sections }: { sections: FaqSection[] }) {
   const { language } = useLanguage();
   const isEnglish = language === "en";
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("Tutte");
+  const [availableSections, setAvailableSections] = useState(sections);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void apiFetch<ManagedFaq[]>("/content/faq", { signal: controller.signal })
+      .then((items) => {
+        if (items.length) setAvailableSections(groupFaq(items));
+      })
+      .catch(() => undefined);
+    return () => controller.abort();
+  }, []);
 
   const filteredSections = useMemo(() => {
     const normalizedQuery = normalize(query);
 
-    return sections
+    return availableSections
       .filter((section) => category === "Tutte" || section.title === category)
       .map((section) => ({
         ...section,
@@ -24,13 +46,11 @@ export default function FaqExplorer({ sections }: { sections: FaqSection[] }) {
             isEnglish
               ? `${item.questionEn} ${item.answerEn}`
               : `${item.question} ${item.answer}`,
-          ).includes(
-            normalizedQuery,
-          ),
+          ).includes(normalizedQuery),
         ),
       }))
       .filter((section) => section.questions.length > 0);
-  }, [category, isEnglish, query, sections]);
+  }, [availableSections, category, isEnglish, query]);
 
   const resultCount = filteredSections.reduce(
     (total, section) => total + section.questions.length,
@@ -43,7 +63,9 @@ export default function FaqExplorer({ sections }: { sections: FaqSection[] }) {
         <label className="flex items-center gap-3">
           <Search size={20} className="shrink-0 text-[#F58220]" />
           <span className="sr-only">
-            {isEnglish ? "Search frequently asked questions" : "Cerca nelle domande frequenti"}
+            {isEnglish
+              ? "Search frequently asked questions"
+              : "Cerca nelle domande frequenti"}
           </span>
           <input
             type="search"
@@ -73,27 +95,30 @@ export default function FaqExplorer({ sections }: { sections: FaqSection[] }) {
         className="mt-5 flex flex-wrap gap-2"
         aria-label={isEnglish ? "FAQ categories" : "Categorie FAQ"}
       >
-        {["Tutte", ...sections.map((section) => section.title)].map((item) => (
-          <button
-            key={item}
-            type="button"
-            onClick={() => setCategory(item)}
-            aria-pressed={category === item}
-            className={`rounded-full px-4 py-2.5 text-[10px] font-bold uppercase tracking-[0.1em] transition-colors ${
-              category === item
-                ? "bg-[#0D2340] text-white"
-                : "bg-white text-[#0D2340]/55 hover:text-[#0D2340]"
-            }`}
-          >
-            {item === "Tutte"
-              ? isEnglish
-                ? "All"
-                : item
-              : isEnglish
-                ? sections.find((section) => section.title === item)?.titleEn
-                : item}
-          </button>
-        ))}
+        {["Tutte", ...availableSections.map((section) => section.title)].map(
+          (item) => (
+            <button
+              key={item}
+              type="button"
+              onClick={() => setCategory(item)}
+              aria-pressed={category === item}
+              className={`rounded-full px-4 py-2.5 text-[10px] font-bold uppercase tracking-[0.1em] transition-colors ${
+                category === item
+                  ? "bg-[#0D2340] text-white"
+                  : "bg-white text-[#0D2340]/55 hover:text-[#0D2340]"
+              }`}
+            >
+              {item === "Tutte"
+                ? isEnglish
+                  ? "All"
+                  : item
+                : isEnglish
+                  ? availableSections.find((section) => section.title === item)
+                      ?.titleEn
+                  : item}
+            </button>
+          ),
+        )}
       </div>
 
       <p className="mt-6 text-xs text-slate-400" aria-live="polite">
@@ -150,6 +175,25 @@ export default function FaqExplorer({ sections }: { sections: FaqSection[] }) {
       )}
     </div>
   );
+}
+
+function groupFaq(items: ManagedFaq[]): FaqSection[] {
+  const grouped = new Map<string, FaqSection>();
+  items.forEach((item) => {
+    const section = grouped.get(item.category) ?? {
+      title: item.category,
+      titleEn: item.categoryEn || item.category,
+      questions: [],
+    };
+    section.questions.push({
+      question: item.question,
+      questionEn: item.questionEn || item.question,
+      answer: item.answer,
+      answerEn: item.answerEn || item.answer,
+    });
+    grouped.set(item.category, section);
+  });
+  return [...grouped.values()];
 }
 
 function normalize(value: string) {

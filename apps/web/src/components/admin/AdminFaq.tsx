@@ -7,15 +7,21 @@ import { apiFetch } from "@/lib/api";
 type Item = {
   id: string;
   category: string;
+  categoryEn?: string | null;
   question: string;
+  questionEn?: string | null;
   answer: string;
+  answerEn?: string | null;
   sortOrder: number;
   isPublished: boolean;
 };
 const empty = {
   category: "Ricerca e disponibilità",
+  categoryEn: "Search and availability",
   question: "",
+  questionEn: "",
   answer: "",
+  answerEn: "",
   sortOrder: 0,
   isPublished: true,
 };
@@ -87,7 +93,16 @@ export default function AdminFaq({ token }: { token: string }) {
                 key={item.id}
                 onClick={() => {
                   setEditing(item.id);
-                  setForm(item);
+                  setForm({
+                    category: item.category,
+                    categoryEn: item.categoryEn ?? "",
+                    question: item.question,
+                    questionEn: item.questionEn ?? "",
+                    answer: item.answer,
+                    answerEn: item.answerEn ?? "",
+                    sortOrder: item.sortOrder,
+                    isPublished: item.isPublished,
+                  });
                 }}
                 className="w-full rounded-2xl bg-white p-4 text-left"
               >
@@ -112,9 +127,21 @@ export default function AdminFaq({ token }: { token: string }) {
           onChange={(v) => setForm({ ...form, category: v })}
         />
         <Field
+          label="Categoria inglese"
+          value={form.categoryEn}
+          onChange={(v) => setForm({ ...form, categoryEn: v })}
+          required={false}
+        />
+        <Field
           label="Domanda"
           value={form.question}
           onChange={(v) => setForm({ ...form, question: v })}
+        />
+        <Field
+          label="Domanda inglese"
+          value={form.questionEn}
+          onChange={(v) => setForm({ ...form, questionEn: v })}
+          required={false}
         />
         <label className="mt-4 block text-xs font-semibold text-[#0D2340]">
           Risposta
@@ -123,6 +150,15 @@ export default function AdminFaq({ token }: { token: string }) {
             rows={8}
             value={form.answer}
             onChange={(e) => setForm({ ...form, answer: e.target.value })}
+            className="mt-2 w-full rounded-xl border border-slate-200 p-3 outline-none"
+          />
+        </label>
+        <label className="mt-4 block text-xs font-semibold text-[#0D2340]">
+          Risposta inglese
+          <textarea
+            rows={8}
+            value={form.answerEn}
+            onChange={(e) => setForm({ ...form, answerEn: e.target.value })}
             className="mt-2 w-full rounded-xl border border-slate-200 p-3 outline-none"
           />
         </label>
@@ -164,16 +200,18 @@ function Field({
   label,
   value,
   onChange,
+  required = true,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  required?: boolean;
 }) {
   return (
     <label className="mt-4 block text-xs font-semibold text-[#0D2340]">
       {label}
       <input
-        required
+        required={required}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="mt-2 h-11 w-full rounded-xl border border-slate-200 px-3 outline-none"

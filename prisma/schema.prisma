@@ -289,8 +289,11 @@ model TourismEvent {
 model FaqItem {
   id          String   @id @default(cuid())
   category    String
+  categoryEn  String?
   question    String
+  questionEn  String?
   answer      String
+  answerEn    String?
   sortOrder   Int      @default(0)
   isPublished Boolean  @default(true)
   createdAt   DateTime @default(now())
