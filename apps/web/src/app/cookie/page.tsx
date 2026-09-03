@@ -30,20 +30,30 @@ export default function CookiePage() {
           title: "Preferenze e misurazione",
           titleEn: "Preferences and measurement",
           paragraphs: [
-            "Prima della produzione dovranno essere censiti eventuali strumenti di analisi, marketing o servizi esterni e dovrà essere configurata la relativa gestione del consenso.",
+            "Le preferenze facoltative possono ricordare le scelte effettuate nel portale. Al momento non sono attivi cookie di profilazione o marketing.",
           ],
           paragraphsEn: [
-            "Before production, any analytics, marketing tools or external services must be identified and the relevant consent management configured.",
+            "Optional preferences can remember choices made on the website. Profiling and marketing cookies are not currently active.",
+          ],
+        },
+        {
+          title: "Servizi esterni",
+          titleEn: "External services",
+          paragraphs: [
+            "La mappa interattiva di Google Maps viene caricata soltanto dopo il consenso dell’utente. Prima dell’autorizzazione non viene stabilito alcun collegamento con il servizio esterno.",
+          ],
+          paragraphsEn: [
+            "The interactive Google Maps map is loaded only after the user’s consent. No connection to the external service is established before permission is granted.",
           ],
         },
         {
           title: "Gestione",
           titleEn: "Management",
           paragraphs: [
-            "Le informazioni memorizzate localmente possono essere eliminate tramite le impostazioni del browser o chiudendo la sessione, secondo la tecnologia utilizzata.",
+            "Le preferenze possono essere modificate in qualsiasi momento tramite il collegamento Preferenze cookie presente nel footer. Le informazioni locali possono inoltre essere eliminate dalle impostazioni del browser.",
           ],
           paragraphsEn: [
-            "Information stored locally can be deleted through the browser settings or by closing the session, depending on the technology used.",
+            "Preferences can be changed at any time through the Cookie preferences link in the footer. Local information can also be deleted through the browser settings.",
           ],
         },
       ]}

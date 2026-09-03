@@ -13,6 +13,7 @@ import {
 } from "@tabler/icons-react";
 
 import { useConcierge } from "@/components/concierge/ConciergeProvider";
+import { useCookieConsent } from "@/components/cookies/CookieConsentProvider";
 import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 const menu = [
@@ -60,6 +61,7 @@ const menu = [
 
 export default function FooterSection() {
   const { openConcierge } = useConcierge();
+  const { openPreferences } = useCookieConsent();
   const { language } = useLanguage();
   const isEnglish = language === "en";
 
@@ -867,6 +869,14 @@ export default function FooterSection() {
               >
                 Cookie
               </Link>
+
+              <button
+                type="button"
+                onClick={openPreferences}
+                className="transition-colors duration-300 hover:text-white"
+              >
+                {isEnglish ? "Cookie preferences" : "Preferenze cookie"}
+              </button>
 
               <Link
                 href="/termini"

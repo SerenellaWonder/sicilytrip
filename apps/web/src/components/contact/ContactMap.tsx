@@ -1,7 +1,8 @@
 "use client";
 
-import { ExternalLink, MapPin } from "lucide-react";
+import { ExternalLink, MapPin, ShieldCheck } from "lucide-react";
 
+import { useCookieConsent } from "@/components/cookies/CookieConsentProvider";
 import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 const MAP_URL =
@@ -11,6 +12,7 @@ const DIRECTIONS_URL =
 
 export default function ContactMap() {
   const { language } = useLanguage();
+  const { choices, allowExternalServices } = useCookieConsent();
   const isEnglish = language === "en";
 
   return (
@@ -53,18 +55,35 @@ export default function ContactMap() {
           </div>
 
           <div className="relative min-h-[360px] bg-slate-200 sm:min-h-[440px]">
-            <iframe
-              title={
-                isEnglish
-                  ? "Satellite map of Palermo, Sicily"
-                  : "Mappa satellitare di Palermo, Sicilia"
-              }
-              src={MAP_URL}
-              className="absolute inset-0 h-full w-full border-0"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              allowFullScreen
-            />
+            {choices.externalServices ? (
+              <iframe
+                title={
+                  isEnglish
+                    ? "Satellite map of Palermo, Sicily"
+                    : "Mappa satellitare di Palermo, Sicilia"
+                }
+                src={MAP_URL}
+                className="absolute inset-0 h-full w-full border-0"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                allowFullScreen
+              />
+            ) : (
+              <div className="absolute inset-0 flex flex-col items-center justify-center px-7 text-center">
+                <ShieldCheck size={30} className="text-[#F58220]" />
+                <h3 className="mt-4 text-xl font-bold text-[#0D2340]">
+                  {isEnglish ? "Map protected by your choices" : "Mappa protetta dalle tue scelte"}
+                </h3>
+                <p className="mt-2 max-w-sm text-sm leading-6 text-slate-500">
+                  {isEnglish
+                    ? "Allow external services to load the interactive Google map."
+                    : "Autorizza i servizi esterni per caricare la mappa interattiva di Google."}
+                </p>
+                <button type="button" onClick={allowExternalServices} className="mt-5 rounded-full bg-[#0D2340] px-6 py-3 text-[10px] font-bold uppercase tracking-[0.12em] text-white">
+                  {isEnglish ? "Allow and show map" : "Autorizza e mostra mappa"}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
