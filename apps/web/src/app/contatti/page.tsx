@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import ContactForm from "@/components/contact/ContactForm";
 import ContactIntro from "@/components/contact/ContactIntro";
+import ContactMap from "@/components/contact/ContactMap";
 import FooterSection from "@/components/layout/FooterSection";
 import Header from "@/components/layout/header";
 
@@ -21,6 +22,7 @@ export default function ContactPage() {
 
           <ContactForm />
         </section>
+        <ContactMap />
         <FooterSection />
       </main>
     </>
