@@ -26,6 +26,7 @@ import AdminActivity from "./AdminActivity";
 import AdminUsers from "./AdminUsers";
 import AdminOperators from "./AdminOperators";
 import AdminContacts from "./AdminContacts";
+import AdminEvents from "./AdminEvents";
 
 type AdminRole = "SUPER_ADMIN" | "CONTENT_EDITOR" | "CUSTOMER_SUPPORT";
 
@@ -69,6 +70,7 @@ export default function AdminDashboard() {
     | "users"
     | "operators"
     | "contacts"
+    | "events"
   >("overview");
 
   useEffect(() => {
@@ -255,6 +257,11 @@ export default function AdminDashboard() {
                     onClick={() => setSection("journal")}
                   />
                   <NavButton
+                    label="Eventi"
+                    active={section === "events"}
+                    onClick={() => setSection("events")}
+                  />
+                  <NavButton
                     label="FAQ"
                     active={section === "faq"}
                     onClick={() => setSection("faq")}
@@ -334,6 +341,8 @@ export default function AdminDashboard() {
               <AdminOverview token={token} />
             ) : section === "journal" ? (
               <AdminJournal token={token} />
+            ) : section === "events" ? (
+              <AdminEvents token={token} />
             ) : section === "faq" ? (
               <AdminFaq token={token} />
             ) : section === "customers" ? (

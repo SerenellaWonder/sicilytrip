@@ -16,6 +16,7 @@ import { HotelsModule } from './modules/hotels/hotels.module';
 import { CustomerAreaModule } from './modules/customer-area/customer-area.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { ContactsModule } from './modules/contacts/contacts.module';
+import { EventsModule } from './modules/events/events.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { ContactsModule } from './modules/contacts/contacts.module';
     CustomerAreaModule,
     AdminModule,
     ContactsModule,
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

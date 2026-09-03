@@ -12,6 +12,7 @@ import {
   UpdateAdminOperatorDto,
 } from './dto/admin-operator.dto';
 import { UpdateAdminContactDto } from './dto/admin-contact.dto';
+import { AdminEventDto } from './dto/admin-event.dto';
 class LoginDto {
   @IsEmail() email!: string;
   @IsString() @IsNotEmpty() password!: string;
@@ -151,6 +152,22 @@ export class AdminController {
   }
   @Get('journal') journal(@Headers('authorization') auth?: string) {
     return this.service.journalArticles(auth);
+  }
+  @Get('events') events(@Headers('authorization') auth?: string) {
+    return this.service.events(auth);
+  }
+  @Post('events') createEvent(
+    @Headers('authorization') auth: string | undefined,
+    @Body() dto: AdminEventDto,
+  ) {
+    return this.service.createEvent(auth, dto);
+  }
+  @Post('events/:id') updateEvent(
+    @Headers('authorization') auth: string | undefined,
+    @Param('id') id: string,
+    @Body() dto: AdminEventDto,
+  ) {
+    return this.service.updateEvent(auth, id, dto);
   }
   @Post('journal') createJournal(
     @Headers('authorization') auth: string | undefined,

@@ -24,6 +24,7 @@ import {
   UpdateAdminOperatorDto,
 } from './dto/admin-operator.dto';
 import { UpdateAdminContactDto } from './dto/admin-contact.dto';
+import { AdminEventDto } from './dto/admin-event.dto';
 @Injectable()
 export class AdminService {
   private readonly email?: string;
@@ -628,6 +629,39 @@ export class AdminService {
     return this.prisma.journalArticle.findMany({
       orderBy: { updatedAt: 'desc' },
     });
+  }
+  events(auth?: string) {
+    this.verify(auth);
+    return this.prisma.tourismEvent.findMany({
+      orderBy: [{ startAt: 'asc' }, { updatedAt: 'desc' }],
+    });
+  }
+  createEvent(auth: string | undefined, dto: AdminEventDto) {
+    this.verify(auth, 'content');
+    return this.tracked('event.created', () =>
+      this.prisma.tourismEvent.create({ data: this.eventData(dto) }),
+    );
+  }
+  updateEvent(auth: string | undefined, id: string, dto: AdminEventDto) {
+    this.verify(auth, 'content');
+    return this.tracked('event.updated', () =>
+      this.prisma.tourismEvent.update({
+        where: { id },
+        data: this.eventData(dto),
+      }),
+    );
+  }
+  private eventData(dto: AdminEventDto) {
+    return {
+      ...dto,
+      titleEn: dto.titleEn || null,
+      description: dto.description || null,
+      descriptionEn: dto.descriptionEn || null,
+      endAt: dto.endAt ? new Date(dto.endAt) : null,
+      image: dto.image || null,
+      externalUrl: dto.externalUrl || null,
+      startAt: new Date(dto.startAt),
+    };
   }
   createJournalArticle(auth: string | undefined, dto: AdminJournalArticleDto) {
     this.verify(auth, 'content');
