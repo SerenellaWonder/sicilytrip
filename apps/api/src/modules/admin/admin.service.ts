@@ -1,5 +1,6 @@
 import {
   Injectable,
+  NotFoundException,
   ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -168,6 +169,63 @@ export class AdminService {
       checkOut: x.hotelSearch.checkOut,
       createdAt: x.createdAt,
     }));
+  }
+  async booking(auth: string | undefined, id: string) {
+    this.verify(auth);
+    const row = await this.prisma.providerBookingAttempt.findUnique({
+      where: { id },
+      include: {
+        hotelSearch: {
+          include: {
+            results: true,
+            preBookSnapshots: { include: { payment: true } },
+          },
+        },
+      },
+    });
+    if (!row) throw new NotFoundException('Prenotazione non trovata');
+    const search = row.hotelSearch;
+    const hotel = search.results.find(
+      (result) => result.providerHotelId === row.providerHotelId,
+    );
+    const preBook = search.preBookSnapshots.find(
+      (snapshot) =>
+        snapshot.providerHotelId === row.providerHotelId &&
+        snapshot.roomId === row.roomId,
+    );
+    return {
+      id: row.id,
+      status: row.status,
+      referenceCode: row.referenceCode,
+      providerError: row.providerError,
+      provider: search.provider,
+      providerSearchId: row.providerSearchId,
+      providerHotelId: row.providerHotelId,
+      giataId: row.giataId,
+      hotelName: hotel?.hotelName ?? 'Hotel',
+      checkIn: search.checkIn,
+      checkOut: search.checkOut,
+      searchStatus: search.status,
+      preBook: preBook
+        ? {
+            deadlineDate: preBook.deadlineDate,
+            finalPrice:
+              preBook.finalPrice == null ? null : Number(preBook.finalPrice),
+            currency: preBook.originalCurrency,
+            expiresAt: preBook.expiresAt,
+          }
+        : null,
+      payment: preBook?.payment
+        ? {
+            status: preBook.payment.status,
+            amount: preBook.payment.amount,
+            currency: preBook.payment.currency,
+            createdAt: preBook.payment.createdAt,
+          }
+        : null,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+    };
   }
   async summary(auth?: string) {
     this.verify(auth);

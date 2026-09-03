@@ -55,6 +55,12 @@ export class AdminController {
   @Get('bookings') bookings(@Headers('authorization') auth?: string) {
     return this.service.bookings(auth);
   }
+  @Get('bookings/:id') booking(
+    @Headers('authorization') auth: string | undefined,
+    @Param('id') id: string,
+  ) {
+    return this.service.booking(auth, id);
+  }
   @Get('summary') summary(@Headers('authorization') auth?: string) {
     return this.service.summary(auth);
   }

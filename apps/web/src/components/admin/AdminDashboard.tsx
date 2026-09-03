@@ -5,6 +5,7 @@ import Image from "next/image";
 import {
   CheckCircle2,
   Download,
+  ExternalLink,
   Loader2,
   LockKeyhole,
   LogOut,
@@ -45,6 +46,26 @@ type Booking = {
   createdAt: string;
 };
 
+type BookingDetail = Booking & {
+  providerSearchId: string;
+  providerHotelId: string;
+  giataId: string;
+  searchStatus: string;
+  updatedAt: string;
+  preBook: {
+    deadlineDate: string;
+    finalPrice: number | null;
+    currency: string;
+    expiresAt: string;
+  } | null;
+  payment: {
+    status: string;
+    amount: number;
+    currency: string;
+    createdAt: string;
+  } | null;
+};
+
 const SESSION_KEY = "sicilytrip-admin-session";
 
 export default function AdminDashboard() {
@@ -59,6 +80,10 @@ export default function AdminDashboard() {
   const [bookingStatus, setBookingStatus] = useState("ALL");
   const [bookingFrom, setBookingFrom] = useState("");
   const [bookingTo, setBookingTo] = useState("");
+  const [selectedBooking, setSelectedBooking] =
+    useState<BookingDetail | null>(null);
+  const [detailLoadingId, setDetailLoadingId] = useState("");
+  const [detailError, setDetailError] = useState("");
   const filteredBookings = useMemo(() => {
     const needle = bookingQuery.trim().toLowerCase();
     return bookings.filter(
@@ -138,6 +163,26 @@ export default function AdminDashboard() {
         reason instanceof Error ? reason.message : "Accesso non riuscito.",
       );
       setLoading(false);
+    }
+  }
+
+  async function openBooking(id: string) {
+    try {
+      setDetailLoadingId(id);
+      setDetailError("");
+      setSelectedBooking(
+        await apiFetch<BookingDetail>(`/admin/bookings/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      );
+    } catch (reason) {
+      setDetailError(
+        reason instanceof Error
+          ? reason.message
+          : "Dettaglio non disponibile.",
+      );
+    } finally {
+      setDetailLoadingId("");
     }
   }
 
@@ -432,13 +477,29 @@ export default function AdminDashboard() {
                     </div>
                   ) : (
                     filteredBookings.map((booking) => (
-                      <BookingCard key={booking.id} booking={booking} />
+                      <BookingCard
+                        key={booking.id}
+                        booking={booking}
+                        loading={detailLoadingId === booking.id}
+                        onOpen={() => void openBooking(booking.id)}
+                      />
                     ))
                   )}
                   {bookings.length > 0 && filteredBookings.length === 0 && (
                     <div className="rounded-2xl bg-white p-7 text-sm text-slate-500">Nessuna prenotazione corrisponde ai filtri selezionati.</div>
                   )}
                 </div>
+                {detailError && (
+                  <p role="alert" className="mt-4 text-sm text-red-600">
+                    {detailError}
+                  </p>
+                )}
+                {selectedBooking && (
+                  <BookingDetailPanel
+                    booking={selectedBooking}
+                    onClose={() => setSelectedBooking(null)}
+                  />
+                )}
               </>
             )}
           </section>
@@ -494,7 +555,15 @@ function NavButton({
   );
 }
 
-function BookingCard({ booking }: { booking: Booking }) {
+function BookingCard({
+  booking,
+  loading,
+  onOpen,
+}: {
+  booking: Booking;
+  loading: boolean;
+  onOpen: () => void;
+}) {
   return (
     <article className="grid gap-5 rounded-[24px] bg-white p-6 md:grid-cols-[1fr_auto]">
       <div>
@@ -527,9 +596,142 @@ function BookingCard({ booking }: { booking: Booking }) {
         <time className="mt-2 block text-xs text-slate-400">
           {dateTime(booking.createdAt)}
         </time>
+        <button
+          type="button"
+          onClick={onOpen}
+          disabled={loading}
+          className="mt-4 inline-flex items-center gap-2 rounded-full border border-[#0D2340]/10 px-4 py-2 text-xs font-bold text-[#0D2340] disabled:opacity-50"
+        >
+          {loading ? (
+            <Loader2 size={14} className="animate-spin" />
+          ) : (
+            <ExternalLink size={14} />
+          )}
+          Apri scheda
+        </button>
       </div>
     </article>
   );
+}
+
+function BookingDetailPanel({
+  booking,
+  onClose,
+}: {
+  booking: BookingDetail;
+  onClose: () => void;
+}) {
+  return (
+    <section
+      aria-label="Dettaglio prenotazione"
+      className="mt-6 rounded-[28px] border border-[#0D2340]/[0.07] bg-white p-6 shadow-[0_18px_55px_rgba(13,35,64,0.07)] sm:p-8"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <span className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#F58220]">
+            Scheda prenotazione
+          </span>
+          <h2 className="mt-2 text-2xl font-bold text-[#0D2340]">
+            {booking.hotelName}
+          </h2>
+          <p className="mt-1 text-sm text-slate-500">
+            {statusLabel(booking.status)} ·{" "}
+            {booking.referenceCode || "Riferimento non disponibile"}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded-full bg-[#F7F5F1] px-4 py-2 text-xs font-bold text-[#0D2340]"
+        >
+          Chiudi scheda
+        </button>
+      </div>
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Detail
+          label="Soggiorno"
+          value={`${date(booking.checkIn)} – ${date(booking.checkOut)}`}
+        />
+        <Detail label="Fornitore" value={booking.provider} />
+        <Detail label="Giata ID" value={booking.giataId} />
+        <Detail label="Stato ricerca" value={booking.searchStatus} />
+        <Detail
+          label="Totale riconfermato"
+          value={
+            booking.preBook?.finalPrice == null
+              ? "—"
+              : money(booking.preBook.finalPrice, booking.preBook.currency)
+          }
+        />
+        <Detail
+          label="Scadenza tariffa"
+          value={booking.preBook?.deadlineDate || "—"}
+        />
+        <Detail
+          label="Pagamento"
+          value={
+            booking.payment
+              ? genericStatusLabel(booking.payment.status)
+              : "Non presente"
+          }
+        />
+        <Detail
+          label="Ultimo aggiornamento"
+          value={dateTime(booking.updatedAt)}
+        />
+      </div>
+      {booking.providerError && (
+        <div className="mt-5 rounded-2xl bg-red-50 p-4 text-sm text-red-700">
+          <strong>Errore fornitore:</strong> {booking.providerError}
+        </div>
+      )}
+      <details className="mt-5 rounded-2xl bg-[#F7F5F1] p-4 text-xs text-slate-500">
+        <summary className="cursor-pointer font-bold text-[#0D2340]">
+          Identificativi tecnici
+        </summary>
+        <dl className="mt-3 grid gap-2 break-all sm:grid-cols-2">
+          <div>
+            <dt className="font-semibold">ID interno</dt>
+            <dd>{booking.id}</dd>
+          </div>
+          <div>
+            <dt className="font-semibold">Search ID fornitore</dt>
+            <dd>{booking.providerSearchId}</dd>
+          </div>
+          <div>
+            <dt className="font-semibold">Hotel ID fornitore</dt>
+            <dd>{booking.providerHotelId}</dd>
+          </div>
+        </dl>
+      </details>
+    </section>
+  );
+}
+
+function Detail({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl bg-[#F7F5F1] p-4">
+      <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-400">
+        {label}
+      </span>
+      <strong className="mt-1 block text-sm text-[#0D2340]">{value}</strong>
+    </div>
+  );
+}
+
+function money(amount: number, currency: string) {
+  if (!currency) return `${amount.toFixed(2)} —`;
+  return new Intl.NumberFormat("it-IT", {
+    style: "currency",
+    currency: currency.toUpperCase(),
+  }).format(amount);
+}
+
+function genericStatusLabel(status: string) {
+  return status
+    .toLowerCase()
+    .replaceAll("_", " ")
+    .replace(/^./, (letter) => letter.toUpperCase());
 }
 
 function statusLabel(value: Booking["status"]) {
