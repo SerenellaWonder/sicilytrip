@@ -9,7 +9,7 @@ export default function HotelSearchEmptyState() {
   const isEnglish = language === "en";
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#F7F5F1] px-5">
+    <main id="main-content" tabIndex={-1} className="flex min-h-screen items-center justify-center bg-[#F7F5F1] px-5">
       <div className="text-center">
         <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#F58220]">
           SicilyTrip Hotels

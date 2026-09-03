@@ -156,7 +156,7 @@ export default function CustomerAreaPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#F7F5F1] px-5 pb-24 pt-[130px]">
+    <main id="main-content" tabIndex={-1} className="min-h-screen bg-[#F7F5F1] px-5 pb-24 pt-[130px]">
       <div className="mx-auto max-w-[920px]">
         <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#F58220]">
           SicilyTrip

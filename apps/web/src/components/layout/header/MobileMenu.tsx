@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 import { IconMenu2, IconSparkles, IconX } from "@tabler/icons-react";
@@ -53,6 +53,9 @@ type MobileMenuProps = {
 
 export default function MobileMenu({ solidHeader, pathname }: MobileMenuProps) {
   const [open, setOpen] = useState(false);
+  const openButtonRef = useRef<HTMLButtonElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   const { openConcierge } = useConcierge();
   const { language, setLanguage } = useLanguage();
@@ -64,14 +67,43 @@ export default function MobileMenu({ solidHeader, pathname }: MobileMenuProps) {
     }
 
     document.body.style.overflow = "hidden";
+    closeButtonRef.current?.focus();
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setOpen(false);
+        window.requestAnimationFrame(() => openButtonRef.current?.focus());
+        return;
+      }
+
+      if (event.key !== "Tab") return;
+      const focusable = panelRef.current?.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable?.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
 
     return () => {
       document.body.style.overflow = "";
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [open]);
 
   function closeMenu() {
     setOpen(false);
+    window.requestAnimationFrame(() => openButtonRef.current?.focus());
   }
 
   function handleConcierge() {
@@ -91,6 +123,7 @@ export default function MobileMenu({ solidHeader, pathname }: MobileMenuProps) {
       ===================================================== */}
 
       <button
+        ref={openButtonRef}
         type="button"
         onClick={() => setOpen(true)}
         aria-label={language === "it" ? "Apri menu" : "Open menu"}
@@ -130,6 +163,7 @@ export default function MobileMenu({ solidHeader, pathname }: MobileMenuProps) {
       ===================================================== */}
 
       <div
+        aria-hidden="true"
         className={`
           fixed
           inset-0
@@ -150,6 +184,12 @@ export default function MobileMenu({ solidHeader, pathname }: MobileMenuProps) {
       ===================================================== */}
 
       <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-hidden={!open}
+        aria-label={language === "it" ? "Menu di navigazione" : "Navigation menu"}
+        inert={!open}
         className={`
           fixed
           right-0
@@ -200,6 +240,7 @@ export default function MobileMenu({ solidHeader, pathname }: MobileMenuProps) {
           </Link>
 
           <button
+            ref={closeButtonRef}
             type="button"
             onClick={closeMenu}
             aria-label={language === "it" ? "Chiudi menu" : "Close menu"}

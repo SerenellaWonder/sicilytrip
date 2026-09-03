@@ -19,7 +19,7 @@ export default function JournalPage() {
     <>
       <Header />
 
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <JournalHero />
         <JournalStories />
         <JournalEvents />

@@ -34,7 +34,7 @@ export default function LegalPage({
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-[#F7F5F1] pt-[110px]">
+      <main id="main-content" tabIndex={-1} className="min-h-screen bg-[#F7F5F1] pt-[110px]">
         <article className="mx-auto max-w-[900px] px-5 py-20 sm:px-8 lg:py-28">
           <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#F58220]">
             {isEnglish ? eyebrowEn : eyebrow}

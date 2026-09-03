@@ -314,6 +314,8 @@ export default function HotelDetailPage({
 
   return (
     <main
+      id="main-content"
+      tabIndex={-1}
       className="
         min-h-screen
         bg-[#F7F5F1]

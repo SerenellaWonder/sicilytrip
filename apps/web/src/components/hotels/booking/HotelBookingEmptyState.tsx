@@ -7,7 +7,7 @@ export default function HotelBookingEmptyState({ hotelId, searchId }: Readonly<{
   const isEnglish = language === "en";
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#F7F5F1] px-5">
+    <main id="main-content" tabIndex={-1} className="flex min-h-screen items-center justify-center bg-[#F7F5F1] px-5">
       <div className="text-center">
         <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#F58220]">SicilyTrip Hotels</span>
         <h1 className="mt-4 text-4xl font-bold tracking-[-0.04em] text-[#0D2340]">

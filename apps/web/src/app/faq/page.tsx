@@ -18,7 +18,7 @@ export default function FaqPage() {
     <>
       <Header />
 
-      <main className="min-h-screen bg-[#F7F5F1] pt-[110px]">
+      <main id="main-content" tabIndex={-1} className="min-h-screen bg-[#F7F5F1] pt-[110px]">
         <section className="relative overflow-hidden px-5 py-20 sm:px-8 lg:px-10 lg:py-28">
           <div className="absolute -right-40 top-5 size-[420px] rounded-full bg-[#F58220]/[0.07] blur-3xl" />
 

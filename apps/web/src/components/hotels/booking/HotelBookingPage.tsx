@@ -103,6 +103,8 @@ export default function HotelBookingPage({
   if (loading) {
     return (
       <main
+        id="main-content"
+        tabIndex={-1}
         className="
           flex
           min-h-screen
@@ -139,6 +141,8 @@ export default function HotelBookingPage({
   if (!rate) {
     return (
       <main
+        id="main-content"
+        tabIndex={-1}
         className="
           flex
           min-h-screen
@@ -246,6 +250,8 @@ export default function HotelBookingPage({
 
   return (
     <main
+      id="main-content"
+      tabIndex={-1}
       className="
         min-h-screen
         bg-[#F7F5F1]

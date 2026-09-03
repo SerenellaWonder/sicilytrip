@@ -130,7 +130,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#F7F5F1] px-5 py-8 sm:px-8 lg:py-10">
+    <main id="main-content" tabIndex={-1} className="relative min-h-screen overflow-hidden bg-[#F7F5F1] px-5 py-8 sm:px-8 lg:py-10">
       <div className="pointer-events-none absolute -right-32 top-32 size-[420px] rounded-full bg-[#F58220]/[0.07] blur-3xl" />
       <div className="pointer-events-none absolute -left-40 bottom-0 size-[480px] rounded-full bg-[#0D2340]/[0.06] blur-3xl" />
       <div className="relative mx-auto max-w-[1240px]">

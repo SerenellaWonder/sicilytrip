@@ -14,7 +14,7 @@ export default function JournalArticleContent({
   const isEnglish = language === "en";
 
   return (
-    <main className="bg-[#F7F3EC] pb-24 pt-[112px]">
+    <main id="main-content" tabIndex={-1} className="bg-[#F7F3EC] pb-24 pt-[112px]">
       <article>
         <header className="mx-auto max-w-[1180px] px-5 pb-12 pt-12 sm:px-8 lg:px-10 lg:pb-16 lg:pt-20">
           <Link

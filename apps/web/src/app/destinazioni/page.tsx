@@ -19,7 +19,7 @@ export default function DestinationsPage() {
     <>
       <Header />
 
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <DestinationsHero />
 
         <DestinationShowcase />

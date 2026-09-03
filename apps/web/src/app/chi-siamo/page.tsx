@@ -19,7 +19,7 @@ export default function AboutPage() {
     <>
       <Header />
 
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <AboutHero />
         <AboutStory />
         <AboutApproach />

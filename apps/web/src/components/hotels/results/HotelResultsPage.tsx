@@ -127,6 +127,8 @@ export default function HotelResultsPage({
   if (loading) {
     return (
       <main
+        id="main-content"
+        tabIndex={-1}
         aria-busy="true"
         className="
           flex
@@ -171,6 +173,8 @@ export default function HotelResultsPage({
   if (error) {
     return (
       <main
+        id="main-content"
+        tabIndex={-1}
         aria-live="polite"
         className="
           flex
@@ -257,6 +261,8 @@ export default function HotelResultsPage({
 
   return (
     <main
+      id="main-content"
+      tabIndex={-1}
       className="
         min-h-screen
         bg-[#F7F5F1]
