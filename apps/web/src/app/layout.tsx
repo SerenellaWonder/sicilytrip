@@ -3,7 +3,6 @@ import { Poppins } from "next/font/google";
 
 import ConciergeProvider from "@/components/concierge/ConciergeProvider";
 import LanguageProvider from "@/components/i18n/LanguageProvider";
-import SkipLink from "@/components/accessibility/SkipLink";
 import CookieConsentBanner from "@/components/cookies/CookieConsentBanner";
 import CookieConsentProvider from "@/components/cookies/CookieConsentProvider";
 import { SITE_URL } from "@/lib/site";
@@ -75,7 +74,6 @@ export default function RootLayout({
           antialiased
         "
       >
-        <SkipLink />
         <LanguageProvider>
           <CookieConsentProvider>
             <ConciergeProvider>{children}</ConciergeProvider>
