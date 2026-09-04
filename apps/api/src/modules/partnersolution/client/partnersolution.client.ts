@@ -3,6 +3,7 @@ import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { AxiosError, AxiosRequestConfig } from 'axios';
 import { firstValueFrom } from 'rxjs';
+import { normalizePartnerAssets } from '../utils/partner-assets';
 
 @Injectable()
 export class PartnerSolutionClient {
@@ -14,6 +15,8 @@ export class PartnerSolutionClient {
 
   private readonly timeout: number;
 
+  private readonly cdnUrl: string;
+
   constructor(
     private readonly http: HttpService,
     private readonly config: ConfigService,
@@ -23,6 +26,8 @@ export class PartnerSolutionClient {
     this.apiKey = this.config.get<string>('PARTNERSOLUTION_API_KEY') ?? '';
 
     this.timeout = Number(this.config.get('PARTNERSOLUTION_TIMEOUT') ?? 30000);
+
+    this.cdnUrl = this.config.get<string>('PARTNERSOLUTION_CDN_URL') ?? '';
   }
 
   async get<T>(endpoint: string, config?: AxiosRequestConfig): Promise<T> {
@@ -86,7 +91,7 @@ export class PartnerSolutionClient {
 
       this.logger.log('========================================');
 
-      return response.data;
+      return normalizePartnerAssets(response.data, this.cdnUrl);
     } catch (error) {
       const err = error as AxiosError;
 
