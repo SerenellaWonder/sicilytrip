@@ -25,7 +25,25 @@ export class HotelDetailsService {
       await this.hotelDetailRepository.findByProviderHotelId(hotelId);
 
     if (cached) {
-      return cached;
+      if (hasImages(cached.photoGallery)) {
+        return cached;
+      }
+
+      const cachedSearchResults =
+        await this.hotelSearchResultRepository.findBySearchId(searchId);
+
+      const cachedHotelResult = cachedSearchResults.find(
+        (result) => result.providerHotelId === hotelId,
+      );
+
+      const cachedPayload = cachedHotelResult?.payload as Record<
+        string,
+        unknown
+      >;
+
+      const cachedImage = getHotelPayloadString(cachedPayload?.Image);
+
+      return cachedImage ? { ...cached, photoGallery: [cachedImage] } : cached;
     }
 
     //
@@ -72,6 +90,18 @@ export class HotelDetailsService {
       giataId,
     );
 
+    const searchImage = getHotelPayloadString(payload.Image);
+    const photoGallery = hasImages(detail.PhotoGallery)
+      ? detail.PhotoGallery
+      : searchImage
+        ? [searchImage]
+        : [];
+
+    const detailWithGallery = {
+      ...detail,
+      PhotoGallery: photoGallery,
+    };
+
     //
     // 6. Salvataggio nel DB
     //
@@ -94,19 +124,26 @@ export class HotelDetailsService {
 
       address: detail.Address,
 
-      photoGallery: detail.PhotoGallery ?? [],
+      photoGallery,
 
       descriptions: (detail.Descriptions ??
         []) as unknown as Prisma.InputJsonValue,
 
       facilities: detail.Facilities ?? [],
 
-      payload: detail as unknown as Prisma.InputJsonValue,
+      payload: detailWithGallery as unknown as Prisma.InputJsonValue,
     });
 
     //
     // 7. Restituzione dettaglio
     //
-    return detail;
+    return detailWithGallery;
   }
+}
+
+function hasImages(value: unknown): value is string[] {
+  return (
+    Array.isArray(value) &&
+    value.some((image) => typeof image === 'string' && image.trim().length > 0)
+  );
 }
