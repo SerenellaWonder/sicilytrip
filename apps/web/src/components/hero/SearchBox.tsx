@@ -242,9 +242,15 @@ export default function SearchBox({ initialValues }: SearchBoxProps) {
         }),
       });
 
-      if (response.status === "FAILED") {
+      if (
+        response.status === "FAILED" &&
+        response.results.length === 0 &&
+        !response.timeout
+      ) {
         throw new Error(
-          "La ricerca non è stata completata. Riprova tra qualche istante.",
+          isItalian
+            ? "Il fornitore non ha potuto completare la ricerca. Riprova tra qualche istante."
+            : "The provider could not complete the search. Please try again shortly.",
         );
       }
 

@@ -185,7 +185,12 @@ export class SearchPollingService {
          * avere almeno quel numero di risultati.
          */
 
-        const resultsCompleted = total > 0 && hotels.length >= total;
+        /*
+         * TotFound=0 è un risultato valido quando il provider ha concluso
+         * tutte le elaborazioni: significa semplicemente che per quei
+         * criteri non esistono disponibilità.
+         */
+        const resultsCompleted = total === 0 || hotels.length >= total;
 
         const completed = providerCompleted && resultsCompleted;
 
