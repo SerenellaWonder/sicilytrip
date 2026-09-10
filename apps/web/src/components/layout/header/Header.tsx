@@ -124,7 +124,7 @@ export default function Header() {
 
           {/* DESKTOP ACTION */}
 
-          <div className="hidden items-center gap-3 lg:flex">
+          <div className="hidden items-center gap-3 2xl:flex">
             <LanguageSwitcher solidHeader={solidHeader} />
             <HeaderActions scrolled={solidHeader} />
           </div>

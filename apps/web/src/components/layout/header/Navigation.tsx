@@ -57,8 +57,8 @@ export default function Navigation({
         hidden
         items-center
         gap-5
-        lg:flex
-        xl:gap-7
+        2xl:flex
+        2xl:gap-7
       "
     >
       {items.map((item) => {

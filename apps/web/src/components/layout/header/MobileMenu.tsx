@@ -142,7 +142,7 @@ export default function MobileMenu({ solidHeader, pathname }: MobileMenuProps) {
           rounded-full
           transition-all
           duration-300
-          lg:hidden
+          2xl:hidden
 
           ${
             solidHeader
@@ -177,7 +177,7 @@ export default function MobileMenu({ solidHeader, pathname }: MobileMenuProps) {
           backdrop-blur-sm
           transition-all
           duration-300
-          lg:hidden
+          2xl:hidden
 
           ${open ? "visible opacity-100" : "invisible opacity-0"}
         `}
@@ -214,7 +214,7 @@ export default function MobileMenu({ solidHeader, pathname }: MobileMenuProps) {
           transition-transform
           duration-500
           ease-out
-          lg:hidden
+          2xl:hidden
 
           ${open ? "translate-x-0" : "translate-x-full"}
         `}
