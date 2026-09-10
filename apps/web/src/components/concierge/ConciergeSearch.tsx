@@ -1,6 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import {
+  useState,
+  useSyncExternalStore,
+} from "react";
 
 import {
   IconArrowRight,
@@ -120,6 +123,34 @@ const initialSuggestions = [
   fixedSuggestion,
 ];
 
+function createRandomSuggestions() {
+  const shuffled = [...randomSuggestions];
+
+  for (
+    let index = shuffled.length - 1;
+    index > 0;
+    index--
+  ) {
+    const randomIndex = Math.floor(
+      Math.random() * (index + 1)
+    );
+
+    [shuffled[index], shuffled[randomIndex]] = [
+      shuffled[randomIndex],
+      shuffled[index],
+    ];
+  }
+
+  return [
+    ...shuffled.slice(0, 3),
+    fixedSuggestion,
+  ];
+}
+
+function subscribeToHydration() {
+  return () => undefined;
+}
+
 /* ============================================================
    COMPONENT
 ============================================================ */
@@ -129,7 +160,19 @@ export default function ConciergeSearch() {
   const isEnglish = language === "en";
   const [query, setQuery] = useState("");
 
-  const suggestions = initialSuggestions;
+  const [randomizedSuggestions] = useState(
+    createRandomSuggestions
+  );
+
+  const isHydrated = useSyncExternalStore(
+    subscribeToHydration,
+    () => true,
+    () => false
+  );
+
+  const suggestions = isHydrated
+    ? randomizedSuggestions
+    : initialSuggestions;
 
   const { openConcierge } = useConcierge();
 

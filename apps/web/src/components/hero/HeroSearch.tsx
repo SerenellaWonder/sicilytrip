@@ -20,8 +20,10 @@ export default function HeroSearch() {
 
   return (
     <div
+      id="accommodation-search"
       className="
         mx-auto
+        scroll-mt-[110px]
         w-full
         max-w-[1380px]
       "
@@ -111,7 +113,9 @@ export default function HeroSearch() {
         >
           <Building2 size={18} className="shrink-0" />
           <span>
-            <span className="block">{isItalian ? "Cerca hotel" : "Search hotels"}</span>
+            <span className="block">
+              {isItalian ? "Ricerca strutture ricettive" : "Search accommodation"}
+            </span>
             <span className="mt-0.5 hidden text-[10px] font-normal opacity-70 sm:block">
               {isItalian ? "Sai già dove andare?" : "Know where to go?"}
             </span>

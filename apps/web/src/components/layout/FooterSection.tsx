@@ -18,6 +18,11 @@ import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 const menu = [
   {
+    label: "Home",
+    labelEn: "Home",
+    href: "/",
+  },
+  {
     label: "Destinazioni",
     labelEn: "Destinations",
     href: "/destinazioni",
@@ -25,7 +30,7 @@ const menu = [
   {
     label: "Hotel",
     labelEn: "Hotels",
-    href: "/#destinations",
+    href: "/#accommodation-search",
   },
   {
     label: "Esperienze",

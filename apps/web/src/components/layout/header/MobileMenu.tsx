@@ -10,6 +10,11 @@ import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 const items = [
   {
+    label: { it: "Hotel", en: "Hotels" },
+    href: "/#accommodation-search",
+    pathname: "/hotel",
+  },
+  {
     label: { it: "Destinazioni", en: "Destinations" },
     href: "/destinazioni",
     pathname: "/destinazioni",

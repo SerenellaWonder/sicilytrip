@@ -4,6 +4,11 @@ import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 const items = [
   {
+    label: { it: "Hotel", en: "Hotels" },
+    href: "/#accommodation-search",
+    pathname: "/hotel",
+  },
+  {
     label: { it: "Destinazioni", en: "Destinations" },
     href: "/destinazioni",
     pathname: "/destinazioni",
@@ -51,9 +56,9 @@ export default function Navigation({
       className="
         hidden
         items-center
-        gap-8
+        gap-5
         lg:flex
-        xl:gap-10
+        xl:gap-7
       "
     >
       {items.map((item) => {

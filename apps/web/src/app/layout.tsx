@@ -5,6 +5,7 @@ import ConciergeProvider from "@/components/concierge/ConciergeProvider";
 import LanguageProvider from "@/components/i18n/LanguageProvider";
 import CookieConsentBanner from "@/components/cookies/CookieConsentBanner";
 import CookieConsentProvider from "@/components/cookies/CookieConsentProvider";
+import ScrollToTop from "@/components/layout/ScrollToTop";
 import { SITE_URL } from "@/lib/site";
 
 import "./globals.css";
@@ -76,6 +77,7 @@ export default function RootLayout({
       >
         <LanguageProvider>
           <CookieConsentProvider>
+            <ScrollToTop />
             <ConciergeProvider>{children}</ConciergeProvider>
             <CookieConsentBanner />
           </CookieConsentProvider>
