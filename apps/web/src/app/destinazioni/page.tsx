@@ -6,6 +6,7 @@ import DestinationsMap from "@/components/destinations/page/DestinationsMap";
 import TravelMood from "@/components/destinations/page/TravelMood";
 
 import FooterSection from "@/components/layout/FooterSection";
+import AccommodationSearchSection from "@/components/hotels/AccommodationSearchSection";
 
 export const metadata: Metadata = {
   title: "Destinazioni",
@@ -27,6 +28,8 @@ export default function DestinationsPage() {
         <DestinationsMap />
 
         <TravelMood />
+
+        <AccommodationSearchSection />
 
         <FooterSection />
       </main>

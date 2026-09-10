@@ -6,6 +6,7 @@ import JournalThemes from "@/components/journal/page/JournalThemes";
 import JournalEvents from "@/components/journal/page/JournalEvents";
 
 import FooterSection from "@/components/layout/FooterSection";
+import AccommodationSearchSection from "@/components/hotels/AccommodationSearchSection";
 
 export const metadata: Metadata = {
   title: "Journal",
@@ -24,6 +25,8 @@ export default function JournalPage() {
         <JournalStories />
         <JournalEvents />
         <JournalThemes />
+
+        <AccommodationSearchSection />
 
         <FooterSection />
       </main>

@@ -7,6 +7,7 @@ import FooterSection from "@/components/layout/FooterSection";
 import Header from "@/components/layout/header/Header";
 import { useLanguage } from "@/components/i18n/LanguageProvider";
 import type { DestinationCatalogItem } from "@/data/destinations";
+import AccommodationSearchSection from "@/components/hotels/AccommodationSearchSection";
 
 export default function DestinationDetailPage({
   destination,
@@ -76,6 +77,7 @@ export default function DestinationDetailPage({
           </div>
         </section>
       </main>
+      <AccommodationSearchSection />
       <FooterSection />
     </>
   );

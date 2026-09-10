@@ -5,6 +5,7 @@ import FaqIntro from "@/components/faq/FaqIntro";
 import FooterSection from "@/components/layout/FooterSection";
 import Header from "@/components/layout/header";
 import { faqSections } from "@/content/faq";
+import AccommodationSearchSection from "@/components/hotels/AccommodationSearchSection";
 
 export const metadata: Metadata = {
   title: "Domande frequenti",
@@ -28,6 +29,8 @@ export default function FaqPage() {
             <FaqExplorer sections={faqSections} />
           </div>
         </section>
+
+        <AccommodationSearchSection />
 
         <FooterSection />
       </main>

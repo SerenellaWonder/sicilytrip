@@ -5,6 +5,7 @@ import ExperiencesExplorer from "@/components/experiences/page/ExperiencesExplor
 import TailoredExperience from "@/components/experiences/page/TailoredExperience";
 
 import FooterSection from "@/components/layout/FooterSection";
+import AccommodationSearchSection from "@/components/hotels/AccommodationSearchSection";
 
 export const metadata: Metadata = {
   title: "Esperienze",
@@ -24,6 +25,8 @@ export default function ExperiencesPage() {
         <ExperiencesExplorer />
 
         <TailoredExperience />
+
+        <AccommodationSearchSection />
 
         <FooterSection />
       </main>

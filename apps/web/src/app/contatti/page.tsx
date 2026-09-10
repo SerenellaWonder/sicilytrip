@@ -5,6 +5,7 @@ import ContactIntro from "@/components/contact/ContactIntro";
 import ContactMap from "@/components/contact/ContactMap";
 import FooterSection from "@/components/layout/FooterSection";
 import Header from "@/components/layout/header";
+import AccommodationSearchSection from "@/components/hotels/AccommodationSearchSection";
 
 export const metadata: Metadata = {
   title: "Contatti",
@@ -23,6 +24,7 @@ export default function ContactPage() {
           <ContactForm />
         </section>
         <ContactMap />
+        <AccommodationSearchSection />
         <FooterSection />
       </main>
     </>

@@ -8,6 +8,7 @@ import Header from "@/components/layout/header/Header";
 import { useConcierge } from "@/components/concierge/ConciergeProvider";
 import { useLanguage } from "@/components/i18n/LanguageProvider";
 import type { ExperienceCatalogItem } from "@/data/experiences";
+import AccommodationSearchSection from "@/components/hotels/AccommodationSearchSection";
 
 export default function ExperienceDetailPage({
   experience,
@@ -56,6 +57,7 @@ export default function ExperienceDetailPage({
           </button>
         </section>
       </main>
+      <AccommodationSearchSection />
       <FooterSection />
     </>
   );

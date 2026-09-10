@@ -260,6 +260,8 @@ export default function JournalStories() {
 
             <Link
               href="/journal/taormina-oltre-la-cartolina"
+              target="_blank"
+              rel="noopener noreferrer"
               className="
                 group
                 mt-9
@@ -316,6 +318,8 @@ export default function JournalStories() {
 
           <Link
             href="/journal/una-tavola-mille-sicilie"
+            target="_blank"
+            rel="noopener noreferrer"
             className="group block"
           >
             <article>
@@ -417,6 +421,8 @@ export default function JournalStories() {
 
           <Link
             href="/journal/eolie-mare-incontra-fuoco"
+            target="_blank"
+            rel="noopener noreferrer"
             className="group block lg:mt-24"
           >
             <article>

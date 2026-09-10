@@ -6,6 +6,7 @@ import AboutApproach from "@/components/about/page/AboutApproach";
 import AboutManifesto from "@/components/about/page/AboutManifesto";
 
 import FooterSection from "@/components/layout/FooterSection";
+import AccommodationSearchSection from "@/components/hotels/AccommodationSearchSection";
 
 export const metadata: Metadata = {
   title: "Chi siamo",
@@ -24,6 +25,7 @@ export default function AboutPage() {
         <AboutStory />
         <AboutApproach />
         <AboutManifesto />
+        <AccommodationSearchSection />
 
         <FooterSection />
       </main>
