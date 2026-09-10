@@ -1,6 +1,7 @@
 "use client";
 
 import { IconArrowRight } from "@tabler/icons-react";
+import Link from "next/link";
 
 import { useLanguage } from "@/components/i18n/LanguageProvider";
 
@@ -94,8 +95,8 @@ export default function HeroContent() {
 
         {/* CTA */}
 
-        <button
-          type="button"
+        <Link
+          href="/destinazioni"
           className="
             group
             mt-6
@@ -130,7 +131,7 @@ export default function HeroContent() {
               group-hover:translate-x-1
             "
           />
-        </button>
+        </Link>
       </div>
     </div>
   );

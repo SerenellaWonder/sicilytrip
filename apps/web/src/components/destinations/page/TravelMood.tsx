@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 
 import {
   IconArrowUpRight,
@@ -13,6 +12,7 @@ import {
   IconSparkles,
 } from "@tabler/icons-react";
 import { useLanguage } from "@/components/i18n/LanguageProvider";
+import { useConcierge } from "@/components/concierge/ConciergeProvider";
 
 type Mood = {
   id: string;
@@ -123,6 +123,7 @@ const moods: Mood[] = [
 
 export default function TravelMood() {
   const { language } = useLanguage();
+  const { openConcierge } = useConcierge();
   const isEnglish = language === "en";
   const [activeId, setActiveId] =
     useState<string>("mare");
@@ -759,8 +760,9 @@ export default function TravelMood() {
             </div>
           </div>
 
-          <Link
-            href="/concierge"
+          <button
+            type="button"
+            onClick={() => openConcierge(isEnglish ? "Help me create my ideal journey in Sicily" : "Aiutami a creare il mio viaggio ideale in Sicilia")}
             className="
               group
               mt-7
@@ -795,7 +797,7 @@ export default function TravelMood() {
                 group-hover:-translate-y-0.5
               "
             />
-          </Link>
+          </button>
         </div>
       </div>
 

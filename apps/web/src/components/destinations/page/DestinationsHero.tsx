@@ -540,7 +540,7 @@ export default function DestinationsHero() {
                 absolute
 
                 -bottom-7
-                -left-5
+                -right-5
 
                 hidden
 
@@ -557,7 +557,7 @@ export default function DestinationsHero() {
                 shadow-[0_22px_55px_rgba(13,35,64,0.14)]
 
                 lg:block
-                xl:-left-10
+                xl:-right-10
               "
             >
               <div

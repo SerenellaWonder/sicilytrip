@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 
 import {
   IconArrowRight,
@@ -258,8 +259,8 @@ export default function FeaturedExperiences() {
               DESKTOP CTA
           ================================================= */}
 
-          <button
-            type="button"
+          <Link
+            href="/esperienze"
             className="
               group
               inline-flex
@@ -305,7 +306,7 @@ export default function FeaturedExperiences() {
                 group-hover:translate-x-1
               "
             />
-          </button>
+          </Link>
         </div>
       </div>
 

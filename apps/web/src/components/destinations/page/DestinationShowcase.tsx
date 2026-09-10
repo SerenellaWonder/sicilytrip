@@ -68,6 +68,7 @@ export default function DestinationShowcase() {
 
   return (
     <section
+      id="explore-destinations"
       className="
         relative
         overflow-hidden

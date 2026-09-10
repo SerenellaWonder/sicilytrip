@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 
 import {
   IconArrowRight,
@@ -230,8 +231,8 @@ export default function FeaturedDestinations() {
                 : "Dal fascino senza tempo di Taormina alle atmosfere mediterranee di Palermo, fino alla forza dell’Etna e alla luce di Siracusa. Scegli da dove iniziare il tuo viaggio."}
             </p>
 
-            <button
-              type="button"
+            <Link
+              href="/destinazioni"
               className="
                 group
                 mt-4
@@ -259,7 +260,7 @@ export default function FeaturedDestinations() {
                   group-hover:translate-x-1
                 "
               />
-            </button>
+            </Link>
           </div>
         </div>
 

@@ -126,7 +126,7 @@ const destinations: Omit<DestinationCatalogItem, "number">[] = [
   {
     id: "san-vito-lo-capo",
     name: "San Vito Lo Capo",
-    area: "Golfo di Castellammare",
+    area: "San Vito Lo Capo",
     macroArea: "Sicilia Occidentale",
     province: "Trapani",
     description:
