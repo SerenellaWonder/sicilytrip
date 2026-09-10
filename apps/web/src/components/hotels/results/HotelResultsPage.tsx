@@ -2,6 +2,7 @@
 
 import {
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import Link from "next/link";
@@ -11,6 +12,7 @@ import {
   Loader2,
   MapPin,
   SearchX,
+  SlidersHorizontal,
   Star,
 } from "lucide-react";
 
@@ -71,6 +73,11 @@ export default function HotelResultsPage({
   const [error, setError] =
     useState("");
 
+  const [sortBy, setSortBy] = useState("price-asc");
+  const [minStars, setMinStars] = useState(0);
+  const [freeCancellationOnly, setFreeCancellationOnly] = useState(false);
+  const [nameQuery, setNameQuery] = useState("");
+
   useEffect(() => {
     let active = true;
 
@@ -119,6 +126,25 @@ export default function HotelResultsPage({
       active = false;
     };
   }, [isEnglish, searchId]);
+
+  const allHotels = useMemo(() => data?.hotels ?? [], [data]);
+
+  const hotels = useMemo(() => {
+    const normalizedQuery = nameQuery.trim().toLowerCase();
+    const filtered = allHotels.filter((hotel) => {
+      if ((hotel.stars ?? 0) < minStars) return false;
+      if (freeCancellationOnly && hotel.policy !== "FREE") return false;
+      if (normalizedQuery && !hotel.name.toLowerCase().includes(normalizedQuery)) return false;
+      return true;
+    });
+
+    return [...filtered].sort((first, second) => {
+      if (sortBy === "price-desc") return (second.price ?? -1) - (first.price ?? -1);
+      if (sortBy === "stars-desc") return (second.stars ?? 0) - (first.stars ?? 0);
+      if (sortBy === "name-asc") return first.name.localeCompare(second.name);
+      return (first.price ?? Number.POSITIVE_INFINITY) - (second.price ?? Number.POSITIVE_INFINITY);
+    });
+  }, [allHotels, freeCancellationOnly, minStars, nameQuery, sortBy]);
 
   /*
    * LOADING
@@ -247,16 +273,13 @@ export default function HotelResultsPage({
     );
   }
 
-  const hotels =
-    data?.hotels ?? [];
-
   const destination =
-    hotels.find(
+    allHotels.find(
       hotel =>
         hotel.zone?.toLowerCase() ===
         "taormina"
     )?.zone ??
-    hotels[0]?.zone ??
+    allHotels[0]?.zone ??
     (isEnglish ? "Sicily" : "Sicilia");
 
   return (
@@ -330,7 +353,7 @@ export default function HotelResultsPage({
                 text-[#F58220]
               "
             >
-              SicilyTrip Hotels
+              {isEnglish ? "SicilyTrip Stays" : "Strutture SicilyTrip"}
             </span>
 
             <h1
@@ -358,34 +381,53 @@ export default function HotelResultsPage({
                 text-slate-500
               "
             >
-              {hotels.length === 1
+              {allHotels.length === 1
                 ? isEnglish
                   ? "1 property available"
                   : "1 struttura disponibile"
                 : isEnglish
-                  ? `${hotels.length} properties available`
-                  : `${hotels.length} strutture disponibili`}
+                  ? `${allHotels.length} properties available`
+                  : `${allHotels.length} strutture disponibili`}
             </p>
           </div>
 
-          <div
-            className="
-              rounded-full
-              border
-              border-[#0D2340]/10
-              bg-white
-              px-5
-              py-3
-              text-[10px]
-              font-semibold
-              uppercase
-              tracking-[0.14em]
-              text-[#0D2340]/50
-            "
-          >
-            {isEnglish ? "Sorted by price" : "Ordinati per prezzo"}
-          </div>
         </div>
+
+        <section className="mt-8 rounded-[24px] border border-[#0D2340]/[0.07] bg-white p-5 shadow-[0_10px_35px_rgba(13,35,64,0.04)]" aria-label={isEnglish ? "Filter properties" : "Filtra le strutture"}>
+          <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-[#0D2340]">
+            <SlidersHorizontal size={17} className="text-[#F58220]" />
+            {isEnglish ? "Filter and sort" : "Filtra e ordina"}
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <label className="grid gap-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#0D2340]/45">
+              {isEnglish ? "Property name" : "Nome struttura"}
+              <input value={nameQuery} onChange={(event) => setNameQuery(event.target.value)} placeholder={isEnglish ? "Search by name" : "Cerca per nome"} className="h-12 rounded-xl border border-[#0D2340]/10 px-4 text-sm font-normal normal-case tracking-normal text-[#0D2340] outline-none focus:border-[#F58220]" />
+            </label>
+            <label className="grid gap-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#0D2340]/45">
+              {isEnglish ? "Minimum category" : "Categoria minima"}
+              <select value={minStars} onChange={(event) => setMinStars(Number(event.target.value))} className="h-12 rounded-xl border border-[#0D2340]/10 bg-white px-4 text-sm font-normal normal-case tracking-normal text-[#0D2340] outline-none focus:border-[#F58220]">
+                <option value={0}>{isEnglish ? "All categories" : "Tutte le categorie"}</option>
+                {[3, 4, 5].map((stars) => <option key={stars} value={stars}>{stars} {isEnglish ? "stars and above" : "stelle e oltre"}</option>)}
+              </select>
+            </label>
+            <label className="grid gap-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#0D2340]/45">
+              {isEnglish ? "Sort by" : "Ordina per"}
+              <select value={sortBy} onChange={(event) => setSortBy(event.target.value)} className="h-12 rounded-xl border border-[#0D2340]/10 bg-white px-4 text-sm font-normal normal-case tracking-normal text-[#0D2340] outline-none focus:border-[#F58220]">
+                <option value="price-asc">{isEnglish ? "Lowest price" : "Prezzo più basso"}</option>
+                <option value="price-desc">{isEnglish ? "Highest price" : "Prezzo più alto"}</option>
+                <option value="stars-desc">{isEnglish ? "Highest category" : "Categoria più alta"}</option>
+                <option value="name-asc">{isEnglish ? "Name A–Z" : "Nome A–Z"}</option>
+              </select>
+            </label>
+            <label className="flex h-[70px] items-end gap-3 rounded-xl border border-[#0D2340]/10 px-4 pb-3.5 text-sm font-medium text-[#0D2340]">
+              <input type="checkbox" checked={freeCancellationOnly} onChange={(event) => setFreeCancellationOnly(event.target.checked)} className="h-4 w-4 accent-[#F58220]" />
+              {isEnglish ? "Free cancellation" : "Cancellazione gratuita"}
+            </label>
+          </div>
+          <p className="mt-4 text-xs text-[#0D2340]/45">
+            {isEnglish ? `${hotels.length} of ${allHotels.length} properties shown` : `${hotels.length} strutture mostrate su ${allHotels.length}`}
+          </p>
+        </section>
 
         {/* EMPTY */}
 
@@ -645,7 +687,7 @@ function HotelResultCard({
                   >
                     {isEnglish ? "Room:" : "Camera:"}
                   </span>{" "}
-                  {hotel.room}
+                  {localizeProviderText(hotel.room, isEnglish)}
                 </p>
               )}
 
@@ -659,7 +701,7 @@ function HotelResultCard({
                   >
                     {isEnglish ? "Board:" : "Trattamento:"}
                   </span>{" "}
-                  {hotel.board}
+                  {localizeProviderText(hotel.board, isEnglish)}
                 </p>
               )}
             </div>
@@ -832,4 +874,28 @@ function formatPrice(
       maximumFractionDigits: 0,
     }
   ).format(price);
+}
+
+function localizeProviderText(value: string, isEnglish: boolean) {
+  if (isEnglish) return value;
+
+  const translations: Array<[RegExp, string]> = [
+    [/\bDouble Room\b/gi, "Camera doppia"],
+    [/\bTwin Room\b/gi, "Camera con letti singoli"],
+    [/\bTriple Room\b/gi, "Camera tripla"],
+    [/\bSingle Room\b/gi, "Camera singola"],
+    [/\bFamily Room\b/gi, "Camera familiare"],
+    [/\bDeluxe Room\b/gi, "Camera deluxe"],
+    [/\bStandard Room\b/gi, "Camera standard"],
+    [/\bShared Bathroom\b/gi, "bagno condiviso"],
+    [/\bPrivate Bathroom\b/gi, "bagno privato"],
+    [/\bFree WiFi\b/gi, "Wi-Fi gratuito"],
+    [/\bBreakfast included\b/gi, "colazione inclusa"],
+    [/\bRoom only\b/gi, "solo pernottamento"],
+  ];
+
+  return translations.reduce(
+    (translated, [pattern, replacement]) => translated.replace(pattern, replacement),
+    value,
+  );
 }
