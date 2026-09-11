@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
+import Link from "next/link";
 
 import {
   IconArrowUp,
@@ -30,6 +31,7 @@ type Message = {
   id: number;
   role: "user" | "assistant";
   text: string;
+  actions?: Array<{ label: string; href: string }>;
 };
 
 type QuickAction = {
@@ -182,10 +184,16 @@ export default function ConciergePanel() {
     */
 
     window.setTimeout(() => {
+      const response = createConciergeResponse(
+        [...messages.filter((item) => item.role === "user").map((item) => item.text), cleanText].join(" "),
+        cleanText,
+        isEnglish,
+      );
       const assistantMessage: Message = {
         id: Date.now() + 1,
         role: "assistant",
-        text: createDemoResponse(cleanText, isEnglish),
+        text: response.text,
+        actions: response.actions,
       };
 
       setMessages((current) => [
@@ -1031,6 +1039,19 @@ function ChatMessage({
         "
       >
         {message.text}
+        {message.actions && message.actions.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2 border-t border-[#0D2340]/[0.07] pt-3">
+            {message.actions.map((action) => (
+              <Link
+                key={`${action.href}-${action.label}`}
+                href={action.href}
+                className="rounded-full bg-[#F58220]/10 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.08em] text-[#D9680D] transition hover:bg-[#F58220] hover:text-white"
+              >
+                {action.label}
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
 
     </div>
@@ -1134,13 +1155,90 @@ function FollowUpButton({
    Successivamente verrà sostituito dal backend AI/API.
 ============================================================ */
 
-function createDemoResponse(
-  query: string,
+function createConciergeResponse(
+  conversation: string,
+  latestMessage: string,
   isEnglish: boolean,
-): string {
-  const text = query.toLowerCase();
+): { text: string; actions?: Array<{ label: string; href: string }> } {
+  const text = conversation.toLowerCase();
+  const latest = latestMessage.toLowerCase();
 
-  /* HOTEL */
+  const destinations = [
+    ["taormina", "taormina"], ["palermo", "palermo"], ["cefalu", "cefalu"],
+    ["trapani", "trapani"], ["marsala", "marsala"], ["erice", "erice"],
+    ["egadi", "isole-egadi"], ["catania", "catania"], ["etna", "etna"],
+    ["siracusa", "siracusa"], ["ortigia", "siracusa"], ["noto", "noto"],
+    ["ragusa", "ragusa"], ["agrigento", "agrigento"], ["eolie", "isole-eolie"],
+  ] as const;
+  const destination = destinations.find(([name]) => text.includes(name));
+  const hasPeriod = /\b(gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre|january|february|march|april|may|june|july|august|september|october|november|december|20\d{2})\b/i.test(text);
+  const guestsMatch = text.match(/\b(\d+)\s*(persone|persona|ospiti|adulti|people|person|guests|adults)\b/i);
+  const nightsMatch = text.match(/\b(\d+)\s*(notti|notte|giorni|giorno|nights|night|days|day)\b/i);
+  const interests = [
+    ["mare", "sea"], ["spiaggia", "beach"], ["vino", "wine"],
+    ["wine", "wine"], ["cucina", "food"], ["food", "food"],
+    ["cultura", "culture"], ["arte", "art"], ["natura", "nature"],
+    ["trekking", "trekking"], ["benessere", "wellness"], ["relax", "relax"],
+  ].filter(([keyword]) => text.includes(keyword)).map(([, value]) => value);
+
+  if (!destination) {
+    return {
+      text: isEnglish
+        ? "Let’s build your trip step by step. Which part of Sicily inspires you most? You can name a destination or choose between western Sicily, eastern Sicily and the central-southern coast."
+        : "Costruiamo il viaggio un passo alla volta. Quale parte della Sicilia ti ispira di più? Puoi indicare una località oppure scegliere tra Sicilia occidentale, orientale e costa centro-meridionale.",
+      actions: [
+        { label: isEnglish ? "Explore destinations" : "Esplora destinazioni", href: "/destinazioni" },
+      ],
+    };
+  }
+
+  if (!hasPeriod) {
+    return {
+      text: isEnglish
+        ? `Excellent choice: ${destination[0]}. When would you like to travel? A month or approximate period is enough.`
+        : `Ottima scelta: ${destination[0]}. In quale mese o periodo vorresti viaggiare? Anche un’indicazione approssimativa va bene.`,
+      actions: [{ label: isEnglish ? "Discover the destination" : "Scopri la destinazione", href: `/destinazioni/${destination[1]}` }],
+    };
+  }
+
+  if (!guestsMatch) {
+    return {
+      text: isEnglish
+        ? "Perfect. How many people will be travelling? Please also tell me if children are included, so the stay can be planned correctly."
+        : "Perfetto. Quante persone viaggeranno? Indicami anche se sono presenti bambini, così il soggiorno potrà essere organizzato correttamente.",
+    };
+  }
+
+  if (interests.length === 0 && !/hotel|albergo|struttura|resort|dimora/i.test(latest)) {
+    return {
+      text: isEnglish
+        ? "What would make this journey special for you: sea and relaxation, food and wine, art and culture, nature or exclusive experiences?"
+        : "Cosa renderebbe speciale questo viaggio per te: mare e relax, gusto e vino, arte e cultura, natura oppure esperienze esclusive?",
+      actions: [{ label: isEnglish ? "Browse experiences" : "Esplora esperienze", href: "/esperienze" }],
+    };
+  }
+
+  const guests = guestsMatch?.[1] ?? "";
+  const duration = nightsMatch?.[1];
+  const interestText = [...new Set(interests)].slice(0, 3).join(", ");
+  const summary = isEnglish
+    ? `${duration ? `${duration} days, ` : ""}${guests} guests in ${destination[0]}${interestText ? `, with a focus on ${interestText}` : ""}.`
+    : `${duration ? `${duration} giorni, ` : ""}${guests} ospiti a ${destination[0]}${interestText ? `, con interesse per ${interestText}` : ""}.`;
+
+  return {
+    text: isEnglish
+      ? `Here is your initial travel profile: ${summary} You can now check accommodation availability, explore suitable experiences or refine the itinerary with another preference.`
+      : `Ecco il tuo primo profilo di viaggio: ${summary} Ora puoi verificare le strutture disponibili, esplorare le esperienze più adatte oppure aggiungere un’altra preferenza per affinare l’itinerario.`,
+    actions: [
+      { label: isEnglish ? "Search properties" : "Cerca strutture", href: "/#accommodation-search" },
+      { label: isEnglish ? "Suitable experiences" : "Esperienze consigliate", href: "/esperienze" },
+      { label: isEnglish ? "Destination guide" : "Guida della destinazione", href: `/destinazioni/${destination[1]}` },
+    ],
+  };
+
+  /* Legacy answers retained below as unreachable documentation until the AI service is connected.
+
+  HOTEL
 
   if (
     text.includes("hotel") ||
@@ -1156,7 +1254,7 @@ function createDemoResponse(
     );
   }
 
-  /* TAORMINA */
+  TAORMINA
 
   if (text.includes("taormina")) {
     if (isEnglish) {
@@ -1168,7 +1266,7 @@ function createDemoResponse(
     );
   }
 
-  /* ETNA */
+  ETNA
 
   if (text.includes("etna")) {
     if (isEnglish) {
@@ -1180,7 +1278,7 @@ function createDemoResponse(
     );
   }
 
-  /* PALERMO */
+  PALERMO
 
   if (text.includes("palermo")) {
     if (isEnglish) {
@@ -1192,7 +1290,7 @@ function createDemoResponse(
     );
   }
 
-  /* SIRACUSA */
+  SIRACUSA
 
   if (
     text.includes("siracusa") ||
@@ -1207,7 +1305,7 @@ function createDemoResponse(
     );
   }
 
-  /* EXPERIENCE */
+  EXPERIENCE
 
   if (
     text.includes("esperienz") ||
@@ -1225,7 +1323,7 @@ function createDemoResponse(
     );
   }
 
-  /* PACKAGE */
+  PACKAGE
 
   if (
     text.includes("pacchetto") ||
@@ -1241,7 +1339,7 @@ function createDemoResponse(
     );
   }
 
-  /* OFFER */
+  OFFER
 
   if (
     text.includes("offert") ||
@@ -1256,7 +1354,7 @@ function createDemoResponse(
     );
   }
 
-  /* DEFAULT */
+  DEFAULT
 
   if (isEnglish) {
     return "Of course, I can help. Tell me a little more about the journey you imagine: destination, travel period, number of guests or the kind of experience you would like. From there, we can build the most suitable solution together.";
@@ -1265,5 +1363,5 @@ function createDemoResponse(
   return (
     "Certo, posso aiutarti. Raccontami qualcosa in più sul viaggio che immagini: destinazione, periodo, numero di ospiti oppure il tipo di esperienza che vorresti vivere. " +
     "Da lì possiamo costruire insieme la soluzione più adatta."
-  );
+  ); */
 }
