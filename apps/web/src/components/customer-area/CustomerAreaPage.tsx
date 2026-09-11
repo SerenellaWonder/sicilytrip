@@ -1,16 +1,20 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import Link from "next/link";
 import {
   ArrowLeft,
   CheckCircle2,
+  Heart,
   KeyRound,
   Loader2,
   LogOut,
   RotateCcw,
+  Trash2,
 } from "lucide-react";
 
 import { apiFetch } from "@/lib/api";
+import { useWishlist } from "@/lib/wishlist";
 import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 type Booking = {
@@ -37,6 +41,7 @@ export default function CustomerAreaPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [resendCooldown, setResendCooldown] = useState(0);
+  const wishlist = useWishlist();
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -164,7 +169,7 @@ export default function CustomerAreaPage() {
         <div className="mt-3 flex items-start justify-between gap-5">
           <div>
             <h1 className="text-4xl font-bold tracking-[-0.04em] text-[#0D2340] sm:text-5xl">
-              {isEnglish ? "Your bookings" : "Le tue prenotazioni"}
+              {isEnglish ? "Your SicilyTrip area" : "La tua area SicilyTrip"}
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-500">
               {isEnglish ? "Sign in with the temporary code sent to the same email used for the booking." : "Accedi con il codice temporaneo inviato alla stessa email usata per la prenotazione."}
@@ -256,6 +261,72 @@ export default function CustomerAreaPage() {
             )}
           </section>
         )}
+
+        <section className="mt-14 border-t border-[#0D2340]/10 pt-10">
+          <div className="flex items-center gap-3">
+            <span className="grid h-11 w-11 place-items-center rounded-full bg-[#F58220]/10 text-[#F58220]">
+              <Heart size={19} />
+            </span>
+            <div>
+              <h2 className="text-2xl font-bold tracking-[-0.03em] text-[#0D2340]">
+                {isEnglish ? "Your favourites" : "I tuoi preferiti"}
+              </h2>
+              <p className="mt-1 text-sm text-slate-500">
+                {isEnglish ? "Properties saved while browsing." : "Le strutture che hai salvato durante la ricerca."}
+              </p>
+            </div>
+          </div>
+
+          {wishlist.items.length === 0 ? (
+            <div className="mt-6 rounded-[26px] bg-white p-8 text-sm text-slate-500">
+              {isEnglish
+                ? "You have not saved any properties yet. Use the heart in the search results to create your selection."
+                : "Non hai ancora salvato strutture. Usa il cuore nei risultati di ricerca per creare la tua selezione."}
+            </div>
+          ) : (
+            <div className="mt-6 grid gap-5 sm:grid-cols-2">
+              {wishlist.items.map((hotel) => (
+                <article key={hotel.hotelId} className="overflow-hidden rounded-[26px] bg-white shadow-[0_12px_40px_rgba(13,35,64,0.05)]">
+                  <div className="relative h-40 bg-[#0D2340]/5">
+                    {hotel.image && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={hotel.image} alt="" className="h-full w-full object-cover" />
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => wishlist.remove(hotel.hotelId)}
+                      aria-label={isEnglish ? `Remove ${hotel.name}` : `Rimuovi ${hotel.name}`}
+                      className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-white text-[#0D2340]/55 shadow-md transition hover:text-red-600"
+                    >
+                      <Trash2 size={17} />
+                    </button>
+                  </div>
+                  <div className="p-6">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#F58220]">
+                      {hotel.zone || (isEnglish ? "Sicily" : "Sicilia")}
+                    </p>
+                    <h3 className="mt-2 text-xl font-bold text-[#0D2340]">{hotel.name}</h3>
+                    <div className="mt-3 flex items-center justify-between gap-4 text-sm text-slate-500">
+                      <span>{hotel.stars ? `${hotel.stars} ${isEnglish ? "stars" : "stelle"}` : ""}</span>
+                      {hotel.price != null && (
+                        <strong className="text-[#0D2340]">
+                          {new Intl.NumberFormat(isEnglish ? "en-GB" : "it-IT", {
+                            style: "currency",
+                            currency: hotel.currency ?? "EUR",
+                            maximumFractionDigits: 0,
+                          }).format(hotel.price)}
+                        </strong>
+                      )}
+                    </div>
+                    <Link href="/hotel" className="mt-5 inline-flex h-11 items-center rounded-full bg-[#0D2340] px-6 text-[10px] font-bold uppercase tracking-[0.12em] text-white">
+                      {isEnglish ? "Check current availability" : "Verifica disponibilità attuale"}
+                    </Link>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
       </div>
     </main>
   );

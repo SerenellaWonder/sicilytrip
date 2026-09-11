@@ -809,6 +809,18 @@ export default function FooterSection() {
             </div>
           </div>
 
+          {/* COMPANY DETAILS */}
+
+          <div className="border-t border-white/10 py-7 text-center text-[11px] leading-6 text-white/45 md:text-left">
+            <p className="font-semibold text-white/65">Euphoria Soc. Coop.</p>
+            <p>C/da Berbarello 623/C · P. IVA 02605430814</p>
+            <div className="mt-1 flex flex-wrap justify-center gap-x-5 gap-y-1 md:justify-start">
+              <a href="tel:+393281468934" className="transition-colors hover:text-[#F58220]">Tel. 328 1468934</a>
+              <a href="mailto:info@euphoriasolutions.it" className="transition-colors hover:text-[#F58220]">info@euphoriasolutions.it</a>
+              <a href="https://www.euphoriasolutions.it" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-[#F58220]">www.euphoriasolutions.it</a>
+            </div>
+          </div>
+
           {/* COPYRIGHT */}
 
           <div
@@ -838,7 +850,9 @@ export default function FooterSection() {
               md:text-left
             "
           >
-            <p>© 2026 SicilyTrip · Tutti i diritti riservati.</p>
+            <p>
+              © 2026 SicilyTrip · {isEnglish ? "All rights reserved." : "Tutti i diritti riservati."}
+            </p>
 
             <div
               className="

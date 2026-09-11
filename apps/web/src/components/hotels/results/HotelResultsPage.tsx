@@ -4,19 +4,24 @@ import {
   useEffect,
   useMemo,
   useState,
+  type ReactNode,
 } from "react";
 import Link from "next/link";
 
 import {
   ArrowLeft,
+  Heart,
   Loader2,
   MapPin,
+  Scale,
   SearchX,
   SlidersHorizontal,
   Star,
+  X,
 } from "lucide-react";
 
 import { apiFetch } from "@/lib/api";
+import { useWishlist } from "@/lib/wishlist";
 import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 import SearchExpiryNotice from "../SearchExpiryNotice";
@@ -77,6 +82,9 @@ export default function HotelResultsPage({
   const [minStars, setMinStars] = useState(0);
   const [freeCancellationOnly, setFreeCancellationOnly] = useState(false);
   const [nameQuery, setNameQuery] = useState("");
+  const [comparisonIds, setComparisonIds] = useState<string[]>([]);
+  const [showComparison, setShowComparison] = useState(false);
+  const wishlist = useWishlist();
 
   useEffect(() => {
     let active = true;
@@ -145,6 +153,21 @@ export default function HotelResultsPage({
       return (first.price ?? Number.POSITIVE_INFINITY) - (second.price ?? Number.POSITIVE_INFINITY);
     });
   }, [allHotels, freeCancellationOnly, minStars, nameQuery, sortBy]);
+
+  const comparisonHotels = useMemo(
+    () => comparisonIds
+      .map((id) => allHotels.find((hotel) => hotel.hotelId === id))
+      .filter((hotel): hotel is Hotel => Boolean(hotel)),
+    [allHotels, comparisonIds],
+  );
+
+  function toggleComparison(hotelId: string) {
+    setComparisonIds((current) => {
+      if (current.includes(hotelId)) return current.filter((id) => id !== hotelId);
+      if (current.length >= 3) return current;
+      return [...current, hotelId];
+    });
+  }
 
   /*
    * LOADING
@@ -490,12 +513,55 @@ export default function HotelResultsPage({
                   hotel={hotel}
                   searchId={searchId}
                   isEnglish={isEnglish}
+                  compared={comparisonIds.includes(hotel.hotelId)}
+                  comparisonDisabled={comparisonIds.length >= 3 && !comparisonIds.includes(hotel.hotelId)}
+                  onToggleComparison={() => toggleComparison(hotel.hotelId)}
+                  favorite={wishlist.has(hotel.hotelId)}
+                  onToggleFavorite={() => wishlist.toggle({
+                    hotelId: hotel.hotelId,
+                    name: hotel.name,
+                    image: hotel.image,
+                    zone: hotel.zone,
+                    stars: hotel.stars,
+                    price: hotel.price,
+                    currency: hotel.currency,
+                  })}
                 />
               )
             )}
           </div>
         )}
       </div>
+
+      {comparisonHotels.length > 0 && (
+        <div className="fixed inset-x-4 bottom-5 z-40 mx-auto flex max-w-2xl items-center justify-between gap-4 rounded-2xl bg-[#0D2340] px-5 py-4 text-white shadow-[0_20px_60px_rgba(7,24,45,0.35)]">
+          <div>
+            <p className="text-sm font-semibold">
+              {isEnglish ? `${comparisonHotels.length} properties selected` : `${comparisonHotels.length} strutture selezionate`}
+            </p>
+            <p className="mt-0.5 text-xs text-white/55">
+              {isEnglish ? "Select up to three properties" : "Puoi selezionare fino a tre strutture"}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={() => setComparisonIds([])} className="rounded-full px-4 py-2 text-xs font-semibold text-white/60 hover:text-white">
+              {isEnglish ? "Clear" : "Azzera"}
+            </button>
+            <button type="button" onClick={() => setShowComparison(true)} disabled={comparisonHotels.length < 2} className="inline-flex items-center gap-2 rounded-full bg-[#F58220] px-5 py-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-45">
+              <Scale size={16} /> {isEnglish ? "Compare" : "Confronta"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showComparison && (
+        <ComparisonDialog
+          hotels={comparisonHotels}
+          isEnglish={isEnglish}
+          searchId={searchId}
+          onClose={() => setShowComparison(false)}
+        />
+      )}
     </main>
   );
 }
@@ -508,10 +574,20 @@ function HotelResultCard({
   hotel,
   searchId,
   isEnglish,
+  compared,
+  comparisonDisabled,
+  onToggleComparison,
+  favorite,
+  onToggleFavorite,
 }: {
   hotel: Hotel;
   searchId: string;
   isEnglish: boolean;
+  compared: boolean;
+  comparisonDisabled: boolean;
+  onToggleComparison: () => void;
+  favorite: boolean;
+  onToggleFavorite: () => void;
 }) {
   const price =
     formatPrice(
@@ -542,6 +618,18 @@ function HotelResultCard({
         hover:shadow-[0_18px_50px_rgba(13,35,64,0.08)]
       "
     >
+      <div className="relative">
+        <button
+          type="button"
+          onClick={onToggleFavorite}
+          aria-pressed={favorite}
+          aria-label={favorite
+            ? isEnglish ? "Remove from favourites" : "Rimuovi dai preferiti"
+            : isEnglish ? "Save to favourites" : "Salva nei preferiti"}
+          className={`absolute right-4 top-4 z-10 grid h-11 w-11 place-items-center rounded-full bg-white shadow-md transition hover:scale-105 ${favorite ? "text-[#F58220]" : "text-[#0D2340]/55"}`}
+        >
+          <Heart size={19} fill={favorite ? "currentColor" : "none"} />
+        </button>
       <div
         className="
           grid
@@ -831,6 +919,18 @@ function HotelResultCard({
               {isEnglish ? "View availability" : "Vedi disponibilità"}
             </a>
 
+            <button
+              type="button"
+              onClick={onToggleComparison}
+              disabled={comparisonDisabled}
+              className={`mt-2 inline-flex h-10 w-full items-center justify-center gap-2 rounded-full border text-[10px] font-bold uppercase tracking-[0.1em] transition disabled:cursor-not-allowed disabled:opacity-35 ${compared ? "border-[#F58220] bg-[#F58220]/10 text-[#F58220]" : "border-[#0D2340]/10 text-[#0D2340]/55 hover:border-[#F58220] hover:text-[#F58220]"}`}
+            >
+              <Scale size={14} />
+              {compared
+                ? isEnglish ? "Selected" : "Selezionata"
+                : isEnglish ? "Add to comparison" : "Aggiungi al confronto"}
+            </button>
+
             {hotel.supplier && (
               <span
                 className="
@@ -849,7 +949,136 @@ function HotelResultCard({
           </div>
         </div>
       </div>
+      </div>
     </article>
+  );
+}
+
+function ComparisonDialog({
+  hotels,
+  isEnglish,
+  searchId,
+  onClose,
+}: {
+  hotels: Hotel[];
+  isEnglish: boolean;
+  searchId: string;
+  onClose: () => void;
+}) {
+  const unavailable = isEnglish ? "Not available" : "Non disponibile";
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-[#07182D]/70 p-0 backdrop-blur-sm md:items-center md:p-8"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="comparison-title"
+      onMouseDown={(event) => {
+        if (event.currentTarget === event.target) onClose();
+      }}
+    >
+      <div className="max-h-[92vh] w-full max-w-6xl overflow-hidden rounded-t-[28px] bg-[#F7F5F1] shadow-2xl md:rounded-[28px]">
+        <div className="flex items-center justify-between border-b border-[#0D2340]/10 px-5 py-5 md:px-8">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#F58220]">
+              SicilyTrip Selection
+            </p>
+            <h2 id="comparison-title" className="mt-1 text-2xl font-bold tracking-[-0.04em] text-[#0D2340]">
+              {isEnglish ? "Compare properties" : "Confronta le strutture"}
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={isEnglish ? "Close comparison" : "Chiudi confronto"}
+            className="grid h-11 w-11 place-items-center rounded-full border border-[#0D2340]/10 text-[#0D2340] transition hover:border-[#F58220] hover:text-[#F58220]"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="max-h-[calc(92vh-92px)] overflow-auto p-5 md:p-8">
+          <div
+            className="grid min-w-[680px] gap-px overflow-hidden rounded-2xl border border-[#0D2340]/10 bg-[#0D2340]/10"
+            style={{ gridTemplateColumns: `160px repeat(${hotels.length}, minmax(220px, 1fr))` }}
+          >
+            <div className="bg-white p-4" />
+            {hotels.map((hotel) => (
+              <div key={hotel.hotelId} className="bg-white p-4">
+                <p className="line-clamp-2 min-h-12 text-base font-bold leading-6 text-[#0D2340]">
+                  {hotel.name}
+                </p>
+                <Link
+                  href={`/hotel/${encodeURIComponent(hotel.hotelId)}?searchId=${encodeURIComponent(searchId)}`}
+                  className="mt-3 inline-flex text-xs font-bold text-[#F58220] hover:underline"
+                >
+                  {isEnglish ? "View property" : "Vedi struttura"}
+                </Link>
+              </div>
+            ))}
+
+            <ComparisonLabel>{isEnglish ? "Price" : "Prezzo"}</ComparisonLabel>
+            {hotels.map((hotel) => (
+              <ComparisonValue key={`price-${hotel.hotelId}`} emphasized>
+                {formatPrice(hotel.price, hotel.currency, isEnglish ? "en-GB" : "it-IT") ?? unavailable}
+              </ComparisonValue>
+            ))}
+
+            <ComparisonLabel>{isEnglish ? "Category" : "Categoria"}</ComparisonLabel>
+            {hotels.map((hotel) => (
+              <ComparisonValue key={`stars-${hotel.hotelId}`}>
+                {hotel.stars ? `${hotel.stars} ${isEnglish ? "stars" : "stelle"}` : unavailable}
+              </ComparisonValue>
+            ))}
+
+            <ComparisonLabel>{isEnglish ? "Area" : "Zona"}</ComparisonLabel>
+            {hotels.map((hotel) => (
+              <ComparisonValue key={`zone-${hotel.hotelId}`}>{hotel.zone || unavailable}</ComparisonValue>
+            ))}
+
+            <ComparisonLabel>{isEnglish ? "Board" : "Trattamento"}</ComparisonLabel>
+            {hotels.map((hotel) => (
+              <ComparisonValue key={`board-${hotel.hotelId}`}>
+                {hotel.board ? localizeProviderText(hotel.board, isEnglish) : unavailable}
+              </ComparisonValue>
+            ))}
+
+            <ComparisonLabel>{isEnglish ? "Cancellation" : "Cancellazione"}</ComparisonLabel>
+            {hotels.map((hotel) => (
+              <ComparisonValue key={`policy-${hotel.hotelId}`}>
+                {hotel.policy === "FREE"
+                  ? isEnglish ? "Free cancellation" : "Cancellazione gratuita"
+                  : hotel.policy
+                    ? localizeProviderText(hotel.policy, isEnglish)
+                    : unavailable}
+              </ComparisonValue>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ComparisonLabel({ children }: { children: ReactNode }) {
+  return (
+    <div className="bg-[#F4F0E8] p-4 text-[10px] font-bold uppercase tracking-[0.14em] text-[#0D2340]/55">
+      {children}
+    </div>
+  );
+}
+
+function ComparisonValue({
+  children,
+  emphasized = false,
+}: {
+  children: ReactNode;
+  emphasized?: boolean;
+}) {
+  return (
+    <div className={`bg-white p-4 text-sm ${emphasized ? "font-bold text-[#F58220]" : "text-[#0D2340]/75"}`}>
+      {children}
+    </div>
   );
 }
 
