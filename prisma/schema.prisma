@@ -225,12 +225,22 @@ model Package {
 }
 
 model Wishlist {
-  id        String   @id @default(cuid())
-  userId    String
-  hotelId   String
-  createdAt DateTime @default(now())
+  id                String   @id @default(cuid())
+  userId            String?
+  hotelId           String?
+  customerEmailHash String?
+  providerHotelId   String?
+  hotelName         String?
+  image             String?
+  zone              String?
+  stars             Int?
+  price             Decimal? @db.Decimal(10, 2)
+  currency          String?
+  createdAt         DateTime @default(now())
 
   @@unique([userId, hotelId])
+  @@unique([customerEmailHash, providerHotelId])
+  @@index([customerEmailHash, createdAt])
 }
 
 model ApiLog {
@@ -268,7 +278,7 @@ model JournalArticle {
 }
 
 model TourismEvent {
-  id            String   @id @default(cuid())
+  id            String    @id @default(cuid())
   title         String
   titleEn       String?
   description   String?
@@ -278,10 +288,10 @@ model TourismEvent {
   endAt         DateTime?
   image         String?
   externalUrl   String?
-  isFeatured    Boolean  @default(false)
-  isPublished   Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  isFeatured    Boolean   @default(false)
+  isPublished   Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@index([isPublished, startAt])
 }

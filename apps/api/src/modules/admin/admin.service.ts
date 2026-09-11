@@ -440,33 +440,64 @@ export class AdminService {
   }
   async wishlists(auth?: string) {
     this.verify(auth);
-    const [groups, customers] = await Promise.all([
-      this.prisma.wishlist.groupBy({
-        by: ['hotelId'],
-        _count: { id: true },
-        _max: { createdAt: true },
-        orderBy: { _count: { id: 'desc' } },
-        take: 100,
-      }),
-      this.prisma.wishlist.groupBy({ by: ['userId'] }),
-    ]);
+    const items = await this.prisma.wishlist.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 5000,
+    });
+    const customerIds = new Set(
+      items
+        .map((item) => item.customerEmailHash ?? item.userId)
+        .filter(Boolean),
+    );
+    const grouped = new Map<
+      string,
+      {
+        hotelId: string;
+        hotelName?: string;
+        image?: string;
+        saves: number;
+        lastSavedAt: Date;
+      }
+    >();
+    for (const item of items) {
+      const id = item.providerHotelId ?? item.hotelId;
+      if (!id) continue;
+      const current = grouped.get(id);
+      grouped.set(id, {
+        hotelId: id,
+        hotelName: item.hotelName ?? current?.hotelName ?? undefined,
+        image: item.image ?? current?.image ?? undefined,
+        saves: (current?.saves ?? 0) + 1,
+        lastSavedAt: current?.lastSavedAt ?? item.createdAt,
+      });
+    }
+    const groups = [...grouped.values()]
+      .sort((a, b) => b.saves - a.saves)
+      .slice(0, 100);
     const hotels = await this.prisma.hotel.findMany({
-      where: { id: { in: groups.map((group) => group.hotelId) } },
+      where: {
+        id: {
+          in: items
+            .map((item) => item.hotelId)
+            .filter((id): id is string => Boolean(id)),
+        },
+      },
       select: { id: true, name: true, mainImageUrl: true, isActive: true },
     });
     const hotelById = new Map(hotels.map((hotel) => [hotel.id, hotel]));
     return {
-      total: groups.reduce((sum, group) => sum + group._count.id, 0),
-      customers: customers.length,
+      total: items.length,
+      customers: customerIds.size,
       hotels: groups.map((group) => {
         const hotel = hotelById.get(group.hotelId);
         return {
           hotelId: group.hotelId,
-          hotelName: hotel?.name ?? 'Hotel non più disponibile',
-          image: hotel?.mainImageUrl ?? null,
-          isActive: hotel?.isActive ?? false,
-          saves: group._count.id,
-          lastSavedAt: group._max.createdAt,
+          hotelName:
+            group.hotelName ?? hotel?.name ?? 'Hotel non più disponibile',
+          image: group.image ?? hotel?.mainImageUrl ?? null,
+          isActive: hotel?.isActive ?? true,
+          saves: group.saves,
+          lastSavedAt: group.lastSavedAt,
         };
       }),
     };

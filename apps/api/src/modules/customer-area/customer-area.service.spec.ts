@@ -21,6 +21,11 @@ describe('CustomerAreaService', () => {
       create: jest.fn(),
       findUnique: jest.fn(),
     },
+    wishlist: {
+      findMany: jest.fn(),
+      upsert: jest.fn(),
+      deleteMany: jest.fn(),
+    },
     $transaction: jest.fn(),
   };
   const config = {
@@ -108,6 +113,32 @@ describe('CustomerAreaService', () => {
 
     expect(prisma.providerBookingAttempt.findMany).toHaveBeenCalledWith(
       expect.objectContaining({ where: { customerEmailHash: 'email-hash' } }),
+    );
+  });
+
+  it('syncs customer favourites using the authenticated email hash', async () => {
+    prisma.customerSession.findUnique.mockResolvedValue({
+      emailHash: 'email-hash',
+      expiresAt: new Date(Date.now() + 60_000),
+      revokedAt: null,
+    });
+    prisma.wishlist.findMany.mockResolvedValue([]);
+    prisma.wishlist.upsert.mockReturnValue(Promise.resolve({ id: 'wishlist' }));
+    prisma.$transaction.mockResolvedValue([]);
+
+    await createService().syncWishlist('session-token', [
+      { hotelId: 'provider-hotel', name: 'Hotel Test', price: 120 },
+    ]);
+
+    expect(prisma.wishlist.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          customerEmailHash_providerHotelId: {
+            customerEmailHash: 'email-hash',
+            providerHotelId: 'provider-hotel',
+          },
+        },
+      }),
     );
   });
 });

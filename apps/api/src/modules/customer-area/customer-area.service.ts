@@ -5,6 +5,7 @@ import { randomBytes, randomInt } from 'node:crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CustomerEmailService } from './customer-email.service';
 import { CustomerIdentityService } from './customer-identity.service';
+import { CustomerWishlistItemDto } from './dto/customer-wishlist.dto';
 
 const CODE_TTL_MS = 10 * 60 * 1000;
 const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
@@ -118,13 +119,7 @@ export class CustomerAreaService {
   }
 
   async getBookings(token: string) {
-    const session = await this.prisma.customerSession.findUnique({
-      where: { tokenHash: this.identity.hash(token) },
-    });
-
-    if (!session || session.revokedAt || session.expiresAt <= new Date()) {
-      throw new UnauthorizedException('Sessione non valida o scaduta');
-    }
+    const session = await this.validSession(token);
 
     const attempts = await this.prisma.providerBookingAttempt.findMany({
       where: { customerEmailHash: session.emailHash },
@@ -148,5 +143,89 @@ export class CustomerAreaService {
       checkOut: attempt.hotelSearch.checkOut,
       createdAt: attempt.createdAt,
     }));
+  }
+
+  async getWishlist(token: string) {
+    const session = await this.validSession(token);
+    const items = await this.prisma.wishlist.findMany({
+      where: { customerEmailHash: session.emailHash },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return items.map((item) => ({
+      hotelId: item.providerHotelId,
+      name: item.hotelName,
+      image: item.image ?? undefined,
+      zone: item.zone ?? undefined,
+      stars: item.stars ?? undefined,
+      price: item.price == null ? undefined : Number(item.price),
+      currency: item.currency ?? undefined,
+      savedAt: item.createdAt,
+    }));
+  }
+
+  async syncWishlist(token: string, items: CustomerWishlistItemDto[]) {
+    const session = await this.validSession(token);
+    const uniqueItems = [
+      ...new Map(
+        items.slice(0, 100).map((item) => [item.hotelId, item]),
+      ).values(),
+    ];
+
+    await this.prisma.$transaction(
+      uniqueItems.map((item) =>
+        this.prisma.wishlist.upsert({
+          where: {
+            customerEmailHash_providerHotelId: {
+              customerEmailHash: session.emailHash,
+              providerHotelId: item.hotelId,
+            },
+          },
+          create: {
+            customerEmailHash: session.emailHash,
+            providerHotelId: item.hotelId,
+            hotelName: item.name,
+            image: item.image,
+            zone: item.zone,
+            stars: item.stars,
+            price: item.price,
+            currency: item.currency,
+          },
+          update: {
+            hotelName: item.name,
+            image: item.image,
+            zone: item.zone,
+            stars: item.stars,
+            price: item.price,
+            currency: item.currency,
+          },
+        }),
+      ),
+    );
+
+    return this.getWishlist(token);
+  }
+
+  async removeWishlistItem(token: string, hotelId: string) {
+    const session = await this.validSession(token);
+    await this.prisma.wishlist.deleteMany({
+      where: {
+        customerEmailHash: session.emailHash,
+        providerHotelId: hotelId,
+      },
+    });
+    return { removed: true };
+  }
+
+  private async validSession(token: string) {
+    const session = await this.prisma.customerSession.findUnique({
+      where: { tokenHash: this.identity.hash(token) },
+    });
+
+    if (!session || session.revokedAt || session.expiresAt <= new Date()) {
+      throw new UnauthorizedException('Sessione non valida o scaduta');
+    }
+
+    return session;
   }
 }

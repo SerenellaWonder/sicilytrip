@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { apiFetch } from "./api";
 
 export type WishlistItem = {
   hotelId: string;
@@ -15,6 +16,7 @@ export type WishlistItem = {
 
 const STORAGE_KEY = "sicilytrip-wishlist";
 const CHANGE_EVENT = "sicilytrip-wishlist-change";
+const SESSION_KEY = "sicilytrip-customer-session";
 
 function readWishlist(): WishlistItem[] {
   if (typeof window === "undefined") return [];
@@ -53,17 +55,59 @@ export function useWishlist() {
     };
   }, []);
 
-  const toggle = useCallback((hotel: Omit<WishlistItem, "savedAt">) => {
+  const toggle = useCallback(async (hotel: Omit<WishlistItem, "savedAt">) => {
     const current = readWishlist();
     const exists = current.some((item) => item.hotelId === hotel.hotelId);
     const next = exists
       ? current.filter((item) => item.hotelId !== hotel.hotelId)
       : [{ ...hotel, savedAt: new Date().toISOString() }, ...current];
     writeWishlist(next);
+    const token = sessionStorage.getItem(SESSION_KEY);
+    if (!token) return;
+    try {
+      if (exists) {
+        await apiFetch(`/customer-area/wishlist/${encodeURIComponent(hotel.hotelId)}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } else {
+        await apiFetch<WishlistItem[]>("/customer-area/wishlist/sync", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ items: [hotel] }),
+        });
+      }
+    } catch {
+      // Il preferito rimane salvato sul dispositivo e sarà sincronizzato al prossimo accesso.
+    }
   }, []);
 
-  const remove = useCallback((hotelId: string) => {
+  const remove = useCallback(async (hotelId: string) => {
     writeWishlist(readWishlist().filter((item) => item.hotelId !== hotelId));
+    const token = sessionStorage.getItem(SESSION_KEY);
+    if (!token) return;
+    try {
+      await apiFetch(`/customer-area/wishlist/${encodeURIComponent(hotelId)}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch {
+      // La rimozione locale resta valida anche se il servizio è temporaneamente offline.
+    }
+  }, []);
+
+  const sync = useCallback(async (token: string) => {
+    const localItems = readWishlist();
+    const remoteItems = await apiFetch<WishlistItem[]>("/customer-area/wishlist/sync", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ items: localItems }),
+    });
+    const merged = [...remoteItems, ...localItems].filter(
+      (item, index, all) => all.findIndex((candidate) => candidate.hotelId === item.hotelId) === index,
+    );
+    writeWishlist(merged);
+    return merged;
   }, []);
 
   return {
@@ -71,5 +115,6 @@ export function useWishlist() {
     has: (hotelId: string) => items.some((item) => item.hotelId === hotelId),
     toggle,
     remove,
+    sync,
   };
 }

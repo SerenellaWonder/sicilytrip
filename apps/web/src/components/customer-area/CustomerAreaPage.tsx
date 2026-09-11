@@ -76,6 +76,7 @@ export default function CustomerAreaPage() {
         headers: { Authorization: `Bearer ${sessionToken}` },
       });
       setBookings(results);
+      await wishlist.sync(sessionToken);
       setStep("BOOKINGS");
     } catch {
       sessionStorage.removeItem(SESSION_KEY);
