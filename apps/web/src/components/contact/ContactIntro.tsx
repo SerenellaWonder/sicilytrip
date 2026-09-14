@@ -1,6 +1,6 @@
 "use client";
 
-import { Mail, MapPin } from "lucide-react";
+import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 
 import { useLanguage } from "@/components/i18n/LanguageProvider";
 
@@ -24,15 +24,31 @@ export default function ContactIntro() {
 
       <div className="mt-10 space-y-4">
         <a
-          href="mailto:info@sicilytrip.it"
+          href="mailto:info@euphoriasolutions.it"
           className="flex items-center gap-4 rounded-2xl bg-white p-5 text-sm font-semibold text-[#0D2340]"
         >
           <Mail size={19} className="text-[#F58220]" />
-          info@sicilytrip.it
+          info@euphoriasolutions.it
+        </a>
+        <a
+          href="tel:+393281468934"
+          className="flex items-center gap-4 rounded-2xl bg-white p-5 text-sm font-semibold text-[#0D2340]"
+        >
+          <Phone size={19} className="text-[#F58220]" />
+          +39 328 146 8934
+        </a>
+        <a
+          href={`https://wa.me/393281468934?text=${encodeURIComponent(isEnglish ? "Hello, I would like information about a trip to Sicily." : "Buongiorno, vorrei ricevere informazioni per un viaggio in Sicilia.")}`}
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center gap-4 rounded-2xl bg-[#25D366] p-5 text-sm font-semibold text-white transition hover:bg-[#20bd5a]"
+        >
+          <MessageCircle size={19} />
+          {isEnglish ? "Chat with us on WhatsApp" : "Scrivici su WhatsApp"}
         </a>
         <div className="flex items-center gap-4 rounded-2xl bg-white p-5 text-sm font-semibold text-[#0D2340]">
           <MapPin size={19} className="text-[#F58220]" />
-          Palermo · {isEnglish ? "Sicily" : "Sicilia"}
+          C/da Berbarello 623/C · {isEnglish ? "Sicily" : "Sicilia"}
         </div>
       </div>
     </div>

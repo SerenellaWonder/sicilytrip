@@ -6,9 +6,9 @@ import { useCookieConsent } from "@/components/cookies/CookieConsentProvider";
 import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 const MAP_URL =
-  "https://www.google.com/maps?q=Palermo%2C%20Sicilia&z=12&t=k&output=embed";
+  "https://www.google.com/maps?q=Contrada%20Berbarello%20623%2FC%2C%20Sicilia&z=17&t=k&output=embed";
 const DIRECTIONS_URL =
-  "https://www.google.com/maps/search/?api=1&query=Palermo%2C%20Sicilia";
+  "https://www.google.com/maps/search/?api=1&query=Contrada%20Berbarello%20623%2FC%2C%20Sicilia";
 
 export default function ContactMap() {
   const { language } = useLanguage();
@@ -59,8 +59,8 @@ export default function ContactMap() {
               <iframe
                 title={
                   isEnglish
-                    ? "Satellite map of Palermo, Sicily"
-                    : "Mappa satellitare di Palermo, Sicilia"
+                    ? "Satellite map of the Euphoria office in Sicily"
+                    : "Mappa satellitare della sede Euphoria in Sicilia"
                 }
                 src={MAP_URL}
                 className="absolute inset-0 h-full w-full border-0"

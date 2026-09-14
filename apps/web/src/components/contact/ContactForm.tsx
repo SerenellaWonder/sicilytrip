@@ -53,7 +53,7 @@ export default function ContactForm() {
       element.reset();
       setSuccess(true);
     } catch {
-      window.location.href = `mailto:info@sicilytrip.it?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      window.location.href = `mailto:info@euphoriasolutions.it?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       setError(
         isEnglish
           ? "The online service is unavailable: we opened your email app so you can complete the request."
