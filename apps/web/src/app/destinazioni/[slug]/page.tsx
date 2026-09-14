@@ -14,7 +14,24 @@ export async function generateMetadata({
   const { slug } = await params;
   const destination = destinationCatalog.find((item) => item.id === slug);
   return destination
-    ? { title: destination.name, description: destination.description }
+    ? {
+        title: destination.name,
+        description: destination.description,
+        alternates: { canonical: destination.href },
+        openGraph: {
+          type: "website",
+          title: `${destination.name} | SicilyTrip`,
+          description: destination.description,
+          url: destination.href,
+          images: [{ url: destination.image, alt: `${destination.name}, Sicilia` }],
+        },
+        twitter: {
+          card: "summary_large_image",
+          title: `${destination.name} | SicilyTrip`,
+          description: destination.description,
+          images: [destination.image],
+        },
+      }
     : {};
 }
 

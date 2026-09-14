@@ -2,6 +2,8 @@ import type { MetadataRoute } from "next";
 
 import { SITE_URL } from "@/lib/site";
 import { journalArticles } from "@/content/journal";
+import { destinationCatalog } from "@/data/destinations";
+import { experienceCatalog } from "@/data/experiences";
 
 const routes = [
   "",
@@ -11,6 +13,9 @@ const routes = [
   "/journal",
   "/faq",
   "/contatti",
+  "/privacy",
+  "/termini",
+  "/cookie",
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -30,5 +35,21 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }),
   );
 
-  return [...staticRoutes, ...journalRoutes];
+  const destinationRoutes: MetadataRoute.Sitemap = destinationCatalog.map(
+    (destination) => ({
+      url: `${SITE_URL}/destinazioni/${destination.id}`,
+      changeFrequency: "monthly",
+      priority: 0.75,
+    }),
+  );
+
+  const experienceRoutes: MetadataRoute.Sitemap = experienceCatalog.map(
+    (experience) => ({
+      url: `${SITE_URL}/esperienze/${experience.slug}`,
+      changeFrequency: "monthly",
+      priority: 0.75,
+    }),
+  );
+
+  return [...staticRoutes, ...destinationRoutes, ...experienceRoutes, ...journalRoutes];
 }

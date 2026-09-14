@@ -14,7 +14,24 @@ export async function generateMetadata({
   const { slug } = await params;
   const experience = experienceCatalog.find((item) => item.slug === slug);
   return experience
-    ? { title: experience.title, description: experience.description }
+    ? {
+        title: experience.title,
+        description: experience.description,
+        alternates: { canonical: experience.href },
+        openGraph: {
+          type: "website",
+          title: `${experience.title} | SicilyTrip`,
+          description: experience.description,
+          url: experience.href,
+          images: [{ url: experience.image, alt: experience.title }],
+        },
+        twitter: {
+          card: "summary_large_image",
+          title: `${experience.title} | SicilyTrip`,
+          description: experience.description,
+          images: [experience.image],
+        },
+      }
     : {};
 }
 
