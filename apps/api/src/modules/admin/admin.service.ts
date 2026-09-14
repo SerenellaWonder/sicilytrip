@@ -289,26 +289,37 @@ export class AdminService {
     this.verify(auth);
     const since = new Date();
     since.setDate(since.getDate() - 30);
-    const [searchStatus, providers, recentSearches, searches, bookings] =
-      await Promise.all([
-        this.prisma.hotelSearch.groupBy({
-          by: ['status'],
-          _count: { id: true },
-          orderBy: { status: 'asc' },
-        }),
-        this.prisma.hotelSearch.groupBy({
-          by: ['provider'],
-          _count: { id: true },
-          orderBy: { _count: { id: 'desc' } },
-        }),
-        this.prisma.hotelSearch.count({ where: { createdAt: { gte: since } } }),
-        this.prisma.hotelSearch.findMany({
-          select: { destination: { select: { name: true } } },
-          orderBy: { createdAt: 'desc' },
-          take: 2000,
-        }),
-        this.prisma.providerBookingAttempt.count(),
-      ]);
+    const [
+      searchStatus,
+      providers,
+      recentSearches,
+      searches,
+      bookings,
+      profiles,
+    ] = await Promise.all([
+      this.prisma.hotelSearch.groupBy({
+        by: ['status'],
+        _count: { id: true },
+        orderBy: { status: 'asc' },
+      }),
+      this.prisma.hotelSearch.groupBy({
+        by: ['provider'],
+        _count: { id: true },
+        orderBy: { _count: { id: 'desc' } },
+      }),
+      this.prisma.hotelSearch.count({ where: { createdAt: { gte: since } } }),
+      this.prisma.hotelSearch.findMany({
+        select: { destination: { select: { name: true } } },
+        orderBy: { createdAt: 'desc' },
+        take: 2000,
+      }),
+      this.prisma.providerBookingAttempt.count(),
+      this.prisma.conciergeProfile.findMany({
+        select: { destination: true, interests: true },
+        orderBy: { updatedAt: 'desc' },
+        take: 2000,
+      }),
+    ]);
     const destinations = new Map<string, number>();
     searches.forEach((search) => {
       const name = search.destination?.name;
@@ -318,6 +329,26 @@ export class AdminService {
       (sum, item) => sum + item._count.id,
       0,
     );
+    const conciergeDestinations = new Map<string, number>();
+    const conciergeInterests = new Map<string, number>();
+    profiles.forEach((profile) => {
+      if (profile.destination) {
+        conciergeDestinations.set(
+          profile.destination,
+          (conciergeDestinations.get(profile.destination) ?? 0) + 1,
+        );
+      }
+      if (Array.isArray(profile.interests)) {
+        profile.interests.forEach((interest) => {
+          if (typeof interest === 'string') {
+            conciergeInterests.set(
+              interest,
+              (conciergeInterests.get(interest) ?? 0) + 1,
+            );
+          }
+        });
+      }
+    });
     return {
       totalSearches,
       recentSearches,
@@ -336,6 +367,17 @@ export class AdminService {
         .map(([name, count]) => ({ name, count }))
         .sort((a, b) => b.count - a.count)
         .slice(0, 10),
+      concierge: {
+        profiles: profiles.length,
+        destinations: [...conciergeDestinations.entries()]
+          .map(([name, count]) => ({ name, count }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 10),
+        interests: [...conciergeInterests.entries()]
+          .map(([name, count]) => ({ name, count }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 10),
+      },
     };
   }
   activity(auth?: string) {

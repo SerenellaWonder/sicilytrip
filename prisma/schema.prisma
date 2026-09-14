@@ -243,6 +243,22 @@ model Wishlist {
   @@index([customerEmailHash, createdAt])
 }
 
+model ConciergeProfile {
+  id          String   @id @default(cuid())
+  sessionId   String   @unique
+  language    String   @default("it")
+  destination String?
+  period      String?
+  guests      Int?
+  duration    Int?
+  interests   Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([updatedAt])
+  @@index([destination])
+}
+
 model ApiLog {
   id           String   @id @default(cuid())
   provider     String

@@ -22,6 +22,7 @@ import {
 
 import { useConcierge } from "./ConciergeProvider";
 import { useLanguage } from "@/components/i18n/LanguageProvider";
+import { apiFetch } from "@/lib/api";
 
 /* ============================================================
    TYPES
@@ -189,6 +190,16 @@ export default function ConciergePanel() {
         cleanText,
         isEnglish,
       );
+      if (response.profile) {
+        void apiFetch("/concierge/profile", {
+          method: "POST",
+          body: JSON.stringify({
+            sessionId: getConciergeSessionId(),
+            language: isEnglish ? "en" : "it",
+            ...response.profile,
+          }),
+        }).catch(() => undefined);
+      }
       const assistantMessage: Message = {
         id: Date.now() + 1,
         role: "assistant",
@@ -1159,7 +1170,17 @@ function createConciergeResponse(
   conversation: string,
   latestMessage: string,
   isEnglish: boolean,
-): { text: string; actions?: Array<{ label: string; href: string }> } {
+): {
+  text: string;
+  actions?: Array<{ label: string; href: string }>;
+  profile?: {
+    destination: string;
+    period?: string;
+    guests: number;
+    duration?: number;
+    interests: string[];
+  };
+} {
   const text = conversation.toLowerCase();
   const latest = latestMessage.toLowerCase();
 
@@ -1171,7 +1192,8 @@ function createConciergeResponse(
     ["ragusa", "ragusa"], ["agrigento", "agrigento"], ["eolie", "isole-eolie"],
   ] as const;
   const destination = destinations.find(([name]) => text.includes(name));
-  const hasPeriod = /\b(gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre|january|february|march|april|may|june|july|august|september|october|november|december|20\d{2})\b/i.test(text);
+  const periodMatch = text.match(/\b(gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre|january|february|march|april|may|june|july|august|september|october|november|december|20\d{2})\b/i);
+  const hasPeriod = Boolean(periodMatch);
   const guestsMatch = text.match(/\b(\d+)\s*(persone|persona|ospiti|adulti|people|person|guests|adults)\b/i);
   const nightsMatch = text.match(/\b(\d+)\s*(notti|notte|giorni|giorno|nights|night|days|day)\b/i);
   const interests = [
@@ -1234,6 +1256,13 @@ function createConciergeResponse(
       { label: isEnglish ? "Suitable experiences" : "Esperienze consigliate", href: "/esperienze" },
       { label: isEnglish ? "Destination guide" : "Guida della destinazione", href: `/destinazioni/${destination[1]}` },
     ],
+    profile: {
+      destination: destination[0],
+      period: periodMatch?.[1],
+      guests: Number(guests),
+      duration: duration ? Number(duration) : undefined,
+      interests: [...new Set(interests)],
+    },
   };
 
   /* Legacy answers retained below as unreachable documentation until the AI service is connected.
@@ -1364,4 +1393,13 @@ function createConciergeResponse(
     "Certo, posso aiutarti. Raccontami qualcosa in più sul viaggio che immagini: destinazione, periodo, numero di ospiti oppure il tipo di esperienza che vorresti vivere. " +
     "Da lì possiamo costruire insieme la soluzione più adatta."
   ); */
+}
+
+function getConciergeSessionId() {
+  const key = "sicilytrip-concierge-session";
+  const current = sessionStorage.getItem(key);
+  if (current) return current;
+  const id = crypto.randomUUID();
+  sessionStorage.setItem(key, id);
+  return id;
 }

@@ -21,6 +21,11 @@ type Analytics = {
   searchStatus: Record<string, number>;
   providers: Array<{ name: string; searches: number }>;
   destinations: Array<{ name: string; count: number }>;
+  concierge: {
+    profiles: number;
+    destinations: Array<{ name: string; count: number }>;
+    interests: Array<{ name: string; count: number }>;
+  };
 };
 
 export default function AdminAnalytics({ token }: { token: string }) {
@@ -129,6 +134,22 @@ export default function AdminAnalytics({ token }: { token: string }) {
           items={data.providers.map((item) => ({
             label: item.name,
             value: item.searches,
+          }))}
+        />
+        <Ranking
+          title={`Destinazioni Concierge · ${data.concierge.profiles} profili`}
+          empty="Il Concierge non ha ancora completato profili di viaggio."
+          items={data.concierge.destinations.map((item) => ({
+            label: item.name,
+            value: item.count,
+          }))}
+        />
+        <Ranking
+          title="Interessi rilevati dal Concierge"
+          empty="Non sono ancora stati rilevati interessi di viaggio."
+          items={data.concierge.interests.map((item) => ({
+            label: item.name,
+            value: item.count,
           }))}
         />
       </div>

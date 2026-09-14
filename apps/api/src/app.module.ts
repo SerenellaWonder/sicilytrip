@@ -18,6 +18,7 @@ import { AdminModule } from './modules/admin/admin.module';
 import { ContactsModule } from './modules/contacts/contacts.module';
 import { EventsModule } from './modules/events/events.module';
 import { ContentModule } from './modules/content/content.module';
+import { ConciergeModule } from './modules/concierge/concierge.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { ContentModule } from './modules/content/content.module';
     ContactsModule,
     EventsModule,
     ContentModule,
+    ConciergeModule,
   ],
   controllers: [AppController],
   providers: [AppService],
