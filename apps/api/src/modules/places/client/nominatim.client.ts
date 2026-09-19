@@ -17,11 +17,13 @@ export class NominatimClient {
       const response = await firstValueFrom(
         this.http.get<NominatimResultDto[]>(`${this.baseUrl}/search`, {
           params: {
-            q: query,
+            q: `${query}, Sicilia`,
             format: 'jsonv2',
             addressdetails: 1,
             limit: 8,
             countrycodes: 'it',
+            viewbox: '12.35,38.82,15.70,36.62',
+            bounded: 1,
           },
 
           headers: {

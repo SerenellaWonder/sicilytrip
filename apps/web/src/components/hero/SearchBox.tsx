@@ -126,9 +126,21 @@ export default function SearchBox({ initialValues }: SearchBoxProps) {
           },
         );
 
-        setSuggestions(results.length > 0 ? results : localSuggestions);
+        const sicilianResults = results.filter(isSicilianDestination);
+        const mergedSuggestions = [...localSuggestions, ...sicilianResults]
+          .filter(
+            (item, index, all) =>
+              all.findIndex(
+                (candidate) =>
+                  normalizeSearchText(candidate.name) ===
+                  normalizeSearchText(item.name),
+              ) === index,
+          )
+          .slice(0, 8);
 
-        setShowSuggestions(true);
+        setSuggestions(mergedSuggestions);
+
+        setShowSuggestions(mergedSuggestions.length > 0);
       } catch (err) {
         if (err instanceof DOMException && err.name === "AbortError") {
           return;
@@ -884,6 +896,13 @@ function normalizeSearchText(value: string) {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
+}
+
+function isSicilianDestination(destination: Destination) {
+  const location = normalizeSearchText(
+    `${destination.region ?? ""} ${destination.province ?? ""} ${destination.displayName ?? ""}`,
+  );
+  return location.includes("sicilia") || location.includes("sicily");
 }
 
 /* =========================================================

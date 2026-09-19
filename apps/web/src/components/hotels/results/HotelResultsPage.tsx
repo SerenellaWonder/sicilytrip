@@ -23,6 +23,8 @@ import {
 import { apiFetch } from "@/lib/api";
 import { useWishlist } from "@/lib/wishlist";
 import { useLanguage } from "@/components/i18n/LanguageProvider";
+import SearchBox from "@/components/hero/SearchBox";
+import type { StoredHotelSearch } from "@/types/hotel";
 
 import SearchExpiryNotice from "../SearchExpiryNotice";
 import HotelPreviewImage from "./HotelPreviewImage";
@@ -84,7 +86,16 @@ export default function HotelResultsPage({
   const [nameQuery, setNameQuery] = useState("");
   const [comparisonIds, setComparisonIds] = useState<string[]>([]);
   const [showComparison, setShowComparison] = useState(false);
+  const [editingSearch, setEditingSearch] = useState(false);
+  const [storedSearch, setStoredSearch] = useState<StoredHotelSearch | null>(null);
   const wishlist = useWishlist();
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setStoredSearch(readStoredSearch(searchId));
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [searchId]);
 
   useEffect(() => {
     let active = true;
@@ -327,8 +338,15 @@ export default function HotelResultsPage({
       >
         {/* BACK */}
 
-        <Link
-          href="/"
+        <button
+          type="button"
+          onClick={() => {
+            if (!storedSearch?.search) {
+              window.location.href = "/#accommodation-search";
+              return;
+            }
+            setEditingSearch((current) => !current);
+          }}
           className="
             inline-flex
             items-center
@@ -347,8 +365,31 @@ export default function HotelResultsPage({
             size={14}
           />
 
-          {isEnglish ? "Edit search" : "Modifica ricerca"}
-        </Link>
+          {editingSearch
+            ? isEnglish ? "Close search" : "Chiudi ricerca"
+            : isEnglish ? "Edit search" : "Modifica ricerca"}
+        </button>
+
+        {editingSearch && storedSearch?.search && (
+          <section className="mt-6 rounded-[26px] bg-white p-4 shadow-[0_14px_45px_rgba(13,35,64,0.08)] sm:p-6">
+            <h2 className="mb-4 text-lg font-bold text-[#0D2340]">
+              {isEnglish ? "Change your search" : "Modifica la tua ricerca"}
+            </h2>
+            <SearchBox
+              initialValues={{
+                destination: storedSearch.search.destination,
+                checkIn: storedSearch.search.checkIn,
+                checkOut: storedSearch.search.checkOut,
+                adults: storedSearch.search.adults,
+                children: storedSearch.search.children,
+                rooms: storedSearch.search.rooms?.map((room) => ({
+                  adults: room.adults,
+                  children: room.children,
+                })),
+              }}
+            />
+          </section>
+        )}
 
         <SearchExpiryNotice searchId={searchId} />
 
@@ -412,6 +453,16 @@ export default function HotelResultsPage({
                   ? `${allHotels.length} properties available`
                   : `${allHotels.length} strutture disponibili`}
             </p>
+            {storedSearch?.search && (
+              <p className="mt-2 text-sm font-semibold text-[#0D2340]/70">
+                {formatSearchDate(storedSearch.search.checkIn, isEnglish)} –{" "}
+                {formatSearchDate(storedSearch.search.checkOut, isEnglish)} ·{" "}
+                {storedSearch.search.adults} {isEnglish ? "adults" : "adulti"}
+                {storedSearch.search.children > 0
+                  ? ` · ${storedSearch.search.children} ${isEnglish ? "children" : "bambini"}`
+                  : ""}
+              </p>
+            )}
           </div>
 
         </div>
@@ -1103,6 +1154,25 @@ function formatPrice(
       maximumFractionDigits: 0,
     }
   ).format(price);
+}
+
+function formatSearchDate(value: string, isEnglish: boolean) {
+  return new Intl.DateTimeFormat(isEnglish ? "en-GB" : "it-IT", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(`${value}T00:00:00Z`));
+}
+
+function readStoredSearch(searchId: string): StoredHotelSearch | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const value = sessionStorage.getItem(`hotel-search:${searchId}`);
+    return value ? (JSON.parse(value) as StoredHotelSearch) : null;
+  } catch {
+    return null;
+  }
 }
 
 function localizeProviderText(value: string, isEnglish: boolean) {
