@@ -148,8 +148,8 @@ export default function AboutHero() {
               "
             >
               {isEnglish
-                ? "SicilyTrip began with a simple idea: turn a journey through Sicily into something personal, authentic and hard to forget."
-                : "SicilyTrip nasce da un’idea semplice: trasformare un viaggio in Sicilia in qualcosa di personale, autentico e difficile da dimenticare."}
+                ? "Forty years of experience in Sicily, carried into the digital future by a new generation."
+                : "Quarant’anni di Sicilia e di relazioni vere, portati nel futuro digitale da una nuova generazione."}
             </p>
 
             <a

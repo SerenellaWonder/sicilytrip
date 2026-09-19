@@ -1,7 +1,7 @@
 import Header from "@/components/layout/header";
 
 import AboutHero from "@/components/about/page/AboutHero";
-import AboutStory from "@/components/about/page/AboutStory";
+import AboutHistory from "@/components/about/page/AboutHistory";
 import AboutApproach from "@/components/about/page/AboutApproach";
 import AboutManifesto from "@/components/about/page/AboutManifesto";
 
@@ -11,7 +11,7 @@ import AccommodationSearchSection from "@/components/hotels/AccommodationSearchS
 export const metadata: Metadata = {
   title: "Chi siamo",
   description:
-    "Conosci SicilyTrip e il nostro modo di raccontare e organizzare viaggi autentici in Sicilia.",
+    "La storia di Pietro e Gianmarco: oltre quarant’anni di esperienza nel turismo siciliano, uniti a tecnologia, innovazione e intelligenza artificiale.",
   alternates: { canonical: "/chi-siamo" },
 };
 
@@ -22,7 +22,7 @@ export default function AboutPage() {
 
       <main id="main-content" tabIndex={-1}>
         <AboutHero />
-        <AboutStory />
+        <AboutHistory />
         <AboutApproach />
         <AboutManifesto />
         <AccommodationSearchSection />
