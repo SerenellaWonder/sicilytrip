@@ -180,9 +180,9 @@ export default function DestinationsHero() {
               "
             >
               {isEnglish ? (
-                <>One Sicily.<br /><span className="text-[#0D2340]/55">Endless stories</span><br />to experience.</>
+                <>9 provinces.<br /><span className="text-[#0D2340]/55">Endless emotions</span><br />to experience.</>
               ) : (
-                <>Una Sicilia.<br /><span className="text-[#0D2340]/55">Infinite storie</span><br />da vivere.</>
+                <>9 province.<br /><span className="text-[#0D2340]/55">Un’infinità di emozioni</span><br />da vivere.</>
               )}
             </h1>
 
@@ -204,8 +204,8 @@ export default function DestinationsHero() {
               "
             >
               {isEnglish
-                ? "From art cities overlooking the Mediterranean to timeless villages, from the islands to the slopes of Mount Etna. Every place tells a different way of experiencing Sicily."
-                : "Dalle città d’arte affacciate sul Mediterraneo ai borghi sospesi nel tempo, dalle isole alle pendici dell’Etna. Ogni luogo racconta un modo diverso di vivere la Sicilia."}
+                ? "From crystal-clear seas to volcanoes, from art cities to authentic villages. Discover Sicily province by province."
+                : "Dal mare cristallino ai vulcani, dalle città d’arte ai borghi autentici. Scopri la Sicilia provincia dopo provincia."}
             </p>
 
             {/* ===============================================

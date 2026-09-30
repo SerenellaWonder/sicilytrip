@@ -1,7 +1,7 @@
 import Header from "@/components/layout/header";
 
 import DestinationsHero from "@/components/destinations/page/DestinationsHero";
-import DestinationShowcase from "@/components/destinations/page/DestinationShowcase";
+import ProvinceShowcase from "@/components/destinations/page/ProvinceShowcase";
 import DestinationsMap from "@/components/destinations/page/DestinationsMap";
 import TravelMood from "@/components/destinations/page/TravelMood";
 
@@ -23,7 +23,7 @@ export default function DestinationsPage() {
       <main id="main-content" tabIndex={-1}>
         <DestinationsHero />
 
-        <DestinationShowcase />
+        <ProvinceShowcase />
 
         <DestinationsMap />
 
