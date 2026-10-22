@@ -4,18 +4,14 @@ import { notFound } from "next/navigation";
 import JournalArticleContent from "@/components/journal/JournalArticleContent";
 import FooterSection from "@/components/layout/FooterSection";
 import Header from "@/components/layout/header";
-import { getJournalArticle, journalArticles } from "@/content/journal";
+import { getPublicArticle } from "@/lib/journal";
 
 type ArticlePageProps = { params: Promise<{ slug: string }> };
-
-export function generateStaticParams() {
-  return journalArticles.map(({ slug }) => ({ slug }));
-}
 
 export async function generateMetadata({
   params,
 }: ArticlePageProps): Promise<Metadata> {
-  const article = getJournalArticle((await params).slug);
+  const article = await getPublicArticle((await params).slug);
 
   if (!article) return {};
 
@@ -27,14 +23,16 @@ export async function generateMetadata({
       type: "article",
       title: article.title,
       description: article.excerpt,
-      images: [{ url: article.image, alt: article.imageAlt }],
-      publishedTime: article.publishedAt,
+      images: article.image
+        ? [{ url: article.image, alt: article.imageAlt }]
+        : [],
+      publishedTime: article.publishedAt || undefined,
     },
   };
 }
 
 export default async function JournalArticlePage({ params }: ArticlePageProps) {
-  const article = getJournalArticle((await params).slug);
+  const article = await getPublicArticle((await params).slug);
 
   if (!article) notFound();
 

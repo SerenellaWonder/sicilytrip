@@ -2,6 +2,8 @@ import Header from "@/components/layout/header";
 
 import JournalHero from "@/components/journal/page/JournalHero";
 import JournalStories from "@/components/journal/page/JournalStories";
+import JournalDatabaseStories from "@/components/journal/page/JournalDatabaseStories";
+import { getPublicJournal } from "@/lib/journal";
 import JournalThemes from "@/components/journal/page/JournalThemes";
 import JournalEvents from "@/components/journal/page/JournalEvents";
 
@@ -15,14 +17,25 @@ export const metadata: Metadata = {
   alternates: { canonical: "/journal" },
 };
 
-export default function JournalPage() {
+export default async function JournalPage() {
+  const articles = await getPublicJournal().catch(() => null);
   return (
     <>
       <Header />
 
       <main id="main-content" tabIndex={-1}>
         <JournalHero />
-        <JournalStories />
+        {articles ? (
+          <JournalDatabaseStories articles={articles} />
+        ) : (
+          <>
+            <p role="status" className="bg-[#F7F3EC] px-5 py-4 text-center">
+              I nuovi articoli non sono disponibili in questo momento. Puoi
+              leggere le storie in evidenza.
+            </p>
+            <JournalStories />
+          </>
+        )}
         <JournalEvents />
         <JournalThemes />
 

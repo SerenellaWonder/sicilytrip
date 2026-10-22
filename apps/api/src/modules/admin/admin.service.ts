@@ -758,7 +758,17 @@ export class AdminService {
   journalArticles(auth?: string) {
     this.verify(auth);
     return this.prisma.journalArticle.findMany({
+      include: {
+        author: { select: { id: true, slug: true, displayName: true } },
+      },
       orderBy: { updatedAt: 'desc' },
+    });
+  }
+  journalAuthors(auth?: string) {
+    this.verify(auth, 'content');
+    return this.prisma.journalAuthor.findMany({
+      select: { id: true, slug: true, displayName: true },
+      orderBy: { displayName: 'asc' },
     });
   }
   events(auth?: string) {
@@ -806,19 +816,24 @@ export class AdminService {
       }),
     );
   }
-  updateJournalArticle(
+  async updateJournalArticle(
     auth: string | undefined,
     id: string,
     dto: AdminJournalArticleDto,
   ) {
     this.verify(auth, 'content');
+    const previous = await this.prisma.journalArticle.findUniqueOrThrow({
+      where: { id },
+    });
     return this.tracked('journal.updated', () =>
       this.prisma.journalArticle.update({
         where: { id },
         data: {
           ...dto,
           content: dto.content,
-          publishedAt: dto.isPublished ? new Date() : null,
+          publishedAt: dto.isPublished
+            ? (previous.publishedAt ?? new Date())
+            : null,
         },
       }),
     );

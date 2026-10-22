@@ -14,3 +14,5 @@ node_modules/
 
 # Env
 .env
+# Unpublished Journal source material
+scripts/journal/articles.json

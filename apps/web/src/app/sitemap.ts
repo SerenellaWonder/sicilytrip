@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 import { SITE_URL } from "@/lib/site";
-import { journalArticles } from "@/content/journal";
+import { getPublicJournal } from "@/lib/journal";
 import { destinationCatalog } from "@/data/destinations";
 import { experienceCatalog } from "@/data/experiences";
 
@@ -18,7 +18,8 @@ const routes = [
   "/cookie",
 ];
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const journalArticles = await getPublicJournal();
   const staticRoutes: MetadataRoute.Sitemap = routes.map((route, index) => ({
     url: `${SITE_URL}${route}`,
     lastModified: new Date(),
@@ -29,7 +30,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const journalRoutes: MetadataRoute.Sitemap = journalArticles.map(
     (article) => ({
       url: `${SITE_URL}/journal/${article.slug}`,
-      lastModified: new Date(`${article.publishedAt}T00:00:00.000Z`),
+      lastModified: article.publishedAt
+        ? new Date(`${article.publishedAt}T00:00:00.000Z`)
+        : undefined,
       changeFrequency: "monthly",
       priority: 0.7,
     }),
@@ -51,5 +54,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }),
   );
 
-  return [...staticRoutes, ...destinationRoutes, ...experienceRoutes, ...journalRoutes];
+  return [
+    ...staticRoutes,
+    ...destinationRoutes,
+    ...experienceRoutes,
+    ...journalRoutes,
+  ];
 }

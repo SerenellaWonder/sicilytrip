@@ -1,4 +1,6 @@
 export type JournalArticle = {
+  author?: { slug: string; displayName: string } | null;
+  originalLanguage?: "it";
   slug: string;
   category: string;
   categoryEn: string;
@@ -91,7 +93,8 @@ export const journalArticles: JournalArticle[] = [
     title: "Una tavola, mille Sicilie",
     titleEn: "One table, a thousand Sicilies",
     subtitle: "Ingredienti e gesti che cambiano da una provincia all'altra.",
-    subtitleEn: "Ingredients and gestures that change from one province to the next.",
+    subtitleEn:
+      "Ingredients and gestures that change from one province to the next.",
     excerpt:
       "Dal mercato alla cucina, un viaggio attraverso ingredienti, tradizioni e gesti che cambiano da una provincia all'altra.",
     excerptEn:
@@ -149,7 +152,8 @@ export const journalArticles: JournalArticle[] = [
     title: "Eolie, dove il mare incontra il fuoco",
     titleEn: "Aeolian Islands, where the sea meets fire",
     subtitle: "Sette isole e sette modi diversi di vivere il Mediterraneo.",
-    subtitleEn: "Seven islands and seven different ways to experience the Mediterranean.",
+    subtitleEn:
+      "Seven islands and seven different ways to experience the Mediterranean.",
     excerpt:
       "Vulcani, baie, piccoli porti e giornate scandite soltanto dal mare: ogni isola custodisce un carattere distinto.",
     excerptEn:

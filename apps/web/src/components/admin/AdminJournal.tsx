@@ -2,9 +2,13 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { Loader2, Plus } from "lucide-react";
 import { apiFetch } from "@/lib/api";
+import JournalArticleContent from "@/components/journal/JournalArticleContent";
+import { journalView } from "@/lib/journal";
 
 type Article = {
   id: string;
+  authorId?: string;
+  author?: { slug: string; displayName: string };
   slug: string;
   title: string;
   category: string;
@@ -24,20 +28,31 @@ const empty = {
   subtitle: "",
   image: "",
   imageAlt: "",
-  readingTime: "5 min",
-  body: "",
+  readingTime: "",
+  authorId: "",
+  content: [{ title: "", paragraphs: [""] }],
   isPublished: false,
 };
 
 export default function AdminJournal({ token }: { token: string }) {
   const [articles, setArticles] = useState<Article[]>([]);
   const [form, setForm] = useState(empty);
+  const [preview, setPreview] = useState(false);
+  const [search, setSearch] = useState("");
+  const [authors, setAuthors] = useState<
+    Array<{ id: string; slug: string; displayName: string }>
+  >([]);
   const [editing, setEditing] = useState<string>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const load = useCallback(async () => {
     try {
       setLoading(true);
+      setAuthors(
+        await apiFetch("/admin/journal/authors", {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      );
       setArticles(
         await apiFetch<Article[]>("/admin/journal", {
           headers: { Authorization: `Bearer ${token}` },
@@ -63,8 +78,9 @@ export default function AdminJournal({ token }: { token: string }) {
       subtitle: a.subtitle ?? "",
       image: a.image ?? "",
       imageAlt: a.imageAlt ?? "",
-      readingTime: a.readingTime ?? "5 min",
-      body: a.content.flatMap((s) => s.paragraphs).join("\n\n"),
+      readingTime: a.readingTime ?? "",
+      content: a.content,
+      authorId: a.authorId ?? "",
       isPublished: a.isPublished,
     });
   }
@@ -73,19 +89,7 @@ export default function AdminJournal({ token }: { token: string }) {
     try {
       setLoading(true);
       setError("");
-      const payload = {
-        ...form,
-        content: [
-          {
-            title: "Contenuto",
-            paragraphs: form.body
-              .split(/\n\s*\n/)
-              .map((x) => x.trim())
-              .filter(Boolean),
-          },
-        ],
-      };
-      delete (payload as Partial<typeof payload>).body;
+      const payload = { ...form, authorId: form.authorId || undefined };
       await apiFetch(editing ? `/admin/journal/${editing}` : "/admin/journal", {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
@@ -114,22 +118,38 @@ export default function AdminJournal({ token }: { token: string }) {
             <Plus size={15} /> Nuovo
           </button>
         </div>
+        <label className="mb-4 block text-sm">
+          Cerca tra gli articoli
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="mt-2 w-full rounded-xl border p-3"
+          />
+        </label>
         {loading && !articles.length ? (
           <Loader2 className="animate-spin text-[#F58220]" />
         ) : (
-          <div className="space-y-3">
-            {articles.map((a) => (
-              <button
-                key={a.id}
-                onClick={() => edit(a)}
-                className="w-full rounded-2xl bg-white p-4 text-left"
-              >
-                <span className="text-[9px] font-bold uppercase text-[#F58220]">
-                  {a.category} · {a.isPublished ? "Pubblicato" : "Bozza"}
-                </span>
-                <strong className="mt-2 block text-[#0D2340]">{a.title}</strong>
-              </button>
-            ))}
+          <div className="max-h-[65vh] space-y-3 overflow-y-auto">
+            {articles
+              .filter((a) =>
+                a.title
+                  .toLocaleLowerCase()
+                  .includes(search.toLocaleLowerCase()),
+              )
+              .map((a) => (
+                <button
+                  key={a.id}
+                  onClick={() => edit(a)}
+                  className="w-full rounded-2xl bg-white p-4 text-left"
+                >
+                  <span className="text-[9px] font-bold uppercase text-[#F58220]">
+                    {a.category} · {a.isPublished ? "Pubblicato" : "Bozza"}
+                  </span>
+                  <strong className="mt-2 block text-[#0D2340]">
+                    {a.title}
+                  </strong>
+                </button>
+              ))}
           </div>
         )}
       </section>
@@ -180,12 +200,68 @@ export default function AdminJournal({ token }: { token: string }) {
           value={form.excerpt}
           onChange={(v) => setForm({ ...form, excerpt: v })}
         />
-        <Area
-          label="Testo articolo (separa i paragrafi con una riga vuota)"
-          value={form.body}
-          onChange={(v) => setForm({ ...form, body: v })}
-          rows={12}
-        />
+        <label className="mt-5 block text-sm">
+          Autore
+          <select
+            value={form.authorId}
+            onChange={(e) => setForm({ ...form, authorId: e.target.value })}
+            className="mt-2 w-full rounded-xl border p-3"
+          >
+            <option value="">Seleziona autore</option>
+            {authors.map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.displayName}
+              </option>
+            ))}
+          </select>
+        </label>
+        {form.content.map((section, index) => (
+          <div key={index} className="mt-6">
+            <Field
+              label="Titolo sezione (facoltativo)"
+              value={section.title}
+              onChange={(title) =>
+                setForm({
+                  ...form,
+                  content: form.content.map((s, i) =>
+                    i === index ? { ...s, title } : s,
+                  ),
+                })
+              }
+            />
+            <Area
+              label="Testo originale (paragrafi separati da una riga vuota)"
+              value={section.paragraphs.join("\n\n")}
+              rows={12}
+              onChange={(body) =>
+                setForm({
+                  ...form,
+                  content: form.content.map((s, i) =>
+                    i === index ? { ...s, paragraphs: body.split("\n\n") } : s,
+                  ),
+                })
+              }
+            />
+          </div>
+        ))}
+        <button
+          type="button"
+          className="mt-5 rounded-full border px-5 py-2"
+          onClick={() => setPreview(!preview)}
+        >
+          {preview ? "Chiudi anteprima" : "Anteprima bozza"}
+        </button>
+        {preview && (
+          <div className="mt-5 border">
+            <p className="p-4 font-bold">Anteprima privata · non pubblicata</p>
+            <JournalArticleContent
+              article={journalView({
+                ...form,
+                author: authors.find((a) => a.id === form.authorId),
+              })}
+            />
+          </div>
+        )}
         <label className="mt-5 flex items-center gap-3 text-sm">
           <input
             type="checkbox"
@@ -221,7 +297,6 @@ function Field({
     <label className="text-xs font-semibold text-[#0D2340]">
       {label}
       <input
-        required
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="mt-2 h-11 w-full rounded-xl border border-slate-200 px-3 outline-none"

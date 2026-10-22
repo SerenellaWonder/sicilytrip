@@ -1,0 +1,4 @@
+scripts/journal/articles.json
+.env
+.env.*
+*.tsbuildinfo

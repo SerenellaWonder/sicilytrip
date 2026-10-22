@@ -156,6 +156,11 @@ export class AdminController {
   ) {
     return this.service.updateHotel(auth, id, dto);
   }
+  @Get('journal/authors') journalAuthors(
+    @Headers('authorization') auth?: string,
+  ) {
+    return this.service.journalAuthors(auth);
+  }
   @Get('journal') journal(@Headers('authorization') auth?: string) {
     return this.service.journalArticles(auth);
   }

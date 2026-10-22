@@ -75,6 +75,7 @@ model AdminOperator {
   lastLoginAt  DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+  journalAuthor JournalAuthor?
 
   @@index([role, isActive])
 }
@@ -289,8 +290,23 @@ model JournalArticle {
   publishedAt DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  authorId    String?
+  author      JournalAuthor? @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  sourceKey   String? @unique
+  sourceDateRaw String?
+  source      Json?
 
   @@index([isPublished, publishedAt])
+}
+
+model JournalAuthor {
+  id          String @id @default(cuid())
+  slug        String @unique
+  displayName String
+  bio         String?
+  operatorId  String? @unique
+  operator    AdminOperator? @relation(fields: [operatorId], references: [id], onDelete: SetNull)
+  articles    JournalArticle[]
 }
 
 model TourismEvent {
