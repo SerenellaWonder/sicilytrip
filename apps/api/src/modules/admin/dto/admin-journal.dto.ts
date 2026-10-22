@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsObject,
   IsBoolean,
   IsOptional,
   IsString,
@@ -36,4 +37,11 @@ export class AdminJournalArticleDto {
   content!: Array<{ title: string; paragraphs: string[] }>;
   @IsOptional() @IsString() readingTime?: string;
   @IsBoolean() isPublished!: boolean;
+}
+
+export class ImportJournalDraftDto extends AdminJournalArticleDto {
+  @IsString() @Matches(/^euphoria:[0-9]{3}$/) sourceKey!: string;
+  @IsString() sourceDateRaw!: string;
+  @IsObject() source!: Record<string, unknown>;
+  @IsString() @Matches(/^[a-f0-9]{64}$/) bodySha256!: string;
 }

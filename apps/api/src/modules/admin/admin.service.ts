@@ -1,5 +1,7 @@
 import {
   Injectable,
+  BadRequestException,
+  ConflictException,
   NotFoundException,
   ServiceUnavailableException,
   UnauthorizedException,
@@ -12,9 +14,12 @@ import {
   scryptSync,
   timingSafeEqual,
 } from 'node:crypto';
-import { AdminRole } from '@prisma/client';
+import { AdminRole, Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
-import { AdminJournalArticleDto } from './dto/admin-journal.dto';
+import {
+  AdminJournalArticleDto,
+  ImportJournalDraftDto,
+} from './dto/admin-journal.dto';
 import { AdminFaqDto } from './dto/admin-faq.dto';
 import { AdminExperienceDto } from './dto/admin-experience.dto';
 import { AdminPackageDto } from './dto/admin-package.dto';
@@ -803,6 +808,85 @@ export class AdminService {
       externalUrl: dto.externalUrl || null,
       startAt: new Date(dto.startAt),
     };
+  }
+  async importJournalDraft(
+    auth: string | undefined,
+    dto: ImportJournalDraftDto,
+  ) {
+    this.verify(auth, 'super');
+    if (
+      dto.isPublished ||
+      dto.content.length !== 1 ||
+      dto.content[0].title !== ''
+    )
+      throw new BadRequestException('Sono ammesse solo bozze originali');
+    const digest = createHash('sha256')
+      .update(dto.content[0].paragraphs.join('\n\n'))
+      .digest('hex');
+    if (digest !== dto.bodySha256)
+      throw new BadRequestException('Testo originale non integro');
+    return this.prisma.$transaction(async (tx) => {
+      const author = await tx.journalAuthor.upsert({
+        where: { slug: 'rosario-de-santis' },
+        update: {},
+        create: { slug: 'rosario-de-santis', displayName: 'Rosario De Santis' },
+      });
+      if (author.displayName !== 'Rosario De Santis')
+        throw new ConflictException('Autore già presente con dati diversi');
+      const old = await tx.journalArticle.findFirst({
+        where: { OR: [{ slug: dto.slug }, { sourceKey: dto.sourceKey }] },
+      });
+      const data = {
+        slug: dto.slug,
+        title: dto.title,
+        subtitle: dto.subtitle ?? '',
+        excerpt: dto.excerpt,
+        category: dto.category,
+        content: dto.content,
+        isPublished: false,
+        publishedAt: null,
+        authorId: author.id,
+        sourceKey: dto.sourceKey,
+        sourceDateRaw: dto.sourceDateRaw,
+        source: dto.source as Prisma.InputJsonObject,
+      };
+      if (old) {
+        const normalized = (value: unknown): string => {
+          const sort = (v: unknown): unknown =>
+            Array.isArray(v)
+              ? v.map(sort)
+              : v && typeof v === 'object'
+                ? Object.fromEntries(
+                    Object.entries(v)
+                      .sort(([a], [b]) => a.localeCompare(b))
+                      .map(([k, x]) => [k, sort(x)]),
+                  )
+                : v;
+          return JSON.stringify(sort(value));
+        };
+        if (
+          Object.entries(data).some(
+            ([key, value]) => normalized(old[key]) !== normalized(value),
+          )
+        )
+          throw new ConflictException(
+            'Articolo già presente con dati diversi; nessuna sovrascrittura',
+          );
+        return {
+          id: old.id,
+          slug: old.slug,
+          created: false,
+          isPublished: false,
+        };
+      }
+      const created = await tx.journalArticle.create({ data });
+      return {
+        id: created.id,
+        slug: created.slug,
+        created: true,
+        isPublished: false,
+      };
+    });
   }
   createJournalArticle(auth: string | undefined, dto: AdminJournalArticleDto) {
     this.verify(auth, 'content');

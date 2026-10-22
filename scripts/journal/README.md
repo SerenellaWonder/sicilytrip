@@ -29,4 +29,6 @@ Public article pages use Italian source text when no English translation exists,
 - HTTP checks passed: anonymous draft 404, protected admin listing, 191 drafts, author page without drafts, exact content after authorized save, no drafts in sitemap.
 - Broader API TypeScript check including existing tests reports a pre-existing customer-area.service.spec.ts developmentCode typing issue; production build excludes tests and passes.
 
-No article was imported into the production database. A Vercel deploy applies the additive author/provenance schema migration through the existing API build command; it does not import articles. Do not use the API build command for a dry run: it contains migrate deploy.
+On 22 October 2026, after explicit user approval, all 191 articles were imported through the authenticated super-admin API into production as private drafts. All body hashes and author links were verified; zero imported articles are published. The API route POST /admin/journal/import-draft checks original text integrity, rejects publication and conflicting existing records, and is idempotent. It never updates existing articles. Production credentials were not added to this repository.
+
+A Vercel deploy applies schema migrations through the existing API build command; it does not import articles. Do not use the API build command for a dry run: it contains migrate deploy.

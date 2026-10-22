@@ -1,7 +1,10 @@
 import { Body, Controller, Get, Headers, Param, Post } from '@nestjs/common';
 import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 import { AdminService } from './admin.service';
-import { AdminJournalArticleDto } from './dto/admin-journal.dto';
+import {
+  AdminJournalArticleDto,
+  ImportJournalDraftDto,
+} from './dto/admin-journal.dto';
 import { AdminFaqDto } from './dto/admin-faq.dto';
 import { AdminExperienceDto } from './dto/admin-experience.dto';
 import { AdminPackageDto } from './dto/admin-package.dto';
@@ -185,6 +188,12 @@ export class AdminController {
     @Body() dto: AdminJournalArticleDto,
   ) {
     return this.service.createJournalArticle(auth, dto);
+  }
+  @Post('journal/import-draft') importJournalDraft(
+    @Headers('authorization') auth: string | undefined,
+    @Body() dto: ImportJournalDraftDto,
+  ) {
+    return this.service.importJournalDraft(auth, dto);
   }
   @Post('journal/:id') updateJournal(
     @Headers('authorization') auth: string | undefined,
