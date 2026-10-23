@@ -617,3 +617,11 @@ model HotelDetail {
 
   @@index([provider])
 }
+
+// Small Journal covers persist independently of serverless deployments.
+model JournalImage {
+  id        String   @id @default(cuid())
+  mimeType  String
+  data      Bytes
+  createdAt DateTime @default(now())
+}

@@ -1,7 +1,8 @@
 "use client";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { Loader2, Plus } from "lucide-react";
-import { apiFetch } from "@/lib/api";
+import Image from "next/image";
+import { API_URL, apiFetch } from "@/lib/api";
 import JournalArticleContent from "@/components/journal/JournalArticleContent";
 import { journalView } from "@/lib/journal";
 
@@ -37,6 +38,7 @@ const empty = {
 export default function AdminJournal({ token }: { token: string }) {
   const [articles, setArticles] = useState<Article[]>([]);
   const [form, setForm] = useState(empty);
+  const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState(false);
   const [search, setSearch] = useState("");
   const [authors, setAuthors] = useState<
@@ -84,8 +86,42 @@ export default function AdminJournal({ token }: { token: string }) {
       isPublished: a.isPublished,
     });
   }
+  async function uploadImage(file?: File) {
+    if (!file) return;
+    setError("");
+    if (
+      !["image/jpeg", "image/png", "image/webp"].includes(file.type) ||
+      file.size > 2 * 1024 * 1024
+    ) {
+      setError("Scegli un’immagine JPG, PNG o WebP di massimo 2 MB.");
+      return;
+    }
+    setUploading(true);
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      const response = await fetch(`${API_URL}/admin/journal/images`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body,
+      });
+      if (!response.ok)
+        throw new Error(
+          response.status === 401
+            ? "Sessione scaduta: accedi nuovamente."
+            : "Caricamento non riuscito. Usa JPG, PNG o WebP, massimo 2 MB, e riprova.",
+        );
+      const result = (await response.json()) as { path: string };
+      setForm((current) => ({ ...current, image: `${API_URL}${result.path}` }));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Caricamento non riuscito.");
+    } finally {
+      setUploading(false);
+    }
+  }
   async function save(event: FormEvent) {
     event.preventDefault();
+    if (uploading) return;
     try {
       setLoading(true);
       setError("");
@@ -109,6 +145,7 @@ export default function AdminJournal({ token }: { token: string }) {
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-bold text-[#0D2340]">Articoli</h2>
           <button
+            disabled={uploading || loading}
             onClick={() => {
               setEditing(undefined);
               setForm(empty);
@@ -139,6 +176,7 @@ export default function AdminJournal({ token }: { token: string }) {
               .map((a) => (
                 <button
                   key={a.id}
+                  disabled={uploading || loading}
                   onClick={() => edit(a)}
                   className="w-full rounded-2xl bg-white p-4 text-left"
                 >
@@ -157,125 +195,182 @@ export default function AdminJournal({ token }: { token: string }) {
         <h2 className="text-xl font-bold text-[#0D2340]">
           {editing ? "Modifica articolo" : "Nuovo articolo"}
         </h2>
-        <div className="mt-5 grid gap-4 sm:grid-cols-2">
-          <Field
-            label="Titolo"
-            value={form.title}
-            onChange={(v) =>
-              setForm({
-                ...form,
-                title: v,
-                slug: editing ? form.slug : slugify(v),
-              })
-            }
-          />
-          <Field
-            label="Slug URL"
-            value={form.slug}
-            onChange={(v) => setForm({ ...form, slug: slugify(v) })}
-          />
-          <Field
-            label="Categoria"
-            value={form.category}
-            onChange={(v) => setForm({ ...form, category: v })}
-          />
-          <Field
-            label="Tempo di lettura"
-            value={form.readingTime}
-            onChange={(v) => setForm({ ...form, readingTime: v })}
-          />
-          <Field
-            label="Sottotitolo"
-            value={form.subtitle}
-            onChange={(v) => setForm({ ...form, subtitle: v })}
-          />
-          <Field
-            label="Percorso immagine"
-            value={form.image}
-            onChange={(v) => setForm({ ...form, image: v })}
-          />
-        </div>
-        <Area
-          label="Riassunto"
-          value={form.excerpt}
-          onChange={(v) => setForm({ ...form, excerpt: v })}
-        />
-        <label className="mt-5 block text-sm">
-          Autore
-          <select
-            value={form.authorId}
-            onChange={(e) => setForm({ ...form, authorId: e.target.value })}
-            className="mt-2 w-full rounded-xl border p-3"
-          >
-            <option value="">Seleziona autore</option>
-            {authors.map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.displayName}
-              </option>
-            ))}
-          </select>
-        </label>
-        {form.content.map((section, index) => (
-          <div key={index} className="mt-6">
+        <fieldset disabled={uploading || loading}>
+          <div className="mt-5 grid gap-4 sm:grid-cols-2">
             <Field
-              label="Titolo sezione (facoltativo)"
-              value={section.title}
-              onChange={(title) =>
+              label="Titolo"
+              value={form.title}
+              onChange={(v) =>
                 setForm({
                   ...form,
-                  content: form.content.map((s, i) =>
-                    i === index ? { ...s, title } : s,
-                  ),
+                  title: v,
+                  slug: editing ? form.slug : slugify(v),
                 })
               }
             />
-            <Area
-              label="Testo originale (paragrafi separati da una riga vuota)"
-              value={section.paragraphs.join("\n\n")}
-              rows={12}
-              onChange={(body) =>
-                setForm({
+            <Field
+              label="Slug URL"
+              value={form.slug}
+              onChange={(v) => setForm({ ...form, slug: slugify(v) })}
+            />
+            <Field
+              label="Categoria"
+              value={form.category}
+              onChange={(v) => setForm({ ...form, category: v })}
+            />
+            <Field
+              label="Tempo di lettura"
+              value={form.readingTime}
+              onChange={(v) => setForm({ ...form, readingTime: v })}
+            />
+            <Field
+              label="Sottotitolo"
+              value={form.subtitle}
+              onChange={(v) => setForm({ ...form, subtitle: v })}
+            />
+            <Field
+              label="Indirizzo immagine (facoltativo)"
+              value={form.image}
+              onChange={(v) => setForm({ ...form, image: v })}
+            />
+          </div>
+          <div className="mt-5 space-y-3">
+            <label className="block text-sm font-semibold">
+              {form.image
+                ? "Sostituisci immagine"
+                : "Sfoglia / Carica immagine"}
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="mt-2 block w-full text-sm file:mr-4 file:rounded-full file:border-0 file:bg-orange-100 file:px-4 file:py-2"
+                onChange={(e) => {
+                  void uploadImage(e.target.files?.[0]);
+                  e.target.value = "";
+                }}
+              />
+            </label>
+            <p className="text-xs text-slate-500">
+              JPG, PNG o WebP · massimo 2 MB. Premi Salva articolo per
+              confermare la copertina.
+            </p>
+            {form.image &&
+              (/^https:\/\//.test(form.image) ||
+                /^\/(?!\/)/.test(form.image)) && (
+                <Image
+                  unoptimized
+                  src={form.image}
+                  alt={form.imageAlt || "Anteprima copertina"}
+                  width={480}
+                  height={270}
+                  className="max-h-64 w-auto rounded-xl object-contain"
+                />
+              )}
+            {form.image && (
+              <button
+                type="button"
+                className="text-sm text-red-600"
+                onClick={() => setForm({ ...form, image: "", imageAlt: "" })}
+              >
+                Rimuovi immagine
+              </button>
+            )}
+            <Field
+              label="Descrizione dell’immagine (testo alternativo)"
+              value={form.imageAlt}
+              onChange={(imageAlt) => setForm({ ...form, imageAlt })}
+            />
+          </div>
+          <Area
+            label="Riassunto"
+            value={form.excerpt}
+            onChange={(v) => setForm({ ...form, excerpt: v })}
+          />
+          <label className="mt-5 block text-sm">
+            Autore
+            <select
+              value={form.authorId}
+              onChange={(e) => setForm({ ...form, authorId: e.target.value })}
+              className="mt-2 w-full rounded-xl border p-3"
+            >
+              <option value="">Seleziona autore</option>
+              {authors.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.displayName}
+                </option>
+              ))}
+            </select>
+          </label>
+          {form.content.map((section, index) => (
+            <div key={index} className="mt-6">
+              <Field
+                label="Titolo sezione (facoltativo)"
+                value={section.title}
+                onChange={(title) =>
+                  setForm({
+                    ...form,
+                    content: form.content.map((s, i) =>
+                      i === index ? { ...s, title } : s,
+                    ),
+                  })
+                }
+              />
+              <Area
+                label="Testo originale (paragrafi separati da una riga vuota)"
+                value={section.paragraphs.join("\n\n")}
+                rows={12}
+                onChange={(body) =>
+                  setForm({
+                    ...form,
+                    content: form.content.map((s, i) =>
+                      i === index
+                        ? { ...s, paragraphs: body.split("\n\n") }
+                        : s,
+                    ),
+                  })
+                }
+              />
+            </div>
+          ))}
+          <button
+            type="button"
+            className="mt-5 rounded-full border px-5 py-2"
+            onClick={() => setPreview(!preview)}
+          >
+            {preview ? "Chiudi anteprima" : "Anteprima bozza"}
+          </button>
+          {preview && (
+            <div className="mt-5 border">
+              <p className="p-4 font-bold">
+                Anteprima privata · non pubblicata
+              </p>
+              <JournalArticleContent
+                article={journalView({
                   ...form,
-                  content: form.content.map((s, i) =>
-                    i === index ? { ...s, paragraphs: body.split("\n\n") } : s,
-                  ),
-                })
+                  author: authors.find((a) => a.id === form.authorId),
+                })}
+              />
+            </div>
+          )}
+          <label className="mt-5 flex items-center gap-3 text-sm">
+            <input
+              type="checkbox"
+              checked={form.isPublished}
+              onChange={(e) =>
+                setForm({ ...form, isPublished: e.target.checked })
               }
-            />
-          </div>
-        ))}
-        <button
-          type="button"
-          className="mt-5 rounded-full border px-5 py-2"
-          onClick={() => setPreview(!preview)}
-        >
-          {preview ? "Chiudi anteprima" : "Anteprima bozza"}
-        </button>
-        {preview && (
-          <div className="mt-5 border">
-            <p className="p-4 font-bold">Anteprima privata · non pubblicata</p>
-            <JournalArticleContent
-              article={journalView({
-                ...form,
-                author: authors.find((a) => a.id === form.authorId),
-              })}
-            />
-          </div>
+              className="accent-[#F58220]"
+            />{" "}
+            Pubblica articolo
+          </label>
+        </fieldset>
+        {uploading && (
+          <p role="status" className="mt-4 text-sm">
+            Caricamento immagine in corso…
+          </p>
         )}
-        <label className="mt-5 flex items-center gap-3 text-sm">
-          <input
-            type="checkbox"
-            checked={form.isPublished}
-            onChange={(e) =>
-              setForm({ ...form, isPublished: e.target.checked })
-            }
-            className="accent-[#F58220]"
-          />{" "}
-          Pubblica articolo
-        </label>
         {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
         <button
-          disabled={loading}
+          disabled={loading || uploading}
           className="mt-6 rounded-full bg-[#F58220] px-7 py-3 text-xs font-bold text-white disabled:opacity-60"
         >
           Salva articolo

@@ -6,6 +6,7 @@ import {
   ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
+import sharp from 'sharp';
 import { ConfigService } from '@nestjs/config';
 import {
   createHash,
@@ -43,6 +44,48 @@ export class AdminService {
     this.email = config.get<string>('ADMIN_EMAIL')?.trim().toLowerCase();
     this.password = config.get<string>('ADMIN_PASSWORD');
     this.secret = config.get<string>('ADMIN_AUTH_SECRET');
+  }
+  async uploadJournalImage(auth: string | undefined, data?: Buffer) {
+    await this.verify(auth, 'content');
+    if (!data?.length || data.length > 2 * 1024 * 1024)
+      throw new BadRequestException('Seleziona un’immagine di massimo 2 MB.');
+    const mimeType = data
+      .subarray(0, 8)
+      .equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))
+      ? 'image/png'
+      : data[0] === 255 && data[1] === 216 && data[2] === 255
+        ? 'image/jpeg'
+        : data.toString('ascii', 0, 4) === 'RIFF' &&
+            data.toString('ascii', 8, 12) === 'WEBP'
+          ? 'image/webp'
+          : undefined;
+    if (!mimeType)
+      throw new BadRequestException('Usa un’immagine JPG, PNG o WebP.');
+    let normalized: Buffer;
+    try {
+      normalized = await sharp(data, {
+        limitInputPixels: 40000000,
+        failOn: 'error',
+      })
+        .rotate()
+        .resize({
+          width: 2400,
+          height: 2400,
+          fit: 'inside',
+          withoutEnlargement: true,
+        })
+        .webp({ quality: 85 })
+        .toBuffer();
+    } catch {
+      throw new BadRequestException(
+        'Immagine non valida o troppo grande. Scegli un’altra foto.',
+      );
+    }
+    const image = await this.prisma.journalImage.create({
+      data: { mimeType: 'image/webp', data: new Uint8Array(normalized) },
+      select: { id: true },
+    });
+    return { path: `/content/journal-images/${image.id}` };
   }
   async login(email: string, password: string) {
     this.configured();

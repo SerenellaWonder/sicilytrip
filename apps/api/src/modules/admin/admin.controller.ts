@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Headers, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Headers,
+  Param,
+  Post,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 import { AdminService } from './admin.service';
 import {
@@ -194,6 +204,18 @@ export class AdminController {
     @Body() dto: ImportJournalDraftDto,
   ) {
     return this.service.importJournalDraft(auth, dto);
+  }
+  @Post('journal/images')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 2 * 1024 * 1024, files: 1, fields: 0 },
+    }),
+  )
+  uploadJournalImage(
+    @Headers('authorization') auth: string | undefined,
+    @UploadedFile() file?: { buffer: Buffer },
+  ) {
+    return this.service.uploadJournalImage(auth, file?.buffer);
   }
   @Post('journal/:id') updateJournal(
     @Headers('authorization') auth: string | undefined,
