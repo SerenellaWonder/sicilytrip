@@ -4,7 +4,12 @@ import { AdminService } from './admin.service';
 import sharp from 'sharp';
 
 describe('Journal image upload', () => {
-  const create = jest.fn().mockResolvedValue({ id: 'cover123' });
+  const create = jest
+    .fn<
+      Promise<{ id: string }>,
+      [{ data: { mimeType: string; data: Uint8Array } }]
+    >()
+    .mockResolvedValue({ id: 'cover123' });
   const config = new ConfigService({
     ADMIN_EMAIL: 'test@example.test',
     ADMIN_PASSWORD: 'test-password',
