@@ -1,14 +1,8 @@
 "use client";
 
-import {
-  useState,
-} from "react";
+import { useState } from "react";
 
-import {
-  ChevronLeft,
-  ChevronRight,
-  Images,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Images } from "lucide-react";
 
 import { useLanguage } from "@/components/i18n/LanguageProvider";
 
@@ -21,11 +15,11 @@ export default function HotelGallery({
 }) {
   const { language } = useLanguage();
   const isEnglish = language === "en";
-  const validImages =
-    images.filter(Boolean);
+  const validImages = images.filter(Boolean);
 
-  const [activeIndex, setActiveIndex] =
-    useState(0);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const selectedIndex = activeIndex < validImages.length ? activeIndex : 0;
 
   if (validImages.length === 0) {
     return (
@@ -68,21 +62,14 @@ export default function HotelGallery({
   }
 
   function previous() {
-    setActiveIndex(
-      current =>
-        current === 0
-          ? validImages.length - 1
-          : current - 1
+    setActiveIndex((current) =>
+      current === 0 ? validImages.length - 1 : current - 1,
     );
   }
 
   function next() {
-    setActiveIndex(
-      current =>
-        current ===
-        validImages.length - 1
-          ? 0
-          : current + 1
+    setActiveIndex((current) =>
+      current === validImages.length - 1 ? 0 : current + 1,
     );
   }
 
@@ -94,19 +81,20 @@ export default function HotelGallery({
           overflow-hidden
           rounded-[30px]
           bg-[#0D2340]
+          flex min-h-[240px] items-center justify-center
         "
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={validImages[activeIndex]}
-          alt={`${hotelName} - ${isEnglish ? "photo" : "foto"} ${activeIndex + 1}`}
+          src={validImages[selectedIndex]}
+          alt={`${hotelName} - ${isEnglish ? "photo" : "foto"} ${selectedIndex + 1}`}
           className="
-            h-[390px]
-            w-full
-            object-cover
-
-            sm:h-[500px]
-            lg:h-[600px]
+            mx-auto
+            h-auto
+            w-auto
+            max-h-[480px]
+            max-w-full
+            object-contain
           "
         />
 
@@ -188,7 +176,7 @@ export default function HotelGallery({
             backdrop-blur
           "
         >
-          {activeIndex + 1} / {validImages.length}
+          {selectedIndex + 1} / {validImages.length}
         </div>
       </div>
 
@@ -205,20 +193,14 @@ export default function HotelGallery({
             [&::-webkit-scrollbar]:hidden
           "
         >
-          {validImages
-            .slice(0, 12)
-            .map(
-              (
-                image,
-                index
-              ) => (
-                <button
-                  type="button"
-                  key={image}
-                  onClick={() =>
-                    setActiveIndex(index)
-                  }
-                  className={`
+          {validImages.map((image, index) => (
+            <button
+              type="button"
+              key={`${image}-${index}`}
+              aria-label={`${isEnglish ? "Show photo" : "Mostra foto"} ${index + 1}`}
+              aria-pressed={selectedIndex === index}
+              onClick={() => setActiveIndex(index)}
+              className={`
                     h-[72px]
                     w-[100px]
                     shrink-0
@@ -232,20 +214,19 @@ export default function HotelGallery({
                         : "border-transparent"
                     }
                   `}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={image}
-                    alt=""
-                    className="
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={image}
+                alt=""
+                className="
                       h-full
                       w-full
                       object-cover
                     "
-                  />
-                </button>
-              )
-            )}
+              />
+            </button>
+          ))}
         </div>
       )}
     </div>

@@ -25,8 +25,28 @@ export class HotelDetailsService {
       await this.hotelDetailRepository.findByProviderHotelId(hotelId);
 
     if (cached) {
+      // Cached database fields and fresh provider responses share one contract.
+      const payload =
+        cached.payload &&
+        typeof cached.payload === 'object' &&
+        !Array.isArray(cached.payload)
+          ? cached.payload
+          : {};
+      const normalized = {
+        ...payload,
+        Name: cached.name,
+        Stars: cached.stars,
+        Category: cached.category,
+        Zone: cached.zone,
+        Address: cached.address,
+        Lat: cached.latitude == null ? undefined : String(cached.latitude),
+        Lon: cached.longitude == null ? undefined : String(cached.longitude),
+        PhotoGallery: cached.photoGallery,
+        Descriptions: cached.descriptions,
+        Facilities: cached.facilities,
+      };
       if (hasImages(cached.photoGallery)) {
-        return cached;
+        return normalized;
       }
 
       const cachedSearchResults =
@@ -43,7 +63,9 @@ export class HotelDetailsService {
 
       const cachedImage = getHotelPayloadString(cachedPayload?.Image);
 
-      return cachedImage ? { ...cached, photoGallery: [cachedImage] } : cached;
+      return cachedImage
+        ? { ...normalized, PhotoGallery: [cachedImage] }
+        : normalized;
     }
 
     //

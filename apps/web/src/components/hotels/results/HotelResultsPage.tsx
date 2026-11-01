@@ -20,6 +20,7 @@ import {
   X,
 } from "lucide-react";
 
+import { hotelCoordinates, hotelMapUrl } from "@/lib/hotel-location";
 import { apiFetch } from "@/lib/api";
 import { useWishlist } from "@/lib/wishlist";
 import { useLanguage } from "@/components/i18n/LanguageProvider";
@@ -805,6 +806,7 @@ function HotelResultCard({
               </div>
             )}
 
+            {hotelCoordinates(hotel.latitude, hotel.longitude) && <a href={hotelMapUrl(hotel.latitude!, hotel.longitude!)} target="_blank" rel="noopener noreferrer" className="mt-3 inline-block text-sm font-semibold text-[#0D2340] underline">{isEnglish ? 'View on map' : 'Vedi sulla mappa'}</a>}
             {/* ROOM */}
 
             <div

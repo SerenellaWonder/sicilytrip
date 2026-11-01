@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   ArrowLeft,
@@ -19,6 +15,7 @@ import { apiFetch } from "@/lib/api";
 import { useLanguage } from "@/components/i18n/LanguageProvider";
 
 import SearchExpiryNotice from "../SearchExpiryNotice";
+import HotelLocation from "./HotelLocation";
 import HotelGallery from "./HotelGallery";
 import HotelRooms from "./HotelRooms";
 
@@ -41,6 +38,9 @@ type HotelDetail = {
   payload?: unknown;
   Descriptions?: HotelDescription[];
   Facilities?: string[];
+  RoomFacilities?: string[];
+  Amenities?: string[];
+  Distances?: string[];
 };
 
 type HotelRoomRate = {
@@ -66,19 +66,13 @@ export default function HotelDetailPage({
 }) {
   const { language } = useLanguage();
   const isEnglish = language === "en";
-  const [detail, setDetail] =
-    useState<HotelDetail | null>(
-      null
-    );
+  const [detail, setDetail] = useState<HotelDetail | null>(null);
 
-  const [rooms, setRooms] =
-    useState<HotelRoomRate[]>([]);
+  const [rooms, setRooms] = useState<HotelRoomRate[]>([]);
 
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const [error, setError] =
-    useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -88,24 +82,17 @@ export default function HotelDetailPage({
         setLoading(true);
         setError("");
 
-        const [
-          detailResponse,
-          roomsResponse,
-        ] = await Promise.all([
+        const [detailResponse, roomsResponse] = await Promise.all([
           apiFetch<HotelDetail>(
             `/hotels/search/${encodeURIComponent(
-              searchId
-            )}/hotel/${encodeURIComponent(
-              hotelId
-            )}`
+              searchId,
+            )}/hotel/${encodeURIComponent(hotelId)}`,
           ),
 
           apiFetch<HotelRoomsResponse>(
             `/hotels/search/${encodeURIComponent(
-              searchId
-            )}/hotel/${encodeURIComponent(
-              hotelId
-            )}/rooms`
+              searchId,
+            )}/hotel/${encodeURIComponent(hotelId)}/rooms`,
           ),
         ]);
 
@@ -113,18 +100,11 @@ export default function HotelDetailPage({
           return;
         }
 
-        setDetail(
-          detailResponse
-        );
+        setDetail(detailResponse);
 
-        setRooms(
-          roomsResponse.Rooms ?? []
-        );
+        setRooms(roomsResponse.Rooms ?? []);
       } catch (err) {
-        console.error(
-          "Hotel detail error:",
-          err
-        );
+        console.error("Hotel detail error:", err);
 
         if (active) {
           setError(
@@ -132,7 +112,7 @@ export default function HotelDetailPage({
               ? err.message
               : isEnglish
                 ? "Unable to load the hotel."
-                : "Impossibile caricare l'hotel."
+                : "Impossibile caricare l'hotel.",
           );
         }
       } finally {
@@ -147,54 +127,31 @@ export default function HotelDetailPage({
     return () => {
       active = false;
     };
-  }, [
-    searchId,
-    hotelId,
-    isEnglish,
-  ]);
+  }, [searchId, hotelId, isEnglish]);
 
   /*
    * Pulizia facilities.
    */
-  const facilities =
-    useMemo(
-      () =>
-        (
-          detail?.Facilities ?? []
-        )
-          .map(item =>
-            item.trim()
-          )
-          .filter(Boolean),
-      [detail]
-    );
+  const facilities = useMemo(
+    () => (detail?.Facilities ?? []).map((item) => item.trim()).filter(Boolean),
+    [detail],
+  );
 
   /*
    * Descrizione hotel pulita.
    */
-  const description =
-    useMemo(() => {
-      const first =
-        detail?.Descriptions?.[0]
-          ?.Description;
+  const descriptions = useMemo(
+    () =>
+      (detail?.Descriptions ?? [])
+        .map((section) => ({
+          title: decodeHtmlEntities(section.Title ?? ""),
+          text: cleanHotelDescription(section.Description ?? ""),
+        }))
+        .filter((section) => section.text),
+    [detail],
+  );
 
-      if (!first) {
-        return "";
-      }
-
-      return cleanHotelDescription(
-        first
-      );
-    }, [detail]);
-
-  const gallery =
-    useMemo(
-      () =>
-        extractHotelGallery(
-          detail
-        ),
-      [detail]
-    );
+  const gallery = useMemo(() => extractHotelGallery(detail), [detail]);
 
   /* =======================================================
      LOADING
@@ -240,10 +197,7 @@ export default function HotelDetailPage({
      ERROR
   ======================================================= */
 
-  if (
-    error ||
-    !detail
-  ) {
+  if (error || !detail) {
     return (
       <div
         className="
@@ -286,9 +240,7 @@ export default function HotelDetailPage({
           </p>
 
           <a
-            href={`/hotel?searchId=${encodeURIComponent(
-              searchId
-            )}`}
+            href={`/hotel?searchId=${encodeURIComponent(searchId)}`}
             className="
               mt-7
               inline-flex
@@ -335,9 +287,7 @@ export default function HotelDetailPage({
         {/* BACK */}
 
         <a
-          href={`/hotel?searchId=${encodeURIComponent(
-            searchId
-          )}`}
+          href={`/hotel?searchId=${encodeURIComponent(searchId)}`}
           className="
             inline-flex
             items-center
@@ -352,9 +302,7 @@ export default function HotelDetailPage({
             hover:text-[#0D2340]
           "
         >
-          <ArrowLeft
-            size={14}
-          />
+          <ArrowLeft size={14} />
 
           {isEnglish ? "Back to results" : "Torna ai risultati"}
         </a>
@@ -395,23 +343,17 @@ export default function HotelDetailPage({
                   "
                 >
                   {Array.from({
-                    length:
-                      detail.Stars,
-                  }).map(
-                    (
-                      _,
-                      index
-                    ) => (
-                      <Star
-                        key={index}
-                        size={15}
-                        fill="currentColor"
-                        className="
+                    length: detail.Stars,
+                  }).map((_, index) => (
+                    <Star
+                      key={index}
+                      size={15}
+                      fill="currentColor"
+                      className="
                           text-[#F58220]
                         "
-                      />
-                    )
-                  )}
+                    />
+                  ))}
                 </div>
               )}
 
@@ -446,10 +388,7 @@ export default function HotelDetailPage({
                 lg:text-[60px]
               "
             >
-              {decodeHtmlEntities(
-                detail.Name ??
-                  "Hotel"
-              )}
+              {decodeHtmlEntities(detail.Name ?? "Hotel")}
             </h1>
 
             {/* LOCATION */}
@@ -486,11 +425,7 @@ export default function HotelDetailPage({
               )}
 
               {detail.Address && (
-                <span>
-                  {decodeHtmlEntities(
-                    detail.Address
-                  )}
-                </span>
+                <span>{decodeHtmlEntities(detail.Address)}</span>
               )}
             </div>
           </div>
@@ -527,12 +462,7 @@ export default function HotelDetailPage({
         <div className="mt-9">
           <HotelGallery
             images={gallery}
-            hotelName={
-              decodeHtmlEntities(
-                detail.Name ??
-                  "Hotel"
-              )
-            }
+            hotelName={decodeHtmlEntities(detail.Name ?? "Hotel")}
           />
         </div>
 
@@ -574,26 +504,21 @@ export default function HotelDetailPage({
               {isEnglish ? "Discover your stay" : "Scopri il soggiorno"}
             </h2>
 
-            {description ? (
-              <p
-                className="
-                  mt-5
-                  max-w-[850px]
-                  whitespace-pre-line
-                  text-[15px]
-                  leading-8
-                  text-slate-600
-                "
-              >
-                {description}
-              </p>
+            {descriptions.length ? (
+              descriptions.map((section, index) => (
+                <section key={index} className="mt-6">
+                  {section.title && (
+                    <h3 className="text-lg font-semibold text-[#0D2340]">
+                      {section.title}
+                    </h3>
+                  )}
+                  <p className="mt-2 whitespace-pre-line text-[15px] leading-8 text-slate-600">
+                    {section.text}
+                  </p>
+                </section>
+              ))
             ) : (
-              <p
-                className="
-                  mt-5
-                  text-slate-500
-                "
-              >
+              <p className="mt-5 text-slate-500">
                 {isEnglish
                   ? "Description unavailable."
                   : "Descrizione non disponibile."}
@@ -635,8 +560,7 @@ export default function HotelDetailPage({
               {isEnglish ? "At the property" : "In struttura"}
             </h3>
 
-            {facilities.length >
-            0 ? (
+            {facilities.length > 0 ? (
               <div
                 className="
                   mt-6
@@ -644,38 +568,29 @@ export default function HotelDetailPage({
                   gap-3
                 "
               >
-                {facilities.map(
-                  (
-                    facility,
-                    index
-                  ) => (
-                    <div
-                      key={`${facility}-${index}`}
-                      className="
+                {facilities.map((facility, index) => (
+                  <div
+                    key={`${facility}-${index}`}
+                    className="
                         flex
                         items-start
                         gap-3
                         text-sm
                         text-slate-600
                       "
-                    >
-                      <CheckCircle2
-                        size={16}
-                        className="
+                  >
+                    <CheckCircle2
+                      size={16}
+                      className="
                           mt-0.5
                           shrink-0
                           text-[#F58220]
                         "
-                      />
+                    />
 
-                      <span>
-                        {decodeHtmlEntities(
-                          facility
-                        )}
-                      </span>
-                    </div>
-                  )
-                )}
+                    <span>{decodeHtmlEntities(facility)}</span>
+                  </div>
+                ))}
               </div>
             ) : (
               <p
@@ -692,6 +607,46 @@ export default function HotelDetailPage({
             )}
           </div>
         </div>
+
+        <div className="mt-8 grid gap-6 md:grid-cols-3">
+          {[
+            {
+              title: isEnglish ? "Room facilities" : "Servizi delle camere",
+              items: detail?.RoomFacilities,
+            },
+            {
+              title: isEnglish
+                ? "Property information"
+                : "Informazioni sulla struttura",
+              items: detail?.Amenities,
+            },
+            {
+              title: isEnglish ? "Distances" : "Distanze",
+              items: detail?.Distances,
+            },
+          ]
+            .filter((group) => group.items?.some((item) => item.trim()))
+            .map((group) => (
+              <section key={group.title} className="rounded-2xl bg-white p-6">
+                <h3 className="text-lg font-semibold text-[#0D2340]">
+                  {group.title}
+                </h3>
+                <ul className="mt-4 space-y-2 text-sm text-slate-600">
+                  {group.items
+                    ?.filter((item) => item.trim())
+                    .map((item, index) => (
+                      <li key={index}>{decodeHtmlEntities(item.trim())}</li>
+                    ))}
+                </ul>
+              </section>
+            ))}
+        </div>
+        <HotelLocation
+          latitude={detail?.Lat}
+          longitude={detail?.Lon}
+          name={detail?.Name ?? ""}
+          isEnglish={isEnglish}
+        />
 
         {/* ROOMS */}
 
@@ -743,11 +698,7 @@ export default function HotelDetailPage({
           </p>
 
           <div className="mt-8">
-            <HotelRooms
-              rooms={rooms}
-              searchId={searchId}
-              hotelId={hotelId}
-            />
+            <HotelRooms rooms={rooms} searchId={searchId} hotelId={hotelId} />
           </div>
         </section>
       </div>
@@ -759,41 +710,28 @@ export default function HotelDetailPage({
    HOTEL GALLERY EXTRACTOR
 ========================================================= */
 
-function extractHotelGallery(
-  detail: HotelDetail | null
-): string[] {
+function extractHotelGallery(detail: HotelDetail | null): string[] {
   if (!detail) {
     return [];
   }
 
-  const galleries: unknown[] = [
-    detail.PhotoGallery,
-    detail.photoGallery,
-  ];
+  const galleries: unknown[] = [detail.PhotoGallery, detail.photoGallery];
 
-  if (
-    detail.payload &&
-    typeof detail.payload ===
-      "object"
-  ) {
+  if (detail.payload && typeof detail.payload === "object") {
     galleries.push(
       (
         detail.payload as {
           PhotoGallery?: unknown;
         }
-      ).PhotoGallery
+      ).PhotoGallery,
     );
   }
 
   for (const gallery of galleries) {
     if (Array.isArray(gallery)) {
       return gallery.filter(
-        (
-          image
-        ): image is string =>
-          typeof image ===
-            "string" &&
-          image.trim().length > 0
+        (image): image is string =>
+          typeof image === "string" && image.trim().length > 0,
       );
     }
   }
@@ -805,77 +743,34 @@ function extractHotelGallery(
    DESCRIPTION CLEANER
 ========================================================= */
 
-function cleanHotelDescription(
-  value: string
-) {
+function cleanHotelDescription(value: string) {
   if (!value) {
     return "";
   }
 
-  let cleaned =
-    value
-      .replace(
-        /<br\s*\/?>/gi,
-        "\n"
-      )
-      .replace(
-        /<\/p>/gi,
-        "\n\n"
-      )
-      .replace(
-        /<p[^>]*>/gi,
-        ""
-      )
-      .replace(
-        /<\/div>/gi,
-        "\n"
-      )
-      .replace(
-        /<div[^>]*>/gi,
-        ""
-      )
-      .replace(
-        /<[^>]+>/g,
-        ""
-      );
+  let cleaned = decodeHtmlEntities(decodeHtmlEntities(value))
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n\n")
+    .replace(/<p[^>]*>/gi, "")
+    .replace(/<\/div>/gi, "\n")
+    .replace(/<div[^>]*>/gi, "")
+    .replace(/<[^>]+>/g, "");
 
   /*
    * Alcune descrizioni arrivano
    * HTML-encoded più di una volta.
    */
-  cleaned =
-    decodeHtmlEntities(
-      cleaned
-    );
+  cleaned = decodeHtmlEntities(cleaned);
 
-  cleaned =
-    decodeHtmlEntities(
-      cleaned
-    );
+  cleaned = decodeHtmlEntities(cleaned);
 
-  cleaned =
-    cleaned
-      .replace(
-        /\r\n/g,
-        "\n"
-      )
-      .replace(
-        /\r/g,
-        "\n"
-      )
-      .replace(
-        /[ \t]+\n/g,
-        "\n"
-      )
-      .replace(
-        /\n[ \t]+/g,
-        "\n"
-      )
-      .replace(
-        /\n{3,}/g,
-        "\n\n"
-      )
-      .trim();
+  cleaned = cleaned
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n[ \t]+/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 
   return cleaned;
 }
@@ -884,55 +779,25 @@ function cleanHotelDescription(
    HTML ENTITY DECODER
 ========================================================= */
 
-function decodeHtmlEntities(
-  value: string
-) {
+function decodeHtmlEntities(value: string) {
   if (!value) {
     return "";
   }
 
-  if (
-    typeof document !==
-    "undefined"
-  ) {
-    const textarea =
-      document.createElement(
-        "textarea"
-      );
+  if (typeof document !== "undefined") {
+    const textarea = document.createElement("textarea");
 
-    textarea.innerHTML =
-      value;
+    textarea.innerHTML = value;
 
     return textarea.value;
   }
 
   return value
-    .replace(
-      /&amp;/g,
-      "&"
-    )
-    .replace(
-      /&apos;/g,
-      "'"
-    )
-    .replace(
-      /&#39;/g,
-      "'"
-    )
-    .replace(
-      /&quot;/g,
-      '"'
-    )
-    .replace(
-      /&lt;/g,
-      "<"
-    )
-    .replace(
-      /&gt;/g,
-      ">"
-    )
-    .replace(
-      /&nbsp;/g,
-      " "
-    );
+    .replace(/&amp;/g, "&")
+    .replace(/&apos;/g, "'")
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&nbsp;/g, " ");
 }

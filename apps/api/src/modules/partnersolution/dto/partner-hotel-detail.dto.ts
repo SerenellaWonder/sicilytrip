@@ -26,4 +26,7 @@ export interface PartnerHotelDetailDto {
   Descriptions?: PartnerHotelDescriptionDto[];
 
   Facilities?: string[];
+  RoomFacilities?: string[];
+  Amenities?: string[];
+  Distances?: string[];
 }
