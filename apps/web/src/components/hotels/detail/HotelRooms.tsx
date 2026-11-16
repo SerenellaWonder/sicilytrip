@@ -2,24 +2,11 @@
 
 import { useRouter } from "next/navigation";
 
-import {
-  BedDouble,
-  Check,
-  Coffee,
-  ShieldCheck,
-} from "lucide-react";
+import { BedDouble, Check, Coffee, ShieldCheck } from "lucide-react";
 
 import { useLanguage } from "@/components/i18n/LanguageProvider";
 
-type HotelRoomRate = {
-  SelectCode: string;
-  Rooms?: string[];
-  Boards?: string[];
-  CancellationPolicyCode?: string;
-  Price?: number;
-  Currency?: string;
-  Supplier?: string;
-};
+import { groupHotelRooms, type HotelRoomRate } from "@/lib/hotel-room-groups";
 
 export default function HotelRooms({
   rooms,
@@ -59,9 +46,7 @@ export default function HotelRooms({
     );
   }
 
-  function selectRate(
-    rate: HotelRoomRate
-  ) {
+  function selectRate(rate: HotelRoomRate) {
     /*
      * Conserviamo la tariffa esatta
      * restituita da HotelRooms.
@@ -72,17 +57,15 @@ export default function HotelRooms({
      */
     sessionStorage.setItem(
       `hotel-rate:${searchId}:${hotelId}`,
-      JSON.stringify(rate)
+      JSON.stringify(rate),
     );
 
     router.push(
       `/hotel/${encodeURIComponent(
-        hotelId
+        hotelId,
       )}/booking?searchId=${encodeURIComponent(
-        searchId
-      )}&rateId=${encodeURIComponent(
-        rate.SelectCode
-      )}`
+        searchId,
+      )}&rateId=${encodeURIComponent(rate.SelectCode)}`,
     );
   }
 
@@ -93,22 +76,39 @@ export default function HotelRooms({
         gap-4
       "
     >
-      {rooms.map(rate => {
-        const price =
-          formatPrice(
-            rate.Price,
-            rate.Currency,
-            isEnglish ? "en-GB" : "it-IT",
-          );
+      <p className="text-sm text-slate-600">
+        {isEnglish
+          ? `${groupHotelRooms(rooms).length} room options · ${rooms.length} rates. Expand a room to compare board, cancellation and supplier.`
+          : `${groupHotelRooms(rooms).length} tipologie/configurazioni di camera · ${rooms.length} tariffe. Apri una camera per confrontare trattamento, cancellazione e fornitore.`}
+      </p>
+      {groupHotelRooms(rooms).map((group, groupIndex) => (
+        <details
+          key={group.key}
+          open={groupIndex === 0}
+          className="rounded-2xl border border-slate-200 bg-white"
+        >
+          <summary className="cursor-pointer p-6 font-semibold text-[#0D2340]">
+            {group.rooms.join(" + ") ||
+              (isEnglish ? "Room details to confirm" : "Camera da verificare")}
+            <span className="mt-2 block text-sm font-normal text-slate-500">
+              {group.rates.length}{" "}
+              {isEnglish ? "available rates" : "tariffe disponibili"}
+            </span>
+          </summary>
+          <div className="grid gap-3 px-3 pb-3">
+            {group.rates.map((rate) => {
+              const price = formatPrice(
+                rate.Price,
+                rate.Currency,
+                isEnglish ? "en-GB" : "it-IT",
+              );
 
-        const freeCancellation =
-          rate.CancellationPolicyCode ===
-          "FREE";
+              const freeCancellation = rate.CancellationPolicyCode === "FREE";
 
-        return (
-          <article
-            key={rate.SelectCode}
-            className="
+              return (
+                <article
+                  key={rate.SelectCode}
+                  className="
               rounded-[24px]
               border
               border-[#0D2340]/[0.08]
@@ -118,9 +118,9 @@ export default function HotelRooms({
 
               sm:p-7
             "
-          >
-            <div
-              className="
+                >
+                  <div
+                    className="
                 flex
                 flex-col
                 gap-6
@@ -129,66 +129,55 @@ export default function HotelRooms({
                 lg:items-center
                 lg:justify-between
               "
-            >
-              {/* ROOM INFO */}
+                  >
+                    {/* ROOM INFO */}
 
-              <div
-                className="
+                    <div
+                      className="
                   min-w-0
                   flex-1
                 "
-              >
-                <div
-                  className="
+                    >
+                      <div
+                        className="
                     grid
                     gap-3
 
                     sm:grid-cols-2
                   "
-                >
-                  <Info
-                    icon={
-                      <BedDouble
-                        size={16}
-                      />
-                    }
-                    label={isEnglish ? "Room" : "Camera"}
-                    value={
-                      rate.Rooms?.join(
-                        ", "
-                      ) ?? (isEnglish ? "Room" : "Camera")
-                    }
-                  />
+                      >
+                        <Info
+                          icon={<BedDouble size={16} />}
+                          label={isEnglish ? "Room" : "Camera"}
+                          value={
+                            rate.Rooms?.join(", ") ??
+                            (isEnglish ? "Room" : "Camera")
+                          }
+                        />
 
-                  <Info
-                    icon={
-                      <Coffee
-                        size={16}
-                      />
-                    }
-                    label={isEnglish ? "Board" : "Trattamento"}
-                    value={
-                      rate.Boards?.join(
-                        ", "
-                      ) ??
-                      (isEnglish ? "Board" : "Trattamento")
-                    }
-                  />
-                </div>
+                        <Info
+                          icon={<Coffee size={16} />}
+                          label={isEnglish ? "Board" : "Trattamento"}
+                          value={
+                            rate.Boards?.join(", ") ??
+                            (isEnglish ? "Board" : "Trattamento")
+                          }
+                        />
+                      </div>
 
-                {/* POLICY */}
+                      {/* POLICY */}
 
-                <div
-                  className="
+                      <div
+                        className="
                     mt-4
                     flex
                     flex-wrap
                     items-center
                     gap-3
                   "
-                >
-                  <span
-                    className={`
+                      >
+                        <span
+                          className={`
                       inline-flex
                       items-center
                       gap-1.5
@@ -204,46 +193,42 @@ export default function HotelRooms({
                           : "bg-slate-100 text-slate-500"
                       }
                     `}
-                  >
-                    {freeCancellation ? (
-                      <Check
-                        size={13}
-                      />
-                    ) : (
-                      <ShieldCheck
-                        size={13}
-                      />
-                    )}
+                        >
+                          {freeCancellation ? (
+                            <Check size={13} />
+                          ) : (
+                            <ShieldCheck size={13} />
+                          )}
 
-                    {freeCancellation
-                      ? isEnglish
-                        ? "Free cancellation"
-                        : "Cancellazione gratuita"
-                      : isEnglish
-                        ? "Non-refundable"
-                        : "Non rimborsabile"}
-                  </span>
+                          {freeCancellation
+                            ? isEnglish
+                              ? "Free cancellation"
+                              : "Cancellazione gratuita"
+                            : isEnglish
+                              ? "Check cancellation conditions"
+                              : "Verifica condizioni di cancellazione"}
+                        </span>
 
-                  {rate.Supplier && (
-                    <span
-                      className="
+                        {rate.Supplier && (
+                          <span
+                            className="
                         text-[9px]
                         font-bold
                         uppercase
                         tracking-[0.15em]
                         text-slate-300
                       "
-                    >
-                      {rate.Supplier}
-                    </span>
-                  )}
-                </div>
-              </div>
+                          >
+                            {rate.Supplier}
+                          </span>
+                        )}
+                      </div>
+                    </div>
 
-              {/* PRICE */}
+                    {/* PRICE */}
 
-              <div
-                className="
+                    <div
+                      className="
                   flex
                   shrink-0
                   flex-col
@@ -255,14 +240,14 @@ export default function HotelRooms({
                   lg:flex-col
                   lg:items-end
                 "
-              >
-                <div
-                  className="
+                    >
+                      <div
+                        className="
                     lg:text-right
                   "
-                >
-                  <span
-                    className="
+                      >
+                        <span
+                          className="
                       block
                       text-[9px]
                       font-bold
@@ -270,12 +255,12 @@ export default function HotelRooms({
                       tracking-[0.17em]
                       text-slate-400
                     "
-                  >
-                    {isEnglish ? "Total stay" : "Totale soggiorno"}
-                  </span>
+                        >
+                          {isEnglish ? "Total stay" : "Totale soggiorno"}
+                        </span>
 
-                  <strong
-                    className="
+                        <strong
+                          className="
                       mt-1
                       block
                       text-[28px]
@@ -283,18 +268,15 @@ export default function HotelRooms({
                       tracking-[-0.04em]
                       text-[#0D2340]
                     "
-                  >
-                    {price ??
-                      (isEnglish ? "On request" : "Su richiesta")}
-                  </strong>
-                </div>
+                        >
+                          {price ?? (isEnglish ? "On request" : "Su richiesta")}
+                        </strong>
+                      </div>
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    selectRate(rate)
-                  }
-                  className="
+                      <button
+                        type="button"
+                        onClick={() => selectRate(rate)}
+                        className="
                     inline-flex
                     h-12
                     items-center
@@ -314,14 +296,17 @@ export default function HotelRooms({
                     hover:-translate-y-0.5
                     hover:bg-[#FF9238]
                   "
-                >
-                  {isEnglish ? "Select rate" : "Seleziona tariffa"}
-                </button>
-              </div>
-            </div>
-          </article>
-        );
-      })}
+                      >
+                        {isEnglish ? "Select rate" : "Seleziona tariffa"}
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </details>
+      ))}
     </div>
   );
 }
@@ -395,21 +380,14 @@ function Info({
    PRICE
 ========================================================= */
 
-function formatPrice(
-  price?: number,
-  currency = "EUR",
-  locale = "it-IT",
-) {
+function formatPrice(price?: number, currency = "EUR", locale = "it-IT") {
   if (price == null) {
     return null;
   }
 
-  return new Intl.NumberFormat(
-    locale,
-    {
-      style: "currency",
-      currency,
-      maximumFractionDigits: 2,
-    }
-  ).format(price);
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 2,
+  }).format(price);
 }

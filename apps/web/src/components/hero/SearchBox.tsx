@@ -26,7 +26,7 @@ import type { Destination, HotelSearchResponse } from "@/types/hotel";
 ========================================================= */
 
 type SearchBoxInitialValues = {
-  destination: Destination;
+  destination?: Destination;
   checkIn: string;
   checkOut: string;
   adults?: number;
@@ -61,7 +61,7 @@ export default function SearchBox({ initialValues }: SearchBoxProps) {
    */
 
   const [destinationQuery, setDestinationQuery] = useState(
-    initialValues?.destination.name ?? "",
+    initialValues?.destination?.name ?? "",
   );
 
   const [destination, setDestination] = useState<Destination | null>(
@@ -210,25 +210,41 @@ export default function SearchBox({ initialValues }: SearchBoxProps) {
     setError("");
 
     if (!destination) {
-      setError(isItalian ? "Seleziona una destinazione dai suggerimenti." : "Select a destination from the suggestions.");
+      setError(
+        isItalian
+          ? "Seleziona una destinazione dai suggerimenti."
+          : "Select a destination from the suggestions.",
+      );
 
       return;
     }
 
     if (!checkIn) {
-      setError(isItalian ? "Seleziona la data di check-in." : "Select a check-in date.");
+      setError(
+        isItalian
+          ? "Seleziona la data di check-in."
+          : "Select a check-in date.",
+      );
 
       return;
     }
 
     if (!checkOut) {
-      setError(isItalian ? "Seleziona la data di check-out." : "Select a check-out date.");
+      setError(
+        isItalian
+          ? "Seleziona la data di check-out."
+          : "Select a check-out date.",
+      );
 
       return;
     }
 
     if (new Date(checkOut) <= new Date(checkIn)) {
-      setError(isItalian ? "Il check-out deve essere successivo al check-in." : "Check-out must be after check-in.");
+      setError(
+        isItalian
+          ? "Il check-out deve essere successivo al check-in."
+          : "Check-out must be after check-in.",
+      );
 
       return;
     }
@@ -325,9 +341,9 @@ export default function SearchBox({ initialValues }: SearchBoxProps) {
 
   const totalAdults = rooms.reduce((total, room) => total + room.adults, 0);
   const totalChildren = rooms.reduce((total, room) => total + room.children, 0);
-  const guestsLabel = `${rooms.length} ${rooms.length === 1 ? (isItalian ? "camera" : "room") : (isItalian ? "camere" : "rooms")}, ${totalAdults} ${totalAdults === 1 ? (isItalian ? "adulto" : "adult") : (isItalian ? "adulti" : "adults")}${
+  const guestsLabel = `${rooms.length} ${rooms.length === 1 ? (isItalian ? "camera" : "room") : isItalian ? "camere" : "rooms"}, ${totalAdults} ${totalAdults === 1 ? (isItalian ? "adulto" : "adult") : isItalian ? "adulti" : "adults"}${
     totalChildren > 0
-      ? `, ${totalChildren} ${totalChildren === 1 ? (isItalian ? "bambino" : "child") : (isItalian ? "bambini" : "children")}`
+      ? `, ${totalChildren} ${totalChildren === 1 ? (isItalian ? "bambino" : "child") : isItalian ? "bambini" : "children"}`
       : ""
   }`;
 
@@ -428,7 +444,11 @@ export default function SearchBox({ initialValues }: SearchBoxProps) {
                       setShowSuggestions(true);
                     }
                   }}
-                  placeholder={isItalian ? "Dove vuoi andare?" : "Where would you like to go?"}
+                  placeholder={
+                    isItalian
+                      ? "Dove vuoi andare?"
+                      : "Where would you like to go?"
+                  }
                   autoComplete="off"
                   className="
                     mt-0.5
@@ -561,7 +581,9 @@ export default function SearchBox({ initialValues }: SearchBoxProps) {
                       text-slate-500
                     "
                   >
-                    {isItalian ? "Nessuna destinazione trovata." : "No destinations found."}
+                    {isItalian
+                      ? "Nessuna destinazione trovata."
+                      : "No destinations found."}
                   </div>
                 )}
               </div>

@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  FormEvent,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 import {
@@ -22,7 +17,7 @@ import {
 
 import { useConcierge } from "./ConciergeProvider";
 import { useLanguage } from "@/components/i18n/LanguageProvider";
-import { apiFetch } from "@/lib/api";
+import { createConciergeResponse } from "@/lib/concierge-search";
 
 /* ============================================================
    TYPES
@@ -82,10 +77,10 @@ const actions: QuickAction[] = [
     promptEn: "Show me the available experiences",
   },
   {
-    label: "Offerte e pacchetti",
-    labelEn: "Offers and packages",
-    description: "Scopri le proposte SicilyTrip",
-    descriptionEn: "Discover SicilyTrip proposals",
+    label: "Soggiorni e viaggi su misura",
+    labelEn: "Stays and tailor-made trips",
+    description: "Hotel disponibili e richieste personalizzate",
+    descriptionEn: "Hotel availability and tailored requests",
     icon: IconGift,
     prompt: "Quali offerte e pacchetti sono disponibili?",
     promptEn: "Which offers and packages are available?",
@@ -99,11 +94,7 @@ const actions: QuickAction[] = [
 export default function ConciergePanel() {
   const { language } = useLanguage();
   const isEnglish = language === "en";
-  const {
-    isOpen,
-    initialQuery,
-    closeConcierge,
-  } = useConcierge();
+  const { isOpen, initialQuery, closeConcierge } = useConcierge();
 
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -169,10 +160,7 @@ export default function ConciergePanel() {
       text: cleanText,
     };
 
-    setMessages((current) => [
-      ...current,
-      userMessage,
-    ]);
+    setMessages((current) => [...current, userMessage]);
 
     setMessage("");
     setIsTyping(true);
@@ -186,20 +174,15 @@ export default function ConciergePanel() {
 
     window.setTimeout(() => {
       const response = createConciergeResponse(
-        [...messages.filter((item) => item.role === "user").map((item) => item.text), cleanText].join(" "),
+        [
+          ...messages
+            .filter((item) => item.role === "user")
+            .map((item) => item.text),
+          cleanText,
+        ].join(" "),
         cleanText,
         isEnglish,
       );
-      if (response.profile) {
-        void apiFetch("/concierge/profile", {
-          method: "POST",
-          body: JSON.stringify({
-            sessionId: getConciergeSessionId(),
-            language: isEnglish ? "en" : "it",
-            ...response.profile,
-          }),
-        }).catch(() => undefined);
-      }
       const assistantMessage: Message = {
         id: Date.now() + 1,
         role: "assistant",
@@ -207,10 +190,7 @@ export default function ConciergePanel() {
         actions: response.actions,
       };
 
-      setMessages((current) => [
-        ...current,
-        assistantMessage,
-      ]);
+      setMessages((current) => [...current, assistantMessage]);
 
       setIsTyping(false);
     }, 1100);
@@ -220,9 +200,7 @@ export default function ConciergePanel() {
      SUBMIT
   ============================================================ */
 
-  function handleSubmit(
-    e: FormEvent<HTMLFormElement>
-  ) {
+  function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     sendMessage(message);
@@ -300,7 +278,6 @@ export default function ConciergePanel() {
           sm:rounded-[32px]
         "
       >
-
         {/* ====================================================
             HEADER
         ==================================================== */}
@@ -320,7 +297,6 @@ export default function ConciergePanel() {
             sm:pt-6
           "
         >
-
           {/* decorative glow */}
 
           <div
@@ -346,11 +322,9 @@ export default function ConciergePanel() {
               gap-4
             "
           >
-
             {/* BRAND */}
 
             <div className="flex items-center gap-3">
-
               <div
                 className="
                   relative
@@ -366,10 +340,7 @@ export default function ConciergePanel() {
                   shadow-[0_8px_25px_rgba(245,130,32,0.28)]
                 "
               >
-                <IconSparkles
-                  size={22}
-                  stroke={1.8}
-                />
+                <IconSparkles size={22} stroke={1.8} />
 
                 <span
                   className="
@@ -387,7 +358,6 @@ export default function ConciergePanel() {
               </div>
 
               <div>
-
                 <div
                   className="
                     text-[10px]
@@ -417,22 +387,23 @@ export default function ConciergePanel() {
                     text-white/45
                   "
                 >
-                  {isEnglish ? "Your travel assistant" : "Il tuo assistente di viaggio"}
+                  {isEnglish
+                    ? "Your travel assistant"
+                    : "Il tuo assistente di viaggio"}
                 </div>
-
               </div>
-
             </div>
 
             {/* HEADER BUTTONS */}
 
             <div className="flex items-center gap-2">
-
               {hasConversation && (
                 <button
                   type="button"
                   onClick={resetConversation}
-                  aria-label={isEnglish ? "New conversation" : "Nuova conversazione"}
+                  aria-label={
+                    isEnglish ? "New conversation" : "Nuova conversazione"
+                  }
                   title={isEnglish ? "New conversation" : "Nuova conversazione"}
                   className="
                     flex
@@ -451,10 +422,7 @@ export default function ConciergePanel() {
                     hover:text-white
                   "
                 >
-                  <IconRefresh
-                    size={18}
-                    stroke={1.7}
-                  />
+                  <IconRefresh size={18} stroke={1.7} />
                 </button>
               )}
 
@@ -479,21 +447,15 @@ export default function ConciergePanel() {
                   hover:text-white
                 "
               >
-                <IconX
-                  size={19}
-                  stroke={1.8}
-                />
+                <IconX size={19} stroke={1.8} />
               </button>
-
             </div>
-
           </div>
 
           {/* HEADER INTRO */}
 
           {!hasConversation && (
             <div className="relative mt-6">
-
               <h2
                 className="
                   text-[25px]
@@ -517,13 +479,11 @@ export default function ConciergePanel() {
                 "
               >
                 {isEnglish
-                  ? "Tell me about the journey you imagine. I can help with hotels, experiences, offers, packages and itineraries."
-                  : "Raccontami il viaggio che immagini. Posso aiutarti con hotel, esperienze, offerte, pacchetti e itinerari."}
+                  ? "Tell me about the journey you imagine. I can guide you to hotel searches and tailor-made travel enquiries."
+                  : "Raccontami il viaggio che immagini. Posso guidarti alla ricerca hotel e alle richieste di viaggio su misura."}
               </p>
-
             </div>
           )}
-
         </div>
 
         {/* ====================================================
@@ -541,14 +501,12 @@ export default function ConciergePanel() {
             sm:px-6
           "
         >
-
           {/* ==================================================
               WELCOME STATE
           ================================================== */}
 
           {!hasConversation && !isTyping && (
             <div>
-
               <div
                 className="
                   mb-4
@@ -559,11 +517,12 @@ export default function ConciergePanel() {
                   text-[#0D2340]/40
                 "
               >
-                {isEnglish ? "Where would you like to start?" : "Da dove vuoi iniziare?"}
+                {isEnglish
+                  ? "Where would you like to start?"
+                  : "Da dove vuoi iniziare?"}
               </div>
 
               <div className="grid gap-2.5">
-
                 {actions.map((action) => {
                   const Icon = action.icon;
 
@@ -572,7 +531,9 @@ export default function ConciergePanel() {
                       key={action.label}
                       type="button"
                       onClick={() =>
-                        selectAction(isEnglish ? action.promptEn : action.prompt)
+                        selectAction(
+                          isEnglish ? action.promptEn : action.prompt,
+                        )
                       }
                       className="
                         group
@@ -593,7 +554,6 @@ export default function ConciergePanel() {
                         hover:shadow-[0_10px_30px_rgba(13,35,64,0.08)]
                       "
                     >
-
                       <span
                         className="
                           flex
@@ -607,14 +567,10 @@ export default function ConciergePanel() {
                           text-[#F58220]
                         "
                       >
-                        <Icon
-                          size={20}
-                          stroke={1.7}
-                        />
+                        <Icon size={20} stroke={1.7} />
                       </span>
 
                       <span className="min-w-0 flex-1">
-
                         <span
                           className="
                             block
@@ -635,9 +591,10 @@ export default function ConciergePanel() {
                             text-slate-500
                           "
                         >
-                          {isEnglish ? action.descriptionEn : action.description}
+                          {isEnglish
+                            ? action.descriptionEn
+                            : action.description}
                         </span>
-
                       </span>
 
                       <IconChevronRight
@@ -652,11 +609,9 @@ export default function ConciergePanel() {
                           group-hover:text-[#F58220]
                         "
                       />
-
                     </button>
                   );
                 })}
-
               </div>
 
               {/* EXAMPLE */}
@@ -667,7 +622,7 @@ export default function ConciergePanel() {
                   selectAction(
                     isEnglish
                       ? "4 nights in Taormina in September for 2 people, a seaside hotel and a wine experience"
-                      : "4 notti a Taormina a settembre per 2 persone, hotel sul mare e una wine experience"
+                      : "4 notti a Taormina a settembre per 2 persone, hotel sul mare e una wine experience",
                   )
                 }
                 className="
@@ -684,7 +639,6 @@ export default function ConciergePanel() {
                 "
               >
                 <div className="flex gap-3">
-
                   <IconMapPin
                     size={19}
                     stroke={1.7}
@@ -696,7 +650,6 @@ export default function ConciergePanel() {
                   />
 
                   <div>
-
                     <div
                       className="
                         text-xs
@@ -721,12 +674,9 @@ export default function ConciergePanel() {
                         ? "“4 nights in Taormina in September for 2 people, a seaside hotel and a wine experience.”"
                         : "“4 notti a Taormina a settembre per 2 persone, hotel sul mare e una wine experience.”"}
                     </p>
-
                   </div>
-
                 </div>
               </button>
-
             </div>
           )}
 
@@ -736,14 +686,9 @@ export default function ConciergePanel() {
 
           {hasConversation && (
             <div className="space-y-5">
-
               {messages.map((item) => (
-                <ChatMessage
-                  key={item.id}
-                  message={item}
-                />
+                <ChatMessage key={item.id} message={item} />
               ))}
-
             </div>
           )}
 
@@ -753,7 +698,6 @@ export default function ConciergePanel() {
 
           {isTyping && (
             <div className="mt-5 flex items-end gap-2.5">
-
               <AssistantAvatar />
 
               <div
@@ -769,14 +713,11 @@ export default function ConciergePanel() {
                 "
               >
                 <div className="flex items-center gap-1.5">
-
                   <TypingDot delay="0ms" />
                   <TypingDot delay="150ms" />
                   <TypingDot delay="300ms" />
-
                 </div>
               </div>
-
             </div>
           )}
 
@@ -786,7 +727,6 @@ export default function ConciergePanel() {
 
           {hasConversation && !isTyping && (
             <div className="mt-5">
-
               <div
                 className="
                   mb-2.5
@@ -801,13 +741,12 @@ export default function ConciergePanel() {
               </div>
 
               <div className="flex flex-wrap gap-2">
-
                 <FollowUpButton
                   onClick={() =>
                     sendMessage(
                       isEnglish
                         ? "Show me the available hotels"
-                        : "Mostrami gli hotel disponibili"
+                        : "Mostrami gli hotel disponibili",
                     )
                   }
                 >
@@ -819,7 +758,7 @@ export default function ConciergePanel() {
                     sendMessage(
                       isEnglish
                         ? "Add some experiences"
-                        : "Aggiungi delle esperienze"
+                        : "Aggiungi delle esperienze",
                     )
                   }
                 >
@@ -830,19 +769,16 @@ export default function ConciergePanel() {
                   onClick={() =>
                     sendMessage(
                       isEnglish
-                        ? "Create a complete package for me"
-                        : "Creami un pacchetto completo"
+                        ? "I would like to request a tailor-made trip"
+                        : "Vorrei richiedere un viaggio su misura",
                     )
                   }
                 >
-                  {isEnglish ? "Complete package" : "Pacchetto completo"}
+                  {isEnglish ? "Tailor-made trip" : "Viaggio su misura"}
                 </FollowUpButton>
-
               </div>
-
             </div>
           )}
-
         </div>
 
         {/* ====================================================
@@ -859,7 +795,6 @@ export default function ConciergePanel() {
             sm:p-5
           "
         >
-
           <form
             onSubmit={handleSubmit}
             className="
@@ -878,17 +813,11 @@ export default function ConciergePanel() {
               focus-within:shadow-[0_5px_20px_rgba(13,35,64,0.05)]
             "
           >
-
             <textarea
               value={message}
-              onChange={(e) =>
-                setMessage(e.target.value)
-              }
+              onChange={(e) => setMessage(e.target.value)}
               onKeyDown={(e) => {
-                if (
-                  e.key === "Enter" &&
-                  !e.shiftKey
-                ) {
+                if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
 
                   if (message.trim()) {
@@ -932,10 +861,7 @@ export default function ConciergePanel() {
 
             <button
               type="submit"
-              disabled={
-                !message.trim() ||
-                isTyping
-              }
+              disabled={!message.trim() || isTyping}
               aria-label={isEnglish ? "Send message" : "Invia messaggio"}
               className="
                 flex
@@ -957,12 +883,8 @@ export default function ConciergePanel() {
                 disabled:hover:scale-100
               "
             >
-              <IconArrowUp
-                size={19}
-                stroke={1.9}
-              />
+              <IconArrowUp size={19} stroke={1.9} />
             </button>
-
           </form>
 
           <div
@@ -979,16 +901,10 @@ export default function ConciergePanel() {
               text-[#0D2340]/30
             "
           >
-            <IconSparkles
-              size={11}
-              className="text-[#F58220]"
-            />
-
+            <IconSparkles size={11} className="text-[#F58220]" />
             SicilyTrip Concierge
           </div>
-
         </div>
-
       </aside>
     </>
   );
@@ -998,15 +914,11 @@ export default function ConciergePanel() {
    CHAT MESSAGE
 ============================================================ */
 
-function ChatMessage({
-  message,
-}: {
-  message: Message;
-}) {
+function ChatMessage({ message }: { message: Message }) {
+  const { closeConcierge } = useConcierge();
   if (message.role === "user") {
     return (
       <div className="flex justify-end">
-
         <div
           className="
             max-w-[84%]
@@ -1023,14 +935,12 @@ function ChatMessage({
         >
           {message.text}
         </div>
-
       </div>
     );
   }
 
   return (
     <div className="flex items-end gap-2.5">
-
       <AssistantAvatar />
 
       <div
@@ -1056,6 +966,7 @@ function ChatMessage({
               <Link
                 key={`${action.href}-${action.label}`}
                 href={action.href}
+                onClick={closeConcierge}
                 className="rounded-full bg-[#F58220]/10 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.08em] text-[#D9680D] transition hover:bg-[#F58220] hover:text-white"
               >
                 {action.label}
@@ -1064,7 +975,6 @@ function ChatMessage({
           </div>
         )}
       </div>
-
     </div>
   );
 }
@@ -1089,10 +999,7 @@ function AssistantAvatar() {
         shadow-[0_5px_15px_rgba(245,130,32,0.22)]
       "
     >
-      <IconSparkles
-        size={15}
-        stroke={1.8}
-      />
+      <IconSparkles size={15} stroke={1.8} />
     </div>
   );
 }
@@ -1101,11 +1008,7 @@ function AssistantAvatar() {
    TYPING DOT
 ============================================================ */
 
-function TypingDot({
-  delay,
-}: {
-  delay: string;
-}) {
+function TypingDot({ delay }: { delay: string }) {
   return (
     <span
       className="
@@ -1157,249 +1060,4 @@ function FollowUpButton({
       {children}
     </button>
   );
-}
-
-/* ============================================================
-   DEMO RESPONSE ENGINE
-
-   Per ora serve esclusivamente alla demo.
-   Successivamente verrà sostituito dal backend AI/API.
-============================================================ */
-
-function createConciergeResponse(
-  conversation: string,
-  latestMessage: string,
-  isEnglish: boolean,
-): {
-  text: string;
-  actions?: Array<{ label: string; href: string }>;
-  profile?: {
-    destination: string;
-    period?: string;
-    guests: number;
-    duration?: number;
-    interests: string[];
-  };
-} {
-  const text = conversation.toLowerCase();
-  const latest = latestMessage.toLowerCase();
-
-  const destinations = [
-    ["taormina", "taormina"], ["palermo", "palermo"], ["cefalu", "cefalu"],
-    ["trapani", "trapani"], ["marsala", "marsala"], ["erice", "erice"],
-    ["egadi", "isole-egadi"], ["catania", "catania"], ["etna", "etna"],
-    ["siracusa", "siracusa"], ["ortigia", "siracusa"], ["noto", "noto"],
-    ["ragusa", "ragusa"], ["agrigento", "agrigento"], ["eolie", "isole-eolie"],
-  ] as const;
-  const destination = destinations.find(([name]) => text.includes(name));
-  const periodMatch = text.match(/\b(gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre|january|february|march|april|may|june|july|august|september|october|november|december|20\d{2})\b/i);
-  const hasPeriod = Boolean(periodMatch);
-  const guestsMatch = text.match(/\b(\d+)\s*(persone|persona|ospiti|adulti|people|person|guests|adults)\b/i);
-  const nightsMatch = text.match(/\b(\d+)\s*(notti|notte|giorni|giorno|nights|night|days|day)\b/i);
-  const interests = [
-    ["mare", "sea"], ["spiaggia", "beach"], ["vino", "wine"],
-    ["wine", "wine"], ["cucina", "food"], ["food", "food"],
-    ["cultura", "culture"], ["arte", "art"], ["natura", "nature"],
-    ["trekking", "trekking"], ["benessere", "wellness"], ["relax", "relax"],
-  ].filter(([keyword]) => text.includes(keyword)).map(([, value]) => value);
-
-  if (!destination) {
-    return {
-      text: isEnglish
-        ? "Let’s build your trip step by step. Which part of Sicily inspires you most? You can name a destination or choose between western Sicily, eastern Sicily and the central-southern coast."
-        : "Costruiamo il viaggio un passo alla volta. Quale parte della Sicilia ti ispira di più? Puoi indicare una località oppure scegliere tra Sicilia occidentale, orientale e costa centro-meridionale.",
-      actions: [
-        { label: isEnglish ? "Explore destinations" : "Esplora destinazioni", href: "/destinazioni" },
-      ],
-    };
-  }
-
-  if (!hasPeriod) {
-    return {
-      text: isEnglish
-        ? `Excellent choice: ${destination[0]}. When would you like to travel? A month or approximate period is enough.`
-        : `Ottima scelta: ${destination[0]}. In quale mese o periodo vorresti viaggiare? Anche un’indicazione approssimativa va bene.`,
-      actions: [{ label: isEnglish ? "Discover the destination" : "Scopri la destinazione", href: `/destinazioni/${destination[1]}` }],
-    };
-  }
-
-  if (!guestsMatch) {
-    return {
-      text: isEnglish
-        ? "Perfect. How many people will be travelling? Please also tell me if children are included, so the stay can be planned correctly."
-        : "Perfetto. Quante persone viaggeranno? Indicami anche se sono presenti bambini, così il soggiorno potrà essere organizzato correttamente.",
-    };
-  }
-
-  if (interests.length === 0 && !/hotel|albergo|struttura|resort|dimora/i.test(latest)) {
-    return {
-      text: isEnglish
-        ? "What would make this journey special for you: sea and relaxation, food and wine, art and culture, nature or exclusive experiences?"
-        : "Cosa renderebbe speciale questo viaggio per te: mare e relax, gusto e vino, arte e cultura, natura oppure esperienze esclusive?",
-      actions: [{ label: isEnglish ? "Browse experiences" : "Esplora esperienze", href: "/esperienze" }],
-    };
-  }
-
-  const guests = guestsMatch?.[1] ?? "";
-  const duration = nightsMatch?.[1];
-  const interestText = [...new Set(interests)].slice(0, 3).join(", ");
-  const summary = isEnglish
-    ? `${duration ? `${duration} days, ` : ""}${guests} guests in ${destination[0]}${interestText ? `, with a focus on ${interestText}` : ""}.`
-    : `${duration ? `${duration} giorni, ` : ""}${guests} ospiti a ${destination[0]}${interestText ? `, con interesse per ${interestText}` : ""}.`;
-
-  return {
-    text: isEnglish
-      ? `Here is your initial travel profile: ${summary} You can now check accommodation availability, explore suitable experiences or refine the itinerary with another preference.`
-      : `Ecco il tuo primo profilo di viaggio: ${summary} Ora puoi verificare le strutture disponibili, esplorare le esperienze più adatte oppure aggiungere un’altra preferenza per affinare l’itinerario.`,
-    actions: [
-      { label: isEnglish ? "Search properties" : "Cerca strutture", href: "/#accommodation-search" },
-      { label: isEnglish ? "Suitable experiences" : "Esperienze consigliate", href: "/esperienze" },
-      { label: isEnglish ? "Destination guide" : "Guida della destinazione", href: `/destinazioni/${destination[1]}` },
-    ],
-    profile: {
-      destination: destination[0],
-      period: periodMatch?.[1],
-      guests: Number(guests),
-      duration: duration ? Number(duration) : undefined,
-      interests: [...new Set(interests)],
-    },
-  };
-
-  /* Legacy answers retained below as unreachable documentation until the AI service is connected.
-
-  HOTEL
-
-  if (
-    text.includes("hotel") ||
-    text.includes("albergo") ||
-    text.includes("struttura")
-  ) {
-    if (isEnglish) {
-      return "Certainly. I can search for the properties that best suit your needs. Tell me your destination, dates, number of guests and, if you wish, the kind of stay you prefer: seaside, historic centre, resort, boutique hotel or exclusive residence.";
-    }
-    return (
-      "Certamente. Posso cercare le strutture più adatte alle tue esigenze. " +
-      "Indicami destinazione, date, numero di ospiti e, se vuoi, il tipo di soggiorno che preferisci: mare, centro storico, resort, boutique hotel o dimora esclusiva."
-    );
-  }
-
-  TAORMINA
-
-  if (text.includes("taormina")) {
-    if (isEnglish) {
-      return "Excellent choice. Taormina is perfect for a stay combining the sea, culture and unique views. I can select hotels for your dates and add experiences such as boat trips, Mount Etna, tastings or a special dinner.";
-    }
-    return (
-      "Ottima scelta. Taormina è perfetta per un soggiorno tra mare, cultura e panorami unici. " +
-      "Posso selezionare hotel adatti alle tue date e aggiungere esperienze come escursioni in barca, Etna, degustazioni o una cena speciale."
-    );
-  }
-
-  ETNA
-
-  if (text.includes("etna")) {
-    if (isEnglish) {
-      return "I can arrange a stay dedicated to Mount Etna, combining selected properties, private excursions, wineries and tastings. Tell me how many days you have and I can build a complete proposal.";
-    }
-    return (
-      "Posso organizzare un soggiorno dedicato all’Etna combinando strutture selezionate, escursioni private, cantine e degustazioni. " +
-      "Se mi indichi quanti giorni hai a disposizione, posso costruire una proposta completa."
-    );
-  }
-
-  PALERMO
-
-  if (text.includes("palermo")) {
-    if (isEnglish) {
-      return "Palermo offers an extraordinary combination of art, markets, food and sea. I can help you choose where to stay and create an itinerary with food experiences, private visits and a day on the coast.";
-    }
-    return (
-      "Palermo offre una combinazione straordinaria di arte, mercati, cucina e mare. " +
-      "Posso aiutarti a scegliere dove soggiornare e creare un itinerario con esperienze gastronomiche, visite private e una giornata sulla costa."
-    );
-  }
-
-  SIRACUSA
-
-  if (
-    text.includes("siracusa") ||
-    text.includes("ortigia")
-  ) {
-    if (isEnglish) {
-      return "Syracuse and Ortigia are ideal for a journey through history, the sea and Sicilian cuisine. I can search for a property in the historic centre or by the sea and pair it with selected experiences.";
-    }
-    return (
-      "Siracusa e Ortigia sono ideali per un viaggio tra storia, mare e cucina siciliana. " +
-      "Posso cercare una struttura nel centro storico oppure sul mare e abbinarla a esperienze selezionate."
-    );
-  }
-
-  EXPERIENCE
-
-  if (
-    text.includes("esperienz") ||
-    text.includes("wine") ||
-    text.includes("vino") ||
-    text.includes("barca") ||
-    text.includes("cooking")
-  ) {
-    if (isEnglish) {
-      return "Of course. We can enrich your stay with selected experiences: private yachts and boats, wine experiences, cooking classes, Mount Etna excursions and cultural itineraries. Tell me where you will be staying and I will suggest the most suitable options.";
-    }
-    return (
-      "Certo. Possiamo arricchire il soggiorno con esperienze selezionate: yacht e barca privata, wine experience, cooking class, escursioni sull’Etna e itinerari culturali. " +
-      "Dimmi dove soggiornerai e ti proporrò quelle più adatte."
-    );
-  }
-
-  PACKAGE
-
-  if (
-    text.includes("pacchetto") ||
-    text.includes("viaggio") ||
-    text.includes("itinerario")
-  ) {
-    if (isEnglish) {
-      return "Perfect. I can build the journey with you by combining accommodation, destinations and experiences. To begin, tell me how many days you would like to spend in Sicily, when you plan to travel and how many people will be travelling.";
-    }
-    return (
-      "Perfetto. Posso costruire il viaggio insieme a te combinando soggiorno, destinazioni ed esperienze. " +
-      "Per iniziare dimmi quanti giorni vuoi trascorrere in Sicilia, il periodo e quante persone viaggeranno."
-    );
-  }
-
-  OFFER
-
-  if (
-    text.includes("offert") ||
-    text.includes("promoz")
-  ) {
-    if (isEnglish) {
-      return "I can show you SicilyTrip offers and packages available for the period you are interested in. Tell me when you would like to travel and how many people will be joining you.";
-    }
-    return (
-      "Posso mostrarti offerte e pacchetti SicilyTrip disponibili per il periodo che ti interessa. " +
-      "Indicami quando vorresti partire e quante persone viaggeranno."
-    );
-  }
-
-  DEFAULT
-
-  if (isEnglish) {
-    return "Of course, I can help. Tell me a little more about the journey you imagine: destination, travel period, number of guests or the kind of experience you would like. From there, we can build the most suitable solution together.";
-  }
-
-  return (
-    "Certo, posso aiutarti. Raccontami qualcosa in più sul viaggio che immagini: destinazione, periodo, numero di ospiti oppure il tipo di esperienza che vorresti vivere. " +
-    "Da lì possiamo costruire insieme la soluzione più adatta."
-  ); */
-}
-
-function getConciergeSessionId() {
-  const key = "sicilytrip-concierge-session";
-  const current = sessionStorage.getItem(key);
-  if (current) return current;
-  const id = crypto.randomUUID();
-  sessionStorage.setItem(key, id);
-  return id;
 }
