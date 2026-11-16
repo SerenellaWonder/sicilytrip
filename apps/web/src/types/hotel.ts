@@ -110,6 +110,8 @@ export interface StoredHotelSearch {
   status: HotelSearchStatus;
   total: number;
 
+  area?: { lat: number; lon: number; radiusKm: number };
+
   search?: {
     destination: Destination;
     checkIn: string;

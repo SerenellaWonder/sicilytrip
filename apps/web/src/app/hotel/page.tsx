@@ -10,11 +10,9 @@ export default async function HotelPage({
     searchId?: string;
   }>;
 }) {
-  const params =
-    await searchParams;
+  const params = await searchParams;
 
-  const searchId =
-    params.searchId;
+  const searchId = params.searchId;
 
   if (!searchId) {
     return (
@@ -30,9 +28,7 @@ export default async function HotelPage({
     <>
       <Header />
 
-      <HotelResultsPage
-        searchId={searchId}
-      />
+      <HotelResultsPage key={searchId} searchId={searchId} />
     </>
   );
 }

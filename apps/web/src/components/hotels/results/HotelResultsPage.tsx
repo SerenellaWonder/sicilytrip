@@ -1,12 +1,20 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
+import {
+  areaBounds,
+  distanceKm,
+  validArea,
+  type SearchArea,
+} from "@/lib/hotel-search-area";
+import type { HotelSearchResponse as SearchResponse } from "@/types/hotel";
+const HotelResultsMap = dynamic(() => import("./HotelResultsMap"), {
+  ssr: false,
+  loading: () => <p className="p-6">Caricamento mappa…</p>,
+});
 
 import {
   ArrowLeft,
@@ -63,23 +71,19 @@ type HotelSearchResponse = {
   hotels: Hotel[];
 };
 
-export default function HotelResultsPage({
-  searchId,
-}: {
-  searchId: string;
-}) {
+export default function HotelResultsPage({ searchId }: { searchId: string }) {
+  const router = useRouter();
+  const [mapView, setMapView] = useState(false);
+  const [selectedId, setSelectedId] = useState<string>();
+  const [areaSearching, setAreaSearching] = useState(false);
+  const [areaError, setAreaError] = useState("");
   const { language } = useLanguage();
   const isEnglish = language === "en";
-  const [data, setData] =
-    useState<HotelSearchResponse | null>(
-      null
-    );
+  const [data, setData] = useState<HotelSearchResponse | null>(null);
 
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const [error, setError] =
-    useState("");
+  const [error, setError] = useState("");
 
   const [sortBy, setSortBy] = useState("price-asc");
   const [minStars, setMinStars] = useState(0);
@@ -88,7 +92,9 @@ export default function HotelResultsPage({
   const [comparisonIds, setComparisonIds] = useState<string[]>([]);
   const [showComparison, setShowComparison] = useState(false);
   const [editingSearch, setEditingSearch] = useState(false);
-  const [storedSearch, setStoredSearch] = useState<StoredHotelSearch | null>(null);
+  const [storedSearch, setStoredSearch] = useState<StoredHotelSearch | null>(
+    null,
+  );
   const wishlist = useWishlist();
 
   useEffect(() => {
@@ -106,12 +112,9 @@ export default function HotelResultsPage({
         setLoading(true);
         setError("");
 
-        const response =
-          await apiFetch<HotelSearchResponse>(
-            `/hotels/search/${encodeURIComponent(
-              searchId
-            )}`
-          );
+        const response = await apiFetch<HotelSearchResponse>(
+          `/hotels/search/${encodeURIComponent(searchId)}`,
+        );
 
         if (!active) {
           return;
@@ -119,10 +122,7 @@ export default function HotelResultsPage({
 
         setData(response);
       } catch (err) {
-        console.error(
-          "Hotel search results error:",
-          err
-        );
+        console.error("Hotel search results error:", err);
 
         if (active) {
           setError(
@@ -130,7 +130,7 @@ export default function HotelResultsPage({
               ? err.message
               : isEnglish
                 ? "Unable to load hotels."
-                : "Impossibile caricare gli hotel."
+                : "Impossibile caricare gli hotel.",
           );
         }
       } finally {
@@ -152,33 +152,137 @@ export default function HotelResultsPage({
   const hotels = useMemo(() => {
     const normalizedQuery = nameQuery.trim().toLowerCase();
     const filtered = allHotels.filter((hotel) => {
+      if (validArea(storedSearch?.area)) {
+        const point = hotelCoordinates(hotel.latitude, hotel.longitude);
+        if (
+          !point ||
+          distanceKm(
+            storedSearch.area.lat,
+            storedSearch.area.lon,
+            point.lat,
+            point.lon,
+          ) > storedSearch.area.radiusKm
+        )
+          return false;
+      }
       if ((hotel.stars ?? 0) < minStars) return false;
       if (freeCancellationOnly && hotel.policy !== "FREE") return false;
-      if (normalizedQuery && !hotel.name.toLowerCase().includes(normalizedQuery)) return false;
+      if (
+        normalizedQuery &&
+        !hotel.name.toLowerCase().includes(normalizedQuery)
+      )
+        return false;
       return true;
     });
 
     return [...filtered].sort((first, second) => {
-      if (sortBy === "price-desc") return (second.price ?? -1) - (first.price ?? -1);
-      if (sortBy === "stars-desc") return (second.stars ?? 0) - (first.stars ?? 0);
+      if (sortBy === "price-desc")
+        return (second.price ?? -1) - (first.price ?? -1);
+      if (sortBy === "stars-desc")
+        return (second.stars ?? 0) - (first.stars ?? 0);
       if (sortBy === "name-asc") return first.name.localeCompare(second.name);
-      return (first.price ?? Number.POSITIVE_INFINITY) - (second.price ?? Number.POSITIVE_INFINITY);
+      return (
+        (first.price ?? Number.POSITIVE_INFINITY) -
+        (second.price ?? Number.POSITIVE_INFINITY)
+      );
     });
-  }, [allHotels, freeCancellationOnly, minStars, nameQuery, sortBy]);
+  }, [
+    allHotels,
+    freeCancellationOnly,
+    minStars,
+    nameQuery,
+    sortBy,
+    storedSearch,
+  ]);
 
   const comparisonHotels = useMemo(
-    () => comparisonIds
-      .map((id) => allHotels.find((hotel) => hotel.hotelId === id))
-      .filter((hotel): hotel is Hotel => Boolean(hotel)),
+    () =>
+      comparisonIds
+        .map((id) => allHotels.find((hotel) => hotel.hotelId === id))
+        .filter((hotel): hotel is Hotel => Boolean(hotel)),
     [allHotels, comparisonIds],
   );
 
   function toggleComparison(hotelId: string) {
     setComparisonIds((current) => {
-      if (current.includes(hotelId)) return current.filter((id) => id !== hotelId);
+      if (current.includes(hotelId))
+        return current.filter((id) => id !== hotelId);
       if (current.length >= 3) return current;
       return [...current, hotelId];
     });
+  }
+
+  async function searchArea(area: SearchArea) {
+    if (!storedSearch?.search || !validArea(area) || areaSearching) return;
+    setAreaSearching(true);
+    setAreaError("");
+    const search = storedSearch.search;
+    try {
+      if (new Date(search.checkOut) <= new Date())
+        throw new Error(
+          isEnglish
+            ? "Update your travel dates."
+            : "Aggiorna le date del viaggio.",
+        );
+      const bounds = areaBounds(area);
+      const rooms = search.rooms ?? [
+        { adults: search.adults, children: search.children },
+      ];
+      const response = await apiFetch<SearchResponse>("/hotels/search", {
+        method: "POST",
+        body: JSON.stringify({
+          placeId: search.destination.id,
+          northEast: `${bounds.northEast.latitude},${bounds.northEast.longitude}`,
+          southWest: `${bounds.southWest.latitude},${bounds.southWest.longitude}`,
+          checkIn: search.checkIn,
+          checkOut: search.checkOut,
+          rooms,
+        }),
+      });
+      if (!response.searchId || response.status === "FAILED")
+        throw new Error(
+          isEnglish
+            ? "Area search failed. Please retry."
+            : "Ricerca nell’area non riuscita. Riprova.",
+        );
+      const destination = {
+        ...search.destination,
+        id: search.destination.id,
+        name: isEnglish ? "Selected map area" : "Area selezionata sulla mappa",
+        displayName: isEnglish
+          ? "Selected map area"
+          : "Area selezionata sulla mappa",
+        latitude: area.lat,
+        longitude: area.lon,
+        ...bounds,
+      };
+      sessionStorage.setItem(
+        `hotel-search:${response.searchId}`,
+        JSON.stringify({
+          ...response,
+          createdAt: Date.now(),
+          expiresAt: Date.now() + 20 * 60 * 1000,
+          area,
+          search: { ...search, rooms, destination },
+        }),
+      );
+      router.push(`/hotel?searchId=${encodeURIComponent(response.searchId)}`);
+    } catch (e) {
+      setAreaError(e instanceof Error ? e.message : "Ricerca non riuscita");
+    } finally {
+      setAreaSearching(false);
+    }
+  }
+  function selectMapHotel(id: string) {
+    setSelectedId(id);
+    setMapView(false);
+    window.setTimeout(
+      () =>
+        document
+          .getElementById(`hotel-card-${id}`)
+          ?.scrollIntoView({ behavior: "smooth", block: "center" }),
+      0,
+    );
   }
 
   /*
@@ -309,11 +413,8 @@ export default function HotelResultsPage({
   }
 
   const destination =
-    allHotels.find(
-      hotel =>
-        hotel.zone?.toLowerCase() ===
-        "taormina"
-    )?.zone ??
+    storedSearch?.search?.destination.name ??
+    allHotels.find((hotel) => hotel.zone?.toLowerCase() === "taormina")?.zone ??
     allHotels[0]?.zone ??
     (isEnglish ? "Sicily" : "Sicilia");
 
@@ -362,13 +463,15 @@ export default function HotelResultsPage({
             hover:text-[#0D2340]
           "
         >
-          <ArrowLeft
-            size={14}
-          />
+          <ArrowLeft size={14} />
 
           {editingSearch
-            ? isEnglish ? "Close search" : "Chiudi ricerca"
-            : isEnglish ? "Edit search" : "Modifica ricerca"}
+            ? isEnglish
+              ? "Close search"
+              : "Chiudi ricerca"
+            : isEnglish
+              ? "Edit search"
+              : "Modifica ricerca"}
         </button>
 
         {editingSearch && storedSearch?.search && (
@@ -403,7 +506,7 @@ export default function HotelResultsPage({
             flex-col
             gap-5
 
-            lg:flex-row
+            xl:flex-row
             lg:items-end
             lg:justify-between
           "
@@ -434,8 +537,7 @@ export default function HotelResultsPage({
                 lg:text-[54px]
               "
             >
-              {isEnglish ? "Stays in" : "Soggiorni a"}{" "}
-              {destination}
+              {isEnglish ? "Stays in" : "Soggiorni a"} {destination}
             </h1>
 
             <p
@@ -465,10 +567,12 @@ export default function HotelResultsPage({
               </p>
             )}
           </div>
-
         </div>
 
-        <section className="mt-8 rounded-[24px] border border-[#0D2340]/[0.07] bg-white p-5 shadow-[0_10px_35px_rgba(13,35,64,0.04)]" aria-label={isEnglish ? "Filter properties" : "Filtra le strutture"}>
+        <section
+          className="mt-8 rounded-[24px] border border-[#0D2340]/[0.07] bg-white p-5 shadow-[0_10px_35px_rgba(13,35,64,0.04)]"
+          aria-label={isEnglish ? "Filter properties" : "Filtra le strutture"}
+        >
           <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-[#0D2340]">
             <SlidersHorizontal size={17} className="text-[#F58220]" />
             {isEnglish ? "Filter and sort" : "Filtra e ordina"}
@@ -476,39 +580,95 @@ export default function HotelResultsPage({
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <label className="grid gap-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#0D2340]/45">
               {isEnglish ? "Property name" : "Nome struttura"}
-              <input value={nameQuery} onChange={(event) => setNameQuery(event.target.value)} placeholder={isEnglish ? "Search by name" : "Cerca per nome"} className="h-12 rounded-xl border border-[#0D2340]/10 px-4 text-sm font-normal normal-case tracking-normal text-[#0D2340] outline-none focus:border-[#F58220]" />
+              <input
+                value={nameQuery}
+                onChange={(event) => setNameQuery(event.target.value)}
+                placeholder={isEnglish ? "Search by name" : "Cerca per nome"}
+                className="h-12 rounded-xl border border-[#0D2340]/10 px-4 text-sm font-normal normal-case tracking-normal text-[#0D2340] outline-none focus:border-[#F58220]"
+              />
             </label>
             <label className="grid gap-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#0D2340]/45">
               {isEnglish ? "Minimum category" : "Categoria minima"}
-              <select value={minStars} onChange={(event) => setMinStars(Number(event.target.value))} className="h-12 rounded-xl border border-[#0D2340]/10 bg-white px-4 text-sm font-normal normal-case tracking-normal text-[#0D2340] outline-none focus:border-[#F58220]">
-                <option value={0}>{isEnglish ? "All categories" : "Tutte le categorie"}</option>
-                {[3, 4, 5].map((stars) => <option key={stars} value={stars}>{stars} {isEnglish ? "stars and above" : "stelle e oltre"}</option>)}
+              <select
+                value={minStars}
+                onChange={(event) => setMinStars(Number(event.target.value))}
+                className="h-12 rounded-xl border border-[#0D2340]/10 bg-white px-4 text-sm font-normal normal-case tracking-normal text-[#0D2340] outline-none focus:border-[#F58220]"
+              >
+                <option value={0}>
+                  {isEnglish ? "All categories" : "Tutte le categorie"}
+                </option>
+                {[3, 4, 5].map((stars) => (
+                  <option key={stars} value={stars}>
+                    {stars} {isEnglish ? "stars and above" : "stelle e oltre"}
+                  </option>
+                ))}
               </select>
             </label>
             <label className="grid gap-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#0D2340]/45">
               {isEnglish ? "Sort by" : "Ordina per"}
-              <select value={sortBy} onChange={(event) => setSortBy(event.target.value)} className="h-12 rounded-xl border border-[#0D2340]/10 bg-white px-4 text-sm font-normal normal-case tracking-normal text-[#0D2340] outline-none focus:border-[#F58220]">
-                <option value="price-asc">{isEnglish ? "Lowest price" : "Prezzo più basso"}</option>
-                <option value="price-desc">{isEnglish ? "Highest price" : "Prezzo più alto"}</option>
-                <option value="stars-desc">{isEnglish ? "Highest category" : "Categoria più alta"}</option>
-                <option value="name-asc">{isEnglish ? "Name A–Z" : "Nome A–Z"}</option>
+              <select
+                value={sortBy}
+                onChange={(event) => setSortBy(event.target.value)}
+                className="h-12 rounded-xl border border-[#0D2340]/10 bg-white px-4 text-sm font-normal normal-case tracking-normal text-[#0D2340] outline-none focus:border-[#F58220]"
+              >
+                <option value="price-asc">
+                  {isEnglish ? "Lowest price" : "Prezzo più basso"}
+                </option>
+                <option value="price-desc">
+                  {isEnglish ? "Highest price" : "Prezzo più alto"}
+                </option>
+                <option value="stars-desc">
+                  {isEnglish ? "Highest category" : "Categoria più alta"}
+                </option>
+                <option value="name-asc">
+                  {isEnglish ? "Name A–Z" : "Nome A–Z"}
+                </option>
               </select>
             </label>
             <label className="flex h-[70px] items-end gap-3 rounded-xl border border-[#0D2340]/10 px-4 pb-3.5 text-sm font-medium text-[#0D2340]">
-              <input type="checkbox" checked={freeCancellationOnly} onChange={(event) => setFreeCancellationOnly(event.target.checked)} className="h-4 w-4 accent-[#F58220]" />
+              <input
+                type="checkbox"
+                checked={freeCancellationOnly}
+                onChange={(event) =>
+                  setFreeCancellationOnly(event.target.checked)
+                }
+                className="h-4 w-4 accent-[#F58220]"
+              />
               {isEnglish ? "Free cancellation" : "Cancellazione gratuita"}
             </label>
           </div>
           <p className="mt-4 text-xs text-[#0D2340]/45">
-            {isEnglish ? `${hotels.length} of ${allHotels.length} properties shown` : `${hotels.length} strutture mostrate su ${allHotels.length}`}
+            {isEnglish
+              ? `${hotels.length} of ${allHotels.length} properties shown`
+              : `${hotels.length} strutture mostrate su ${allHotels.length}`}
           </p>
         </section>
 
-        {/* EMPTY */}
+        <div className="mt-5 flex gap-2 lg:hidden">
+          <button
+            type="button"
+            aria-pressed={!mapView}
+            onClick={() => setMapView(false)}
+            className="rounded-full border bg-white px-5 py-2"
+          >
+            {isEnglish ? "List" : "Elenco"}
+          </button>
+          <button
+            type="button"
+            aria-pressed={mapView}
+            onClick={() => setMapView(true)}
+            className="rounded-full border bg-white px-5 py-2"
+          >
+            {isEnglish ? "Map" : "Mappa"}
+          </button>
+        </div>
+        <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.9fr)]">
+          <div className={mapView ? "hidden lg:block" : "min-w-0"}>
+            {/* EMPTY */}
 
-        {hotels.length === 0 ? (
-          <div
-            className="
+            {hotels.length === 0 ? (
+              <div
+                className="
               mt-12
               rounded-[28px]
               bg-white
@@ -516,90 +676,144 @@ export default function HotelResultsPage({
               py-16
               text-center
             "
-          >
-            <SearchX
-              size={32}
-              className="
+              >
+                <SearchX
+                  size={32}
+                  className="
                 mx-auto
                 text-[#F58220]
               "
-            />
+                />
 
-            <h2
-              className="
+                <h2
+                  className="
                 mt-5
                 text-2xl
                 font-semibold
                 text-[#0D2340]
               "
-            >
-              {isEnglish ? "No properties found" : "Nessuna struttura trovata"}
-            </h2>
+                >
+                  {isEnglish
+                    ? "No properties found"
+                    : "Nessuna struttura trovata"}
+                </h2>
 
-            <p
-              className="
+                <p
+                  className="
                 mt-3
                 text-sm
                 text-slate-500
               "
-            >
-              {isEnglish
-                ? "Try changing the dates, destination or number of guests."
-                : "Prova a modificare date, destinazione o numero di ospiti."}
-            </p>
-          </div>
-        ) : (
-          <div
-            className="
+                >
+                  {isEnglish
+                    ? "Try changing the dates, destination or number of guests."
+                    : "Prova a modificare date, destinazione o numero di ospiti."}
+                </p>
+              </div>
+            ) : (
+              <div
+                className="
               mt-10
               grid
               gap-5
             "
-          >
-            {hotels.map(
-              hotel => (
-                <HotelResultCard
-                  key={
-                    hotel.hotelId
-                  }
-                  hotel={hotel}
-                  searchId={searchId}
-                  isEnglish={isEnglish}
-                  compared={comparisonIds.includes(hotel.hotelId)}
-                  comparisonDisabled={comparisonIds.length >= 3 && !comparisonIds.includes(hotel.hotelId)}
-                  onToggleComparison={() => toggleComparison(hotel.hotelId)}
-                  favorite={wishlist.has(hotel.hotelId)}
-                  onToggleFavorite={() => wishlist.toggle({
-                    hotelId: hotel.hotelId,
-                    name: hotel.name,
-                    image: hotel.image,
-                    zone: hotel.zone,
-                    stars: hotel.stars,
-                    price: hotel.price,
-                    currency: hotel.currency,
-                  })}
-                />
-              )
+              >
+                {hotels.map((hotel) => (
+                  <HotelResultCard
+                    key={hotel.hotelId}
+                    hotel={hotel}
+                    selected={selectedId === hotel.hotelId}
+                    searchId={searchId}
+                    isEnglish={isEnglish}
+                    compared={comparisonIds.includes(hotel.hotelId)}
+                    comparisonDisabled={
+                      comparisonIds.length >= 3 &&
+                      !comparisonIds.includes(hotel.hotelId)
+                    }
+                    onToggleComparison={() => toggleComparison(hotel.hotelId)}
+                    favorite={wishlist.has(hotel.hotelId)}
+                    onToggleFavorite={() =>
+                      wishlist.toggle({
+                        hotelId: hotel.hotelId,
+                        name: hotel.name,
+                        image: hotel.image,
+                        zone: hotel.zone,
+                        stars: hotel.stars,
+                        price: hotel.price,
+                        currency: hotel.currency,
+                      })
+                    }
+                  />
+                ))}
+              </div>
             )}
           </div>
-        )}
+          <aside
+            className={`${mapView ? "block" : "hidden lg:block"} lg:sticky lg:top-24`}
+          >
+            <HotelResultsMap
+              key={searchId + String(!!storedSearch)}
+              hotels={hotels}
+              searchId={searchId}
+              selectedId={selectedId}
+              onSelect={selectMapHotel}
+              onSearch={searchArea}
+              searching={areaSearching}
+              error={areaError}
+              canSearch={!!storedSearch?.search}
+              isEnglish={isEnglish}
+              initialArea={
+                validArea(storedSearch?.area)
+                  ? storedSearch.area
+                  : {
+                      lat:
+                        storedSearch?.search?.destination.latitude ??
+                        allHotels.find((h) =>
+                          hotelCoordinates(h.latitude, h.longitude),
+                        )?.latitude ??
+                        37.6,
+                      lon:
+                        storedSearch?.search?.destination.longitude ??
+                        allHotels.find((h) =>
+                          hotelCoordinates(h.latitude, h.longitude),
+                        )?.longitude ??
+                        14.1,
+                      radiusKm: 5,
+                    }
+              }
+            />
+          </aside>
+        </div>
       </div>
 
       {comparisonHotels.length > 0 && (
         <div className="fixed inset-x-4 bottom-5 z-40 mx-auto flex max-w-2xl items-center justify-between gap-4 rounded-2xl bg-[#0D2340] px-5 py-4 text-white shadow-[0_20px_60px_rgba(7,24,45,0.35)]">
           <div>
             <p className="text-sm font-semibold">
-              {isEnglish ? `${comparisonHotels.length} properties selected` : `${comparisonHotels.length} strutture selezionate`}
+              {isEnglish
+                ? `${comparisonHotels.length} properties selected`
+                : `${comparisonHotels.length} strutture selezionate`}
             </p>
             <p className="mt-0.5 text-xs text-white/55">
-              {isEnglish ? "Select up to three properties" : "Puoi selezionare fino a tre strutture"}
+              {isEnglish
+                ? "Select up to three properties"
+                : "Puoi selezionare fino a tre strutture"}
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <button type="button" onClick={() => setComparisonIds([])} className="rounded-full px-4 py-2 text-xs font-semibold text-white/60 hover:text-white">
+            <button
+              type="button"
+              onClick={() => setComparisonIds([])}
+              className="rounded-full px-4 py-2 text-xs font-semibold text-white/60 hover:text-white"
+            >
               {isEnglish ? "Clear" : "Azzera"}
             </button>
-            <button type="button" onClick={() => setShowComparison(true)} disabled={comparisonHotels.length < 2} className="inline-flex items-center gap-2 rounded-full bg-[#F58220] px-5 py-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-45">
+            <button
+              type="button"
+              onClick={() => setShowComparison(true)}
+              disabled={comparisonHotels.length < 2}
+              className="inline-flex items-center gap-2 rounded-full bg-[#F58220] px-5 py-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-45"
+            >
               <Scale size={16} /> {isEnglish ? "Compare" : "Confronta"}
             </button>
           </div>
@@ -624,6 +838,7 @@ export default function HotelResultsPage({
 
 function HotelResultCard({
   hotel,
+  selected,
   searchId,
   isEnglish,
   compared,
@@ -633,6 +848,7 @@ function HotelResultCard({
   onToggleFavorite,
 }: {
   hotel: Hotel;
+  selected?: boolean;
   searchId: string;
   isEnglish: boolean;
   compared: boolean;
@@ -641,18 +857,22 @@ function HotelResultCard({
   favorite: boolean;
   onToggleFavorite: () => void;
 }) {
-  const price =
-    formatPrice(
-      hotel.price,
-      hotel.currency,
-      isEnglish ? "en-GB" : "it-IT",
-    );
+  const price = formatPrice(
+    hotel.price,
+    hotel.currency,
+    isEnglish ? "en-GB" : "it-IT",
+  );
 
-  const freeCancellation =
-    hotel.policy === "FREE";
+  const freeCancellation = hotel.policy === "FREE";
 
   return (
     <article
+      id={`hotel-card-${hotel.hotelId}`}
+      style={
+        selected
+          ? { outline: "3px solid #F58220", outlineOffset: 3 }
+          : undefined
+      }
       className="
         group
         overflow-hidden
@@ -675,47 +895,49 @@ function HotelResultCard({
           type="button"
           onClick={onToggleFavorite}
           aria-pressed={favorite}
-          aria-label={favorite
-            ? isEnglish ? "Remove from favourites" : "Rimuovi dai preferiti"
-            : isEnglish ? "Save to favourites" : "Salva nei preferiti"}
+          aria-label={
+            favorite
+              ? isEnglish
+                ? "Remove from favourites"
+                : "Rimuovi dai preferiti"
+              : isEnglish
+                ? "Save to favourites"
+                : "Salva nei preferiti"
+          }
           className={`absolute right-4 top-4 z-10 grid h-11 w-11 place-items-center rounded-full bg-white shadow-md transition hover:scale-105 ${favorite ? "text-[#F58220]" : "text-[#0D2340]/55"}`}
         >
           <Heart size={19} fill={favorite ? "currentColor" : "none"} />
         </button>
-      <div
-        className="
-          grid
-
-          md:grid-cols-[260px_minmax(0,1fr)]
-          lg:grid-cols-[300px_minmax(0,1fr)]
-        "
-      >
-        {/* REAL PREVIEW IMAGE */}
-
         <div
           className="
+          grid
+
+          md:grid-cols-[220px_minmax(0,1fr)]
+          lg:grid-cols-1 xl:grid-cols-[180px_minmax(0,1fr)]
+        "
+        >
+          {/* REAL PREVIEW IMAGE */}
+
+          <div
+            className="
             relative
             min-h-[220px]
             overflow-hidden
 
             md:min-h-full
           "
-        >
-          <HotelPreviewImage
-            searchId={searchId}
-            hotelId={
-              hotel.hotelId
-            }
-            hotelName={
-              hotel.name
-            }
-          />
-        </div>
+          >
+            <HotelPreviewImage
+              searchId={searchId}
+              hotelId={hotel.hotelId}
+              hotelName={hotel.name}
+            />
+          </div>
 
-        {/* CONTENT */}
+          {/* CONTENT */}
 
-        <div
-          className="
+          <div
+            className="
             flex
             flex-col
             justify-between
@@ -724,34 +946,28 @@ function HotelResultCard({
 
             sm:p-7
 
-            lg:flex-row
-            lg:items-center
+            lg:items-stretch
           "
-        >
-          <div
-            className="
+          >
+            <div
+              className="
               min-w-0
               flex-1
             "
-          >
-            {/* STARS */}
+            >
+              {/* STARS */}
 
-            {hotel.stars ? (
-              <div
-                className="
+              {hotel.stars ? (
+                <div
+                  className="
                   flex
                   items-center
                   gap-1
                 "
-              >
-                {Array.from({
-                  length:
-                    hotel.stars,
-                }).map(
-                  (
-                    _,
-                    index
-                  ) => (
+                >
+                  {Array.from({
+                    length: hotel.stars,
+                  }).map((_, index) => (
                     <Star
                       key={index}
                       size={13}
@@ -760,15 +976,14 @@ function HotelResultCard({
                         text-[#F58220]
                       "
                     />
-                  )
-                )}
-              </div>
-            ) : null}
+                  ))}
+                </div>
+              ) : null}
 
-            {/* NAME */}
+              {/* NAME */}
 
-            <h2
-              className="
+              <h2
+                className="
                 mt-3
                 text-[25px]
                 font-semibold
@@ -778,15 +993,15 @@ function HotelResultCard({
 
                 sm:text-[28px]
               "
-            >
-              {hotel.name}
-            </h2>
+              >
+                {hotel.name}
+              </h2>
 
-            {/* LOCATION */}
+              {/* LOCATION */}
 
-            {hotel.zone && (
-              <div
-                className="
+              {hotel.zone && (
+                <div
+                  className="
                   mt-2
                   flex
                   items-center
@@ -794,69 +1009,78 @@ function HotelResultCard({
                   text-sm
                   text-slate-500
                 "
-              >
-                <MapPin
-                  size={14}
-                  className="
+                >
+                  <MapPin
+                    size={14}
+                    className="
                     text-[#F58220]
                   "
-                />
+                  />
 
-                {hotel.zone}
-              </div>
-            )}
+                  {hotel.zone}
+                </div>
+              )}
 
-            {hotelCoordinates(hotel.latitude, hotel.longitude) && <a href={hotelMapUrl(hotel.latitude!, hotel.longitude!)} target="_blank" rel="noopener noreferrer" className="mt-3 inline-block text-sm font-semibold text-[#0D2340] underline">{isEnglish ? 'View on map' : 'Vedi sulla mappa'}</a>}
-            {/* ROOM */}
+              {hotelCoordinates(hotel.latitude, hotel.longitude) && (
+                <a
+                  href={hotelMapUrl(hotel.latitude!, hotel.longitude!)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-block text-sm font-semibold text-[#0D2340] underline"
+                >
+                  {isEnglish ? "View on map" : "Vedi sulla mappa"}
+                </a>
+              )}
+              {/* ROOM */}
 
-            <div
-              className="
+              <div
+                className="
                 mt-5
                 grid
                 gap-2
                 text-sm
                 text-slate-600
               "
-            >
-              {hotel.room && (
-                <p>
-                  <span
-                    className="
+              >
+                {hotel.room && (
+                  <p>
+                    <span
+                      className="
                       font-semibold
                       text-[#0D2340]
                     "
-                  >
-                    {isEnglish ? "Room:" : "Camera:"}
-                  </span>{" "}
-                  {localizeProviderText(hotel.room, isEnglish)}
-                </p>
-              )}
+                    >
+                      {isEnglish ? "Room:" : "Camera:"}
+                    </span>{" "}
+                    {localizeProviderText(hotel.room, isEnglish)}
+                  </p>
+                )}
 
-              {hotel.board && (
-                <p>
-                  <span
-                    className="
+                {hotel.board && (
+                  <p>
+                    <span
+                      className="
                       font-semibold
                       text-[#0D2340]
                     "
-                  >
-                    {isEnglish ? "Board:" : "Trattamento:"}
-                  </span>{" "}
-                  {localizeProviderText(hotel.board, isEnglish)}
-                </p>
-              )}
-            </div>
+                    >
+                      {isEnglish ? "Board:" : "Trattamento:"}
+                    </span>{" "}
+                    {localizeProviderText(hotel.board, isEnglish)}
+                  </p>
+                )}
+              </div>
 
-            {/* POLICY */}
+              {/* POLICY */}
 
-            {hotel.policy && (
-              <div
-                className="
+              {hotel.policy && (
+                <div
+                  className="
                   mt-5
                 "
-              >
-                <span
-                  className={`
+                >
+                  <span
+                    className={`
                     inline-flex
                     rounded-full
                     px-3
@@ -870,23 +1094,23 @@ function HotelResultCard({
                         : "bg-slate-100 text-slate-500"
                     }
                   `}
-                >
-                  {freeCancellation
-                    ? isEnglish
-                      ? "Free cancellation"
-                      : "Cancellazione gratuita"
-                    : isEnglish
-                      ? "Non-refundable"
-                      : "Non rimborsabile"}
-                </span>
-              </div>
-            )}
-          </div>
+                  >
+                    {freeCancellation
+                      ? isEnglish
+                        ? "Free cancellation"
+                        : "Cancellazione gratuita"
+                      : isEnglish
+                        ? "Non-refundable"
+                        : "Non rimborsabile"}
+                  </span>
+                </div>
+              )}
+            </div>
 
-          {/* PRICE / CTA */}
+            {/* PRICE / CTA */}
 
-          <div
-            className="
+            <div
+              className="
               shrink-0
 
               border-t
@@ -894,16 +1118,16 @@ function HotelResultCard({
 
               pt-6
 
-              lg:min-w-[210px]
+              lg:min-w-0
               lg:border-l
               lg:border-t-0
               lg:pl-8
               lg:pt-0
               lg:text-right
             "
-          >
-            <span
-              className="
+            >
+              <span
+                className="
                 block
                 text-[9px]
                 font-bold
@@ -911,12 +1135,12 @@ function HotelResultCard({
                 tracking-[0.17em]
                 text-slate-400
               "
-            >
-              {isEnglish ? "From" : "A partire da"}
-            </span>
+              >
+                {isEnglish ? "From" : "A partire da"}
+              </span>
 
-            <strong
-              className="
+              <strong
+                className="
                 mt-1
                 block
                 text-[30px]
@@ -924,29 +1148,26 @@ function HotelResultCard({
                 tracking-[-0.04em]
                 text-[#0D2340]
               "
-            >
-              {price ??
-                (isEnglish ? "On request" : "Su richiesta")}
-            </strong>
+              >
+                {price ?? (isEnglish ? "On request" : "Su richiesta")}
+              </strong>
 
-            <span
-              className="
+              <span
+                className="
                 mt-1
                 block
                 text-[11px]
                 text-slate-400
               "
-            >
-              {isEnglish ? "total stay" : "totale soggiorno"}
-            </span>
+              >
+                {isEnglish ? "total stay" : "totale soggiorno"}
+              </span>
 
-            <a
-              href={`/hotel/${encodeURIComponent(
-                hotel.hotelId
-              )}?searchId=${encodeURIComponent(
-                searchId
-              )}`}
-              className="
+              <a
+                href={`/hotel/${encodeURIComponent(
+                  hotel.hotelId,
+                )}?searchId=${encodeURIComponent(searchId)}`}
+                className="
                 mt-5
                 inline-flex
                 h-11
@@ -968,25 +1189,29 @@ function HotelResultCard({
                 hover:-translate-y-0.5
                 hover:bg-[#173A63]
               "
-            >
-              {isEnglish ? "View availability" : "Vedi disponibilità"}
-            </a>
+              >
+                {isEnglish ? "View availability" : "Vedi disponibilità"}
+              </a>
 
-            <button
-              type="button"
-              onClick={onToggleComparison}
-              disabled={comparisonDisabled}
-              className={`mt-2 inline-flex h-10 w-full items-center justify-center gap-2 rounded-full border text-[10px] font-bold uppercase tracking-[0.1em] transition disabled:cursor-not-allowed disabled:opacity-35 ${compared ? "border-[#F58220] bg-[#F58220]/10 text-[#F58220]" : "border-[#0D2340]/10 text-[#0D2340]/55 hover:border-[#F58220] hover:text-[#F58220]"}`}
-            >
-              <Scale size={14} />
-              {compared
-                ? isEnglish ? "Selected" : "Selezionata"
-                : isEnglish ? "Add to comparison" : "Aggiungi al confronto"}
-            </button>
+              <button
+                type="button"
+                onClick={onToggleComparison}
+                disabled={comparisonDisabled}
+                className={`mt-2 inline-flex h-10 w-full items-center justify-center gap-2 rounded-full border text-[10px] font-bold uppercase tracking-[0.1em] transition disabled:cursor-not-allowed disabled:opacity-35 ${compared ? "border-[#F58220] bg-[#F58220]/10 text-[#F58220]" : "border-[#0D2340]/10 text-[#0D2340]/55 hover:border-[#F58220] hover:text-[#F58220]"}`}
+              >
+                <Scale size={14} />
+                {compared
+                  ? isEnglish
+                    ? "Selected"
+                    : "Selezionata"
+                  : isEnglish
+                    ? "Add to comparison"
+                    : "Aggiungi al confronto"}
+              </button>
 
-            {hotel.supplier && (
-              <span
-                className="
+              {hotel.supplier && (
+                <span
+                  className="
                   mt-3
                   block
                   text-[8px]
@@ -995,13 +1220,13 @@ function HotelResultCard({
                   tracking-[0.15em]
                   text-slate-300
                 "
-              >
-                {hotel.supplier}
-              </span>
-            )}
+                >
+                  {hotel.supplier}
+                </span>
+              )}
+            </div>
           </div>
         </div>
-      </div>
       </div>
     </article>
   );
@@ -1036,7 +1261,10 @@ function ComparisonDialog({
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#F58220]">
               SicilyTrip Selection
             </p>
-            <h2 id="comparison-title" className="mt-1 text-2xl font-bold tracking-[-0.04em] text-[#0D2340]">
+            <h2
+              id="comparison-title"
+              className="mt-1 text-2xl font-bold tracking-[-0.04em] text-[#0D2340]"
+            >
               {isEnglish ? "Compare properties" : "Confronta le strutture"}
             </h2>
           </div>
@@ -1053,7 +1281,9 @@ function ComparisonDialog({
         <div className="max-h-[calc(92vh-92px)] overflow-auto p-5 md:p-8">
           <div
             className="grid min-w-[680px] gap-px overflow-hidden rounded-2xl border border-[#0D2340]/10 bg-[#0D2340]/10"
-            style={{ gridTemplateColumns: `160px repeat(${hotels.length}, minmax(220px, 1fr))` }}
+            style={{
+              gridTemplateColumns: `160px repeat(${hotels.length}, minmax(220px, 1fr))`,
+            }}
           >
             <div className="bg-white p-4" />
             {hotels.map((hotel) => (
@@ -1073,34 +1303,52 @@ function ComparisonDialog({
             <ComparisonLabel>{isEnglish ? "Price" : "Prezzo"}</ComparisonLabel>
             {hotels.map((hotel) => (
               <ComparisonValue key={`price-${hotel.hotelId}`} emphasized>
-                {formatPrice(hotel.price, hotel.currency, isEnglish ? "en-GB" : "it-IT") ?? unavailable}
+                {formatPrice(
+                  hotel.price,
+                  hotel.currency,
+                  isEnglish ? "en-GB" : "it-IT",
+                ) ?? unavailable}
               </ComparisonValue>
             ))}
 
-            <ComparisonLabel>{isEnglish ? "Category" : "Categoria"}</ComparisonLabel>
+            <ComparisonLabel>
+              {isEnglish ? "Category" : "Categoria"}
+            </ComparisonLabel>
             {hotels.map((hotel) => (
               <ComparisonValue key={`stars-${hotel.hotelId}`}>
-                {hotel.stars ? `${hotel.stars} ${isEnglish ? "stars" : "stelle"}` : unavailable}
+                {hotel.stars
+                  ? `${hotel.stars} ${isEnglish ? "stars" : "stelle"}`
+                  : unavailable}
               </ComparisonValue>
             ))}
 
             <ComparisonLabel>{isEnglish ? "Area" : "Zona"}</ComparisonLabel>
             {hotels.map((hotel) => (
-              <ComparisonValue key={`zone-${hotel.hotelId}`}>{hotel.zone || unavailable}</ComparisonValue>
-            ))}
-
-            <ComparisonLabel>{isEnglish ? "Board" : "Trattamento"}</ComparisonLabel>
-            {hotels.map((hotel) => (
-              <ComparisonValue key={`board-${hotel.hotelId}`}>
-                {hotel.board ? localizeProviderText(hotel.board, isEnglish) : unavailable}
+              <ComparisonValue key={`zone-${hotel.hotelId}`}>
+                {hotel.zone || unavailable}
               </ComparisonValue>
             ))}
 
-            <ComparisonLabel>{isEnglish ? "Cancellation" : "Cancellazione"}</ComparisonLabel>
+            <ComparisonLabel>
+              {isEnglish ? "Board" : "Trattamento"}
+            </ComparisonLabel>
+            {hotels.map((hotel) => (
+              <ComparisonValue key={`board-${hotel.hotelId}`}>
+                {hotel.board
+                  ? localizeProviderText(hotel.board, isEnglish)
+                  : unavailable}
+              </ComparisonValue>
+            ))}
+
+            <ComparisonLabel>
+              {isEnglish ? "Cancellation" : "Cancellazione"}
+            </ComparisonLabel>
             {hotels.map((hotel) => (
               <ComparisonValue key={`policy-${hotel.hotelId}`}>
                 {hotel.policy === "FREE"
-                  ? isEnglish ? "Free cancellation" : "Cancellazione gratuita"
+                  ? isEnglish
+                    ? "Free cancellation"
+                    : "Cancellazione gratuita"
                   : hotel.policy
                     ? localizeProviderText(hotel.policy, isEnglish)
                     : unavailable}
@@ -1129,7 +1377,9 @@ function ComparisonValue({
   emphasized?: boolean;
 }) {
   return (
-    <div className={`bg-white p-4 text-sm ${emphasized ? "font-bold text-[#F58220]" : "text-[#0D2340]/75"}`}>
+    <div
+      className={`bg-white p-4 text-sm ${emphasized ? "font-bold text-[#F58220]" : "text-[#0D2340]/75"}`}
+    >
       {children}
     </div>
   );
@@ -1139,23 +1389,16 @@ function ComparisonValue({
    HELPERS
 ========================================================= */
 
-function formatPrice(
-  price?: number,
-  currency = "EUR",
-  locale = "it-IT",
-) {
+function formatPrice(price?: number, currency = "EUR", locale = "it-IT") {
   if (price == null) {
     return null;
   }
 
-  return new Intl.NumberFormat(
-    locale,
-    {
-      style: "currency",
-      currency,
-      maximumFractionDigits: 0,
-    }
-  ).format(price);
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 0,
+  }).format(price);
 }
 
 function formatSearchDate(value: string, isEnglish: boolean) {
@@ -1196,7 +1439,8 @@ function localizeProviderText(value: string, isEnglish: boolean) {
   ];
 
   return translations.reduce(
-    (translated, [pattern, replacement]) => translated.replace(pattern, replacement),
+    (translated, [pattern, replacement]) =>
+      translated.replace(pattern, replacement),
     value,
   );
 }

@@ -282,3 +282,8 @@
     transition-duration: .01ms !important;
   }
 }
+
+.hotel-map-badge { display:block; border:1px solid #0d2340; border-radius:18px; background:white; color:#0d2340; padding:5px 9px; text-align:center; font-weight:700; white-space:nowrap; box-shadow:0 2px 6px #0002; }
+.hotel-map-selected { background:#0d2340; color:white; border-color:#f58220; }
+.hotel-map-link { display:block; margin-top:6px; text-decoration:underline; color:#0d2340; cursor:pointer; }
+.hotel-map-popup { min-width:170px; }
