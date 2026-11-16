@@ -1,3 +1,4 @@
+import { hotelRouteId } from "@/lib/hotel-route-id";
 import Header from "@/components/layout/header";
 
 import HotelDetailPage from "@/components/hotels/detail/HotelDetailPage";
@@ -15,17 +16,13 @@ export default async function HotelDetailRoute({
     searchId?: string;
   }>;
 }) {
-  const resolvedParams =
-    await params;
+  const resolvedParams = await params;
 
-  const resolvedSearchParams =
-    await searchParams;
+  const resolvedSearchParams = await searchParams;
 
-  const hotelId =
-    resolvedParams.hotelId;
+  const hotelId = hotelRouteId(resolvedParams.hotelId);
 
-  const searchId =
-    resolvedSearchParams.searchId;
+  const searchId = resolvedSearchParams.searchId;
 
   if (!searchId) {
     return (
@@ -41,10 +38,7 @@ export default async function HotelDetailRoute({
     <>
       <Header />
 
-      <HotelDetailPage
-        searchId={searchId}
-        hotelId={hotelId}
-      />
+      <HotelDetailPage searchId={searchId} hotelId={hotelId} />
     </>
   );
 }
