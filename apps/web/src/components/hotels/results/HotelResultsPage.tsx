@@ -908,28 +908,10 @@ function HotelResultCard({
         >
           <Heart size={19} fill={favorite ? "currentColor" : "none"} />
         </button>
-        <div
-          className="
-          grid
-
-          md:grid-cols-[220px_minmax(0,1fr)]
-          lg:grid-cols-1 xl:grid-cols-[180px_minmax(0,1fr)]
-        "
-        >
+        <div className="flex flex-col">
           {/* REAL PREVIEW IMAGE */}
 
-          <div
-            className="
-            relative
-            h-[280px]
-            min-h-[220px]
-            overflow-hidden
-
-            md:h-full
-            lg:h-[280px]
-            xl:h-full
-          "
-          >
+          <div className="relative aspect-[16/9] max-h-[320px] w-full overflow-hidden">
             <HotelPreviewImage
               searchId={searchId}
               hotelId={hotel.hotelId}

@@ -296,7 +296,7 @@ export default function HotelPreviewImage({
             inset-0
             h-full
             w-full
-            object-contain
+            object-cover object-center
 
             transition-transform
             duration-700
