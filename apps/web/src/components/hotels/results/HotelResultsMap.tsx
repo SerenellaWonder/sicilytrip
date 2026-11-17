@@ -74,6 +74,70 @@ function InteractiveMap({
   const [ready, setReady] = useState(false);
   const [mapError, setMapError] = useState("");
   const [expanded, setExpanded] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const [locationError, setLocationError] = useState("");
+  const locationRequest = useRef(0);
+  useEffect(
+    () => () => {
+      locationRequest.current += 1;
+    },
+    [],
+  );
+
+  function searchNearby() {
+    if (locating || searching || !ready || !canSearch) return;
+    setLocationError("");
+    if (!navigator.geolocation || !window.isSecureContext) {
+      setLocationError(
+        isEnglish
+          ? "Location is unavailable in this browser. Select an area on the map."
+          : "La posizione non è disponibile in questo browser. Seleziona una zona sulla mappa.",
+      );
+      return;
+    }
+    const request = ++locationRequest.current;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        if (request !== locationRequest.current || !mapRef.current) return;
+        setLocating(false);
+        const nearby = {
+          lat: position.coords.latitude,
+          lon: position.coords.longitude,
+          radiusKm: area.radiusKm,
+        };
+        if (!validArea(nearby)) {
+          setLocationError(
+            isEnglish
+              ? "This location is outside the supported map area."
+              : "Questa posizione è fuori dall’area supportata dalla mappa.",
+          );
+          return;
+        }
+        setArea(nearby);
+        mapRef.current.setView([nearby.lat, nearby.lon], 12);
+        onSearch(nearby);
+      },
+      (failure) => {
+        if (request !== locationRequest.current) return;
+        setLocating(false);
+        setLocationError(
+          failure.code === 1
+            ? isEnglish
+              ? "Location access denied. Allow location in your browser settings or select an area on the map."
+              : "Accesso alla posizione negato. Abilitalo nelle impostazioni del browser oppure seleziona una zona sulla mappa."
+            : failure.code === 3
+              ? isEnglish
+                ? "Location request timed out. Try again or select an area on the map."
+                : "Il rilevamento della posizione ha impiegato troppo tempo. Riprova oppure seleziona una zona sulla mappa."
+              : isEnglish
+                ? "Unable to locate you. Try again or select an area on the map."
+                : "Impossibile rilevare la posizione. Riprova oppure seleziona una zona sulla mappa.",
+        );
+      },
+      { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 },
+    );
+  }
   useEffect(() => {
     latest.current = { hotels, selectedId, onSelect, searchId, isEnglish };
   }, [hotels, selectedId, onSelect, searchId, isEnglish]);
@@ -281,10 +345,26 @@ function InteractiveMap({
               ? "Expand map"
               : "Espandi mappa"}
         </button>
+        <button
+          type="button"
+          onClick={searchNearby}
+          disabled={!ready || !canSearch || searching || locating}
+          aria-describedby="nearby-location-info"
+          className="rounded-lg border border-[#0D2340] px-3 py-2 text-sm font-semibold text-[#0D2340] disabled:opacity-50"
+        >
+          {locating
+            ? isEnglish
+              ? "Finding your location…"
+              : "Rilevamento posizione…"
+            : isEnglish
+              ? "Search near me"
+              : "Cerca vicino a me"}
+        </button>
         <label className="text-sm">
           {isEnglish ? "Radius" : "Raggio"}{" "}
           <select
             aria-label={isEnglish ? "Search radius" : "Raggio di ricerca"}
+            disabled={locating || searching}
             value={area.radiusKm}
             onChange={(e) =>
               setArea({ ...area, radiusKm: Number(e.target.value) })
@@ -300,7 +380,9 @@ function InteractiveMap({
         </label>
         <button
           type="button"
-          disabled={!ready || !canSearch || searching || !validArea(area)}
+          disabled={
+            !ready || !canSearch || searching || locating || !validArea(area)
+          }
           onClick={() => onSearch(area)}
           className="rounded-full bg-[#F58220] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
         >
@@ -318,6 +400,16 @@ function InteractiveMap({
           ? "Move the map to position the circle, select a radius and search. Prices are for the whole stay."
           : "Sposta la mappa per posizionare il cerchio, scegli il raggio e cerca. I prezzi sono per l’intero soggiorno."}
       </p>
+      <p id="nearby-location-info" className="px-3 pb-3 text-xs text-slate-600">
+        {isEnglish
+          ? "Search near me uses your location, with your permission, to search for hotels within the selected radius. Coordinates are sent to SicilyTrip and its hotel provider for this search; the map is supplied by OpenStreetMap."
+          : "Cerca vicino a me usa la tua posizione, con il tuo consenso, per cercare hotel nel raggio selezionato. Le coordinate vengono inviate a SicilyTrip e al fornitore hotel per questa ricerca; la mappa è fornita da OpenStreetMap."}
+      </p>
+      {locationError && (
+        <p role="alert" className="px-3 pb-3 text-sm text-red-700">
+          {locationError}
+        </p>
+      )}
       {!canSearch && (
         <p className="px-3 pb-3 text-sm text-amber-800">
           {isEnglish
