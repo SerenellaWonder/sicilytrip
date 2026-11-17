@@ -921,10 +921,13 @@ function HotelResultCard({
           <div
             className="
             relative
+            h-[280px]
             min-h-[220px]
             overflow-hidden
 
-            md:min-h-full
+            md:h-full
+            lg:h-[280px]
+            xl:h-full
           "
           >
             <HotelPreviewImage

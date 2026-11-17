@@ -296,12 +296,12 @@ export default function HotelPreviewImage({
             inset-0
             h-full
             w-full
-            object-cover
+            object-contain
 
             transition-transform
             duration-700
 
-            group-hover:scale-[1.035]
+
           "
         />
       )}
