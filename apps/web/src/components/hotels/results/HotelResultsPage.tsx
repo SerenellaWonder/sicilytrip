@@ -916,6 +916,7 @@ function HotelResultCard({
               searchId={searchId}
               hotelId={hotel.hotelId}
               hotelName={hotel.name}
+              previewImage={hotel.image}
             />
           </div>
 
