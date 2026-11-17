@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadGatewayException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 
 import { HotelDetailRepository } from '../repositories/hotel-detail.repository';
@@ -24,7 +28,13 @@ export class HotelDetailsService {
     const cached =
       await this.hotelDetailRepository.findByProviderHotelId(hotelId);
 
-    if (cached) {
+    // Refresh aggregated content daily; do not retain incomplete/error responses.
+    if (
+      cached &&
+      cached.name &&
+      Date.now() - cached.updatedAt.getTime() < 24 * 60 * 60 * 1000 &&
+      !(cached.payload as Record<string, unknown>)?.Error
+    ) {
       // Cached database fields and fresh provider responses share one contract.
       const payload =
         cached.payload &&
@@ -46,7 +56,9 @@ export class HotelDetailsService {
         Facilities: cached.facilities,
       };
       if (hasImages(cached.photoGallery)) {
-        return normalized;
+        return normalizeHotelContent(
+          normalized as unknown as Parameters<typeof normalizeHotelContent>[0],
+        );
       }
 
       const cachedSearchResults =
@@ -107,10 +119,17 @@ export class HotelDetailsService {
     //
     // 5. Chiamata Partner Solution
     //
-    const detail = await this.provider.details(
+    const response = await this.provider.details(
       providerSearch.providerSearchId,
       giataId,
     );
+
+    if (response.Error || !response.Name?.trim()) {
+      throw new BadGatewayException(
+        'Scheda hotel temporaneamente non disponibile',
+      );
+    }
+    const detail = normalizeHotelContent(response);
 
     const searchImage = getHotelPayloadString(payload.Image);
     const photoGallery = hasImages(detail.PhotoGallery)
@@ -168,4 +187,40 @@ function hasImages(value: unknown): value is string[] {
     Array.isArray(value) &&
     value.some((image) => typeof image === 'string' && image.trim().length > 0)
   );
+}
+
+// Remove exact repetitions only: different descriptions and image URLs are preserved.
+function normalizeHotelContent<
+  T extends {
+    PhotoGallery?: string[];
+    Facilities?: string[];
+    RoomFacilities?: string[];
+    Amenities?: string[];
+    Distances?: string[];
+    Descriptions?: { Title: string; Description: string }[];
+  },
+>(detail: T): T {
+  const unique = (items?: string[]) => [
+    ...new Set(
+      (items ?? [])
+        .filter((item) => typeof item === 'string')
+        .map((item) => item.trim())
+        .filter(Boolean),
+    ),
+  ];
+  const seen = new Set<string>();
+  return {
+    ...detail,
+    PhotoGallery: unique(detail.PhotoGallery),
+    Facilities: unique(detail.Facilities),
+    RoomFacilities: unique(detail.RoomFacilities),
+    Amenities: unique(detail.Amenities),
+    Distances: unique(detail.Distances),
+    Descriptions: (detail.Descriptions ?? []).filter((section) => {
+      const key = JSON.stringify([section.Title, section.Description]);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }),
+  };
 }

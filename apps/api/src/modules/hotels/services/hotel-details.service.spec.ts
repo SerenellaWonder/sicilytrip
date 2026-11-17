@@ -43,6 +43,7 @@ describe('Hotel detail cache contract', () => {
     { details } as unknown as PartnerSolutionHotelDetailsService,
   );
   const cached = {
+    updatedAt: new Date(),
     name: original.Name,
     stars: original.Stars,
     category: original.Category,
@@ -55,7 +56,10 @@ describe('Hotel detail cache contract', () => {
     facilities: original.Facilities,
     payload: original,
   };
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    details.mockResolvedValue(original);
+  });
   it('returns the same display data for first and subsequent visits', async () => {
     findByProviderHotelId
       .mockResolvedValueOnce(null)
@@ -86,6 +90,37 @@ describe('Hotel detail cache contract', () => {
     expect(await service.details('search1', 'hotel1')).toMatchObject({
       PhotoGallery: ['/fallback.jpg'],
       RoomFacilities: ['Doccia'],
+    });
+  });
+  it('refreshes expired aggregated content', async () => {
+    findByProviderHotelId.mockResolvedValue({
+      ...cached,
+      updatedAt: new Date(0),
+    });
+    await service.details('search1', 'hotel1');
+    expect(details).toHaveBeenCalledWith('provider-search', '123');
+    expect(save).toHaveBeenCalledTimes(1);
+  });
+  it('never stores provider error responses', async () => {
+    findByProviderHotelId.mockResolvedValue(null);
+    details.mockResolvedValue({ Error: 'temporarily unavailable' });
+    await expect(service.details('search1', 'hotel1')).rejects.toThrow(
+      'Scheda hotel',
+    );
+    expect(save).not.toHaveBeenCalled();
+  });
+  it('removes identical content while retaining distinct supplier content', async () => {
+    findByProviderHotelId.mockResolvedValue(null);
+    details.mockResolvedValue({
+      ...original,
+      PhotoGallery: ['/a.jpg', '/a.jpg', '/b.jpg'],
+      Facilities: ['WiFi', 'WiFi', 'Piscina'],
+      Descriptions: [...original.Descriptions, original.Descriptions[0]],
+    });
+    expect(await service.details('search1', 'hotel1')).toMatchObject({
+      PhotoGallery: ['/a.jpg', '/b.jpg'],
+      Facilities: ['WiFi', 'Piscina'],
+      Descriptions: original.Descriptions,
     });
   });
 });
